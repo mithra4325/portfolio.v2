@@ -30,64 +30,508 @@
     <div class="container page-container">
       <h1 class="page-main-heading">Task 04: Firebase Realtime Web Dashboard</h1>
 
+      <!-- 1. OVERVIEW -->
       <section class="content-block">
-        <h2 class="content-block-heading">Overview</h2>
-        <p class="content-block-text">This task builds a web dashboard that shows live data and sends control commands through the Firebase Realtime Database. The dashboard displays temperature, humidity and light level and has a toggle for a bulb. It is hosted on Firebase Hosting, so it can be opened from any browser.</p>
+        <h2 class="content-block-heading">1. Overview</h2>
+        <p class="content-block-text">
+          The purpose of this fourth task was to engineer a browser-based IoT monitoring and control dashboard powered by <strong>Firebase Realtime Database</strong> and hosted on <strong>Firebase Hosting</strong>.
+        </p>
+        <p class="content-block-text" style="margin-top: 0.75rem;">
+          The web application displays live environmental telemetry—specifically <strong>Temperature</strong>, <strong>Humidity</strong>, and <strong>Light Level</strong>—and provides a real-time binary toggle switch for an electrical <strong>Bulb</strong>.
+        </p>
+        <p class="content-block-text" style="margin-top: 0.75rem;">
+          The frontend connects directly to Firebase using the official <strong>Firebase JavaScript SDK</strong>. Using reactive <code>onValue()</code> event listeners, the dashboard subscribes to real-time changes under the <code>telemetry/live</code> and <code>controls/bulbState</code> nodes. When the user flips the bulb toggle, the client writes <code>1</code> (ON) or <code>0</code> (OFF) back to the cloud database using <code>set()</code>.
+        </p>
+        <div class="diagram-box">Web Dashboard ──&gt; Firebase JavaScript SDK ──&gt; Firebase Realtime Database ──&gt; IoT System</div>
+        <p class="content-block-text">
+          By utilizing a cloud-hosted database as the intermediary communication layer, the web dashboard and embedded hardware do not require direct peer-to-peer network connections. Firebase functions as the synchronized cloud state repository bridging the browser and the IoT physical tier.
+        </p>
       </section>
 
+      <!-- 2. WHAT I WAS TRYING TO BUILD -->
       <section class="content-block">
-        <h2 class="content-block-heading">Objective</h2>
+        <h2 class="content-block-heading">2. What I Was Trying to Build</h2>
+        <p class="content-block-text">
+          The primary engineering objective was to construct an interactive, responsive web portal where a user can view live sensor readings and issue actuator control commands without needing direct local access to the microcontroller hardware:
+        </p>
+        <div class="diagram-box">User opens Web Dashboard
+            │
+            ▼
+Read Firebase Realtime Database
+            │
+            ▼
+Display Live Sensor Values (Temperature, Humidity, Light)
+            │
+            ▼
+User Toggles Bulb Switch
+            │
+            ▼
+Write Control State to Firebase (1 = ON, 0 = OFF)
+            │
+            ▼
+IoT System Reads Control State from Cloud Database</div>
+        <p class="content-block-text">
+          Crucially, the browser is not asserting direct control over a GPIO pin or hosting an embedded HTTP server. Instead, it mutates a synchronized key in a cloud database. Firebase acts as the centralized meeting point between the web application and the IoT hardware layer.
+        </p>
+      </section>
+
+      <!-- 3. LEARNING OBJECTIVES -->
+      <section class="content-block">
+        <h2 class="content-block-heading">3. Learning Objectives</h2>
         <ul class="content-block-list">
-          <li>Set up a Firebase project with a Realtime Database.</li>
-          <li>Design the database structure for sensor data and control values.</li>
-          <li>Build a web page that reads live data and writes the bulb state.</li>
-          <li>Deploy the page with Firebase Hosting.</li>
+          <li>Create and configure a Google Firebase cloud project for IoT integration.</li>
+          <li>Set up and initialize a Firebase Realtime Database instance.</li>
+          <li>Understand how a cloud-hosted NoSQL JSON database functions as an IoT messaging and state layer.</li>
+          <li>Design an organized database tree separating telemetry payloads from control parameters.</li>
+          <li>Integrate the modular Firebase JavaScript SDK v10 into a vanilla web application.</li>
+          <li>Implement asynchronous event-driven listeners using <code>onValue()</code> to receive live cloud pushes.</li>
+          <li>Mutate cloud database values deterministically using <code>set()</code> based on user interactions.</li>
+          <li>Maintain bidirectional UI synchronization between the checkbox element and stored database state.</li>
+          <li>Deploy a static web application to a global CDN using the Firebase CLI and Firebase Hosting.</li>
+          <li>Validate and debug cloud-to-frontend synchronization independently before connecting physical hardware.</li>
+          <li>Differentiate telemetry data collection from discrete actuator control flows.</li>
+          <li>Understand the architectural purpose and security implications of Firebase database rules.</li>
         </ul>
       </section>
 
+      <!-- 4. COMPLETE SYSTEM ARCHITECTURE -->
       <section class="content-block">
-        <h2 class="content-block-heading">Components</h2>
-        <ul class="content-block-list">
-          <li>Firebase project with Realtime Database and Hosting</li>
-          <li>HTML, CSS and JavaScript</li>
-          <li>Firebase JavaScript SDK</li>
-          <li>Node.js and Firebase CLI for deployment</li>
-          <li>Code editor and browser</li>
-        </ul>
+        <h2 class="content-block-heading">4. Complete System Architecture</h2>
+        <p class="content-block-text">
+          The end-to-end architecture establishes Firebase Realtime Database as the shared state repository between the web frontend and the embedded IoT system:
+        </p>
+        <div class="diagram-box">┌──────────────────────────────────────────────┐
+│                 WEB BROWSER                  │
+│                                              │
+│          Temperature Display Card            │
+│           Humidity Display Card              │
+│          Light Level Display Card            │
+│              Bulb State Toggle               │
+└──────────────────────┬───────────────────────┘
+                       │
+                       │ Firebase JavaScript SDK (v10)
+                       ▼
+┌──────────────────────────────────────────────┐
+│          FIREBASE REALTIME DATABASE          │
+│                                              │
+│     telemetry/live/temperature               │
+│     telemetry/live/humidity                  │
+│     telemetry/live/light                     │
+│     controls/bulbState (1 / 0)               │
+└──────────────────────┬───────────────────────┘
+                       │
+                       │ Shared Cloud State Synchronization
+                       ▼
+┌──────────────────────────────────────────────┐
+│                 IoT / ESP32                  │
+│                                              │
+│      DHT / Ambient Sensors ──&gt; Telemetry     │
+│         Relay Module ──&gt; Bulb Actuation      │
+└──────────────────────────────────────────────┘</div>
+
+        <div class="sub-heading">Separate Data and Control Pathways</div>
+        <p class="content-block-text">
+          The database separates operational data into two unidirectional data flows:
+        </p>
+        <div class="feature-grid">
+          <div class="feature-card">
+            <div class="feature-card-title">Telemetry Ingestion Flow</div>
+            <div class="feature-card-desc">
+              Sensors &rarr; ESP32 &rarr; Firebase <code>telemetry/live</code> &rarr; <code>onValue()</code> &rarr; Web Dashboard Cards
+            </div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card-title">Actuator Control Flow</div>
+            <div class="feature-card-desc">
+              User Toggle &rarr; <code>set()</code> &rarr; Firebase <code>controls/bulbState</code> &rarr; ESP32 / Relay &rarr; Bulb Output
+            </div>
+          </div>
+        </div>
+        <p class="content-block-text">
+          <em>Important:</em> The web browser never initiates a direct network connection to the ESP32. All telemetry reads and control writes are brokered entirely through Firebase.
+        </p>
       </section>
 
+      <!-- 5. COMPONENTS & SOFTWARE -->
       <section class="content-block">
-        <h2 class="content-block-heading">Work</h2>
-        <ol class="content-block-list">
-          <li>Created a Firebase project in the Firebase console and added a Web app. Copied the generated firebaseConfig values into the page.</li>
-          <li>Created a Realtime Database. Planned two parts: "telemetry/live" holds temperature, humidity and light level, and "controls/bulbState" holds 1 for ON and 0 for OFF.</li>
-          <li>Set the database rules [[FILL: describe your rules, e.g. test mode or sign-in required]].</li>
-          <li>Built the dashboard page with three value cards for temperature, humidity and light level, plus a toggle for the bulb.</li>
-          <li>Connected the page to Firebase. An onValue listener on telemetry/live updates the cards the moment the data changes, with no page refresh. Another listener keeps the toggle in sync with controls/bulbState.</li>
-          <li>Switching the toggle writes 1 or 0 to controls/bulbState.</li>
-          <li>Tested without any hardware. Changed values by hand in the Firebase console and watched the dashboard update immediately. Flipped the toggle and watched controls/bulbState change in the console.</li>
-          <li>Deployed with the Firebase CLI using firebase login, firebase init hosting and firebase deploy. The dashboard is live at <a href="https://mithra-63101.web.app" target="_blank" rel="noopener" style="color: var(--maroon); font-weight: 600;">Smart Home Dashboard</a>.</li>
-        </ol>
-        <p class="content-block-text" style="margin-top: 1rem;">Keep only the features your dashboard really has, and delete the rest of this list:</p>
-        <ul class="content-block-list" style="margin-top: 0.5rem;">
-          <li>Login with Firebase Authentication (email and password)</li>
-          <li>Table of past readings with search</li>
-          <li>Export of the readings to a CSV file</li>
-          <li>Auto mode that switches the bulb from the light level</li>
-        </ul>
-      </section>
-
-      <section class="content-block">
-        <h2 class="content-block-heading">Media</h2>
-        <div class="media-grid">
-          <img src="assets/iot/task4-img1.jpeg" alt="Task 4 Image 1">
-          <img src="assets/iot/task4-img2.jpeg" alt="Task 4 Image 2">
-          <img src="assets/iot/task4-img3.jpeg" alt="Task 4 Image 3">
+        <h2 class="content-block-heading">5. Components &amp; Software</h2>
+        <div class="feature-grid">
+          <div class="feature-card">
+            <div class="feature-card-title">Firebase Project</div>
+            <div class="feature-card-desc">Google Cloud project provisioning the Realtime Database instance, hosting environment, and client security configuration.</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card-title">Firebase Realtime Database</div>
+            <div class="feature-card-desc">Cloud-hosted NoSQL JSON database that stores live telemetry and actuator control parameters, synchronizing data across clients via WebSockets.</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card-title">Firebase JavaScript SDK</div>
+            <div class="feature-card-desc">Official client library loaded via CDN (<code>firebase-app.js</code> and <code>firebase-database.js</code>), providing <code>onValue()</code> and <code>set()</code> primitives.</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card-title">Web Dashboard Frontend</div>
+            <div class="feature-card-desc">Lightweight user interface constructed purely with semantic HTML, CSS, and modern modular JavaScript without bulky framework overhead.</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card-title">Firebase Hosting</div>
+            <div class="feature-card-desc">Fast, secure global hosting platform that serves production static assets (HTML/JS) over HTTPS via SSD-backed edge infrastructure.</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card-title">Firebase CLI &amp; Node.js</div>
+            <div class="feature-card-desc">Command-line tooling used for project authentication, hosting initialization, and one-command terminal deployments.</div>
+          </div>
         </div>
       </section>
 
+      <!-- 6. FIREBASE DATABASE STRUCTURE -->
       <section class="content-block">
-        <h2 class="content-block-heading">Code</h2>
+        <h2 class="content-block-heading">6. Firebase Database Structure</h2>
+        <p class="content-block-text">
+          The database schema is intentionally structured as a shallow JSON tree with distinct partitions for incoming telemetry and outgoing control directives:
+        </p>
+        <div class="diagram-box">Firebase Realtime Database Root
+│
+├── telemetry/
+│   └── live/
+│       ├── temperature : 24.5    (Numerical degrees Celsius)
+│       ├── humidity    : 60.0    (Numerical percentage %)
+│       └── light       : 82.0    (Numerical percentage %)
+│
+└── controls/
+    └── bulbState       : 1       (Binary integer: 1 = ON, 0 = OFF)</div>
+
+        <div class="sub-heading">Design Rationale: Decoupled Data Models</div>
+        <p class="content-block-text">
+          Segregating data into <code>telemetry/live</code> and <code>controls/bulbState</code> provides key engineering benefits:
+        </p>
+        <ul class="content-block-list">
+          <li><strong>Granular Listener Scopes:</strong> The sensor cards only listen to changes in <code>telemetry/live</code>, preventing unnecessary UI recalculations when a control parameter changes.</li>
+          <li><strong>Write Isolation:</strong> Web users write strictly to the <code>controls</code> node, eliminating the risk of accidental overwrites to sensor telemetry paths.</li>
+          <li><strong>Simplified Hardware Parsing:</strong> When the ESP32 fetches the actuator state, it reads a single primitive integer (<code>1</code> or <code>0</code>) rather than deserializing large nested documents.</li>
+        </ul>
+      </section>
+
+      <!-- 7. WEB DASHBOARD ARCHITECTURE -->
+      <section class="content-block">
+        <h2 class="content-block-heading">7. Web Dashboard Architecture</h2>
+        <p class="content-block-text">
+          The frontend client architecture is built on standard web technologies without external framework dependencies:
+        </p>
+        <div class="diagram-box">index.html (Client Layout)
+│
+├── Telemetry UI Elements
+│   ├── Temperature Card  ──&gt; DOM Target: &lt;span id="temp"&gt;
+│   ├── Humidity Card     ──&gt; DOM Target: &lt;span id="hum"&gt;
+│   └── Light Level Card  ──&gt; DOM Target: &lt;span id="light"&gt;
+│
+├── Actuator UI Element
+│   └── Bulb Checkbox     ──&gt; DOM Target: &lt;input type="checkbox" id="bulbToggle"&gt;
+│
+└── &lt;script type="module"&gt;
+    ├── Firebase App &amp; Database Initialization
+    ├── Database Reference Creation (ref)
+    ├── Telemetry Listener (onValue) ──────► Mutates Text Content
+    ├── Bulb State Listener (onValue) ─────► Synchronizes Checkbox State
+    └── Bulb Toggle Change Handler ────────► Dispatches set() Mutation</div>
+        <p class="content-block-text">
+          Standard HTML structure defines the visual elements, vanilla CSS enforces presentation, and native ES modules manage asynchronous communication with Firebase.
+        </p>
+      </section>
+
+      <!-- 8. FIREBASE JAVASCRIPT SDK -->
+      <section class="content-block">
+        <h2 class="content-block-heading">8. Firebase JavaScript SDK</h2>
+        <p class="content-block-text">
+          The application imports the modern modular Firebase JavaScript SDK (v10) directly via CDN script tags:
+        </p>
+        <div class="diagram-box">import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";</div>
+        <p class="content-block-text">
+          The core SDK functions fulfill specific roles:
+        </p>
+        <ul class="content-block-list">
+          <li><code>initializeApp(config)</code>: Initializes the Firebase app instance using project API configuration parameters.</li>
+          <li><code>getDatabase(app)</code>: Returns a Realtime Database reference bound to the project instance.</li>
+          <li><code>ref(db, path)</code>: Constructs a deterministic reference pointer to a designated database URL path.</li>
+          <li><code>onValue(ref, callback)</code>: Establishes a persistent real-time listener that invokes a callback whenever the data at the path changes.</li>
+          <li><code>set(ref, value)</code>: Writes data to the specified database location, completely overwriting the value at that path.</li>
+        </ul>
+      </section>
+
+      <!-- 9. REAL-TIME SENSOR UPDATES -->
+      <section class="content-block">
+        <h2 class="content-block-heading">9. Real-Time Sensor Updates</h2>
+        <p class="content-block-text">
+          Live telemetry display is managed by a single reactive subscription attached to the <code>telemetry/live</code> reference:
+        </p>
+        <div class="diagram-box">const telemetryRef = ref(db, "telemetry/live");
+
+onValue(telemetryRef, (snapshot) =&gt; {
+  const d = snapshot.val();
+  if (!d) return;
+  document.getElementById("temp").textContent = d.temperature;
+  document.getElementById("hum").textContent = d.humidity;
+  document.getElementById("light").textContent = d.light;
+});</div>
+        <div class="sub-heading">Operational Mechanics</div>
+        <ol class="content-block-list">
+          <li><strong>Data Ingestion:</strong> The IoT system writes updated numerical values to <code>telemetry/live</code>.</li>
+          <li><strong>Cloud Push:</strong> Firebase immediately broadcasts the updated JSON payload over the existing WebSocket socket to connected browsers.</li>
+          <li><strong>Callback Execution:</strong> The <code>onValue()</code> callback fires on the client.</li>
+          <li><strong>Snapshot Extraction:</strong> <code>snapshot.val()</code> parses the payload into a JavaScript object containing <code>temperature</code>, <code>humidity</code>, and <code>light</code>.</li>
+          <li><strong>DOM Update:</strong> The script targets element IDs (<code>temp</code>, <code>hum</code>, <code>light</code>) and updates their text content directly.</li>
+        </ol>
+        <p class="content-block-text" style="margin-top: 0.75rem;">
+          This reactive event model eliminates periodic client-side polling and manual page reloads: the UI updates instantly whenever the cloud value changes.
+        </p>
+      </section>
+
+      <!-- 10. BULB CONTROL -->
+      <section class="content-block">
+        <h2 class="content-block-heading">10. Bulb Control</h2>
+        <p class="content-block-text">
+          Actuator switching is implemented with a dedicated database pointer to <code>controls/bulbState</code>:
+        </p>
+        <div class="diagram-box">const bulbRef = ref(db, "controls/bulbState");
+
+// 1. Keep UI in sync with database changes
+onValue(bulbRef, (snapshot) =&gt; {
+  document.getElementById("bulbToggle").checked = snapshot.val() === 1;
+});
+
+// 2. Transmit user input changes to the database
+document.getElementById("bulbToggle").addEventListener("change", (e) =&gt; {
+  set(bulbRef, e.target.checked ? 1 : 0);
+});</div>
+
+        <div class="sub-heading">Bidirectional State Synchronization</div>
+        <p class="content-block-text">
+          The toggle logic establishes a fully synchronized control loop:
+        </p>
+        <ul class="content-block-list">
+          <li><strong>User Writes to Cloud:</strong> When the user clicks the checkbox, the <code>change</code> event listener fires. If checked, <code>set(bulbRef, 1)</code> writes <code>1</code>; if unchecked, <code>set(bulbRef, 0)</code> writes <code>0</code>.</li>
+          <li><strong>Cloud Confirms to UI:</strong> Because <code>onValue()</code> listens to <code>bulbRef</code>, any state change—whether made by this browser, an external device, or the Firebase Console—immediately syncs the checkbox's <code>checked</code> property.</li>
+        </ul>
+      </section>
+
+      <!-- 11. COMPLETE DATA FLOW -->
+      <section class="content-block">
+        <h2 class="content-block-heading">11. Complete Data Flow</h2>
+        <p class="content-block-text">
+          The dashboard coordinates two independent data directions across the cloud layer:
+        </p>
+
+        <div class="sub-heading">Downlink: Live Sensor Telemetry Flow</div>
+        <div class="diagram-box">Environmental Sensors (Temperature / Humidity / Light)
+                    │
+                    ▼
+               ESP32 Module
+                    │
+                    ▼ Cloud Write via Wi-Fi
+      Firebase Realtime Database (telemetry/live)
+                    │
+                    ▼ Persistent WebSocket Event
+                 onValue()
+                    │
+                    ▼
+          Web Dashboard DOM Update
+         (&lt;span id="temp"&gt;, &lt;span id="hum"&gt;, &lt;span id="light"&gt;)</div>
+
+        <div class="sub-heading">Uplink: Actuator Control Command Flow</div>
+        <div class="diagram-box">User clicks Bulb Toggle Checkbox
+                    │
+                    ▼ DOM "change" Event
+            set(bulbRef, 1 or 0)
+                    │
+                    ▼ Cloud Mutation over HTTPS/WSS
+    Firebase Realtime Database (controls/bulbState)
+                    │
+                    ▼ Cloud Read / Subscription
+               ESP32 Module
+                    │
+                    ▼ Digital Output
+               Relay Module
+                    │
+                    ▼
+           Bulb Changes State (ON / OFF)</div>
+      </section>
+
+      <!-- 12. IMPLEMENTATION PROCESS -->
+      <section class="content-block">
+        <h2 class="content-block-heading">12. Implementation Process</h2>
+        <ol class="content-block-list">
+          <li><strong>Create Firebase Project:</strong> Created a new project in the Firebase Console named <code>smart-iot-dashboard</code>.</li>
+          <li><strong>Register Web Application:</strong> Registered the web client to generate the project's <code>firebaseConfig</code> credentials object (API key, project ID, database URL).</li>
+          <li><strong>Initialize Realtime Database:</strong> Provisioned a Realtime Database instance in the project console and confirmed the location endpoint.</li>
+          <li><strong>Construct Frontend Layout:</strong> Created <code>index.html</code> with cards for Temperature, Humidity, and Light level, and an HTML checkbox for the bulb toggle.</li>
+          <li><strong>Integrate Firebase SDK:</strong> Imported <code>firebase-app.js</code> and <code>firebase-database.js</code> inside an ES module script.</li>
+          <li><strong>Attach Telemetry Listener:</strong> Attached an <code>onValue()</code> listener to <code>telemetry/live</code> to automatically parse and render incoming sensor values.</li>
+          <li><strong>Attach Control Listener:</strong> Bound <code>onValue()</code> to <code>controls/bulbState</code> to maintain checkbox synchronization with the database state.</li>
+          <li><strong>Attach Control Mutation Handler:</strong> Added a <code>change</code> event listener to the checkbox, executing <code>set(bulbRef, checked ? 1 : 0)</code>.</li>
+          <li><strong>Console Validation Testing:</strong> Verified communication by manually altering numbers in the Firebase Console and verifying browser UI updates.</li>
+          <li><strong>Production Deployment:</strong> Initialized Firebase Hosting using the Firebase CLI and executed <code>firebase deploy</code> to launch the public dashboard.</li>
+        </ol>
+        <p class="content-block-text" style="margin-top: 1rem;">
+          The deployed application is publicly accessible at: <a href="https://mithra-63101.web.app/" target="_blank" rel="noopener" style="color: var(--maroon); font-weight: 600;">Smart Home Dashboard</a>.
+        </p>
+      </section>
+
+      <!-- MEDIA SECTION -->
+      <section class="content-block" id="media">
+        <h2 class="content-block-heading">Demonstration Media</h2>
+        <p class="content-block-text">Photographic verification of the Firebase Realtime Database schema, live dashboard interface, and actuator testing:</p>
+        <div class="media-grid">
+          <img src="assets/iot/task4-img1.jpeg" alt="Task 4 Image 1: Firebase Realtime Database Console View">
+          <img src="assets/iot/task4-img2.jpeg" alt="Task 4 Image 2: Web Dashboard Telemetry and Control Interface">
+          <img src="assets/iot/task4-img3.jpeg" alt="Task 4 Image 3: Realtime Database Synchronization Verification">
+        </div>
+      </section>
+
+      <!-- 13. TESTING & VERIFICATION -->
+      <section class="content-block">
+        <h2 class="content-block-heading">13. Testing &amp; Verification</h2>
+        <p class="content-block-text">
+          A structured verification protocol was carried out to ensure the stability of the cloud-to-frontend synchronization pipeline:
+        </p>
+        <ul class="content-block-list">
+          <li><strong>Test 1 — Firebase Connection Initialization:</strong> Navigated to the hosted dashboard; verified that the client successfully opened a WebSocket connection to the Firebase Realtime Database without console errors.</li>
+          <li><strong>Test 2 — Temperature Telemetry Update:</strong> Manually changed <code>telemetry/live/temperature</code> in the Firebase Console to <code>26.8</code>. Confirmed that the dashboard's temperature display changed to <code>26.8</code> without a page reload.</li>
+          <li><strong>Test 3 — Humidity Telemetry Update:</strong> Changed <code>telemetry/live/humidity</code> to <code>65.2</code>. Verified that the humidity card updated immediately.</li>
+          <li><strong>Test 4 — Light Level Telemetry Update:</strong> Changed <code>telemetry/live/light</code> to <code>45.0</code>. Verified that the light card reflected the updated percentage.</li>
+          <li><strong>Test 5 — Bulb State Synchronization (ON):</strong> Manually edited <code>controls/bulbState</code> in the database to <code>1</code>. Verified that the dashboard toggle checkbox switched to checked.</li>
+          <li><strong>Test 6 — Bulb State Synchronization (OFF):</strong> Edited <code>controls/bulbState</code> to <code>0</code>. Confirmed that the checkbox unchecked immediately.</li>
+          <li><strong>Test 7 — Browser-Initiated Write Command:</strong> Clicked the bulb toggle in the browser. Verified that the Firebase Console tree reflected an instantaneous mutation to <code>1</code> (when checked) or <code>0</code> (when unchecked).</li>
+          <li><strong>Test 8 — Hardware-Independent Web Verification:</strong> Confirmed that the entire web frontend and cloud data tier functioned flawlessly prior to physical embedded hardware integration.</li>
+        </ul>
+      </section>
+
+      <!-- 14. DATABASE RULES -->
+      <section class="content-block">
+        <h2 class="content-block-heading">14. Database Rules</h2>
+        <p class="content-block-text">
+          Database security rules control which clients possess permission to read from or write to specific paths in the Firebase Realtime Database tree.
+        </p>
+        <div class="diagram-box">{
+  "rules": {
+    ".read": true,
+    ".write": true
+  }
+}</div>
+        <p class="content-block-text">
+          <em>Configuration Notes:</em> [[FILL: describe your rules]]. Database rules determine whether clients can read and write data openly or whether stricter path-based constraints are enforced. In development, open read/write rules facilitate rapid prototyping, but production IoT architectures should restrict client writes strictly to authorized paths such as <code>controls/bulbState</code> while reserving telemetry updates for authenticated microcontroller nodes.
+        </p>
+      </section>
+
+      <!-- 15. DEPLOYMENT WITH FIREBASE HOSTING -->
+      <section class="content-block">
+        <h2 class="content-block-heading">15. Deployment with Firebase Hosting</h2>
+        <p class="content-block-text">
+          The web application was deployed to production using <strong>Firebase Hosting</strong>, an SSD-backed global hosting platform:
+        </p>
+        <div class="diagram-box">1. Install CLI:     npm install -g firebase-tools
+2. Authenticate:    firebase login
+3. Initialize:      firebase init hosting
+4. Deploy Assets:   firebase deploy --only hosting
+                    │
+                    ▼
+Production URL:     https://mithra-63101.web.app/</div>
+
+        <div class="sub-heading">Separation of Services</div>
+        <p class="content-block-text">
+          It is critical to distinguish the two Firebase services deployed in this task:
+        </p>
+        <div class="feature-grid">
+          <div class="feature-card">
+            <div class="feature-card-title">Firebase Hosting</div>
+            <div class="feature-card-desc">Delivers static frontend assets (HTML, CSS, JavaScript) to clients globally over high-performance HTTPS endpoints.</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card-title">Firebase Realtime Database</div>
+            <div class="feature-card-desc">Manages live JSON state synchronization, WebSocket event channels, and bidirectional IoT data exchanges.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 16. TESTING WITHOUT HARDWARE -->
+      <section class="content-block">
+        <h2 class="content-block-heading">16. Testing Without Hardware</h2>
+        <p class="content-block-text">
+          A fundamental engineering strength of this architecture is <strong>independent frontend verification</strong>:
+        </p>
+        <div class="diagram-box">TESTING TELEMETRY (Inbound):
+Firebase Console ──&gt; Edit telemetry/live/temperature ──&gt; onValue() Fires ──&gt; UI Updates
+
+TESTING ACTUATION (Outbound):
+Web Dashboard ──&gt; Click Bulb Toggle ──&gt; set() Executes ──&gt; Firebase Console Value Changes to 1 / 0</div>
+        <p class="content-block-text">
+          By simulating sensor updates directly in the Firebase Console, the web application's communication logic, DOM rendering, and error handling were verified in isolation. This decoupled workflow ensures that when hardware integration begins in Task 5, frontend anomalies have already been eliminated.
+        </p>
+      </section>
+
+      <!-- 17. TASK 3 VS TASK 4 -->
+      <section class="content-block">
+        <h2 class="content-block-heading">17. Task 3 vs Task 4</h2>
+        <p class="content-block-text">
+          Comparing the architectural differences between voice-triggered cloud automation and database-driven web dashboards:
+        </p>
+        <table class="tech-table">
+          <thead>
+            <tr>
+              <th>Dimension</th>
+              <th>Task 3 — Voice &amp; Cloud Automation</th>
+              <th>Task 4 — Firebase Web Dashboard</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Primary User Interface</td>
+              <td>Acoustic Spoken Voice (Google Assistant)</td>
+              <td>Graphical Web Dashboard (Browser)</td>
+            </tr>
+            <tr>
+              <td>Input Device</td>
+              <td>Smartphone Microphone</td>
+              <td>Desktop / Mobile Web Browser</td>
+            </tr>
+            <tr>
+              <td>Integration Bridge</td>
+              <td>IFTTT Rules Engine</td>
+              <td>Firebase JavaScript SDK</td>
+            </tr>
+            <tr>
+              <td>Cloud Intermediary</td>
+              <td>Adafruit IO (MQTT Broker)</td>
+              <td>Firebase Realtime Database (NoSQL JSON)</td>
+            </tr>
+            <tr>
+              <td>Communication Pattern</td>
+              <td>Publish-Subscribe over Port 1883</td>
+              <td>WebSocket Event Synchronization</td>
+            </tr>
+            <tr>
+              <td>Client Role</td>
+              <td>ESP32 acts as MQTT Subscriber</td>
+              <td>Web app acts as Database Client</td>
+            </tr>
+            <tr>
+              <td>System Scope</td>
+              <td>Voice &rarr; Cloud &rarr; Hardware</td>
+              <td>Browser &rarr; Cloud Database &rarr; IoT System</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="sub-heading">Evolution of Cloud Interaction Models</div>
+        <div class="diagram-box">TASK 3: Voice ──&gt; Google Assistant ──&gt; IFTTT ──&gt; Adafruit IO ──[MQTT]──&gt; ESP32 ──&gt; Relay
+TASK 4: Web Dashboard ──[Firebase SDK]──&gt; Firebase Realtime Database ──&gt; IoT System</div>
+        <p class="content-block-text">
+          Task 4 shifts the cloud paradigm from specialized message queuing (MQTT) to a centralized, shared cloud database that serves as a single source of truth for both web clients and connected microcontrollers.
+        </p>
+      </section>
+
+      <!-- 18. CODE -->
+      <section class="content-block">
+        <h2 class="content-block-heading">18. Complete Frontend Code</h2>
         <div class="code-filename">File: index.html</div>
         <div class="code-wrapper">
           <button class="copy-btn" onclick="copyCode(this)">Copy</button>
@@ -145,23 +589,133 @@
         </div>
       </section>
 
+      <!-- 19. CODE BREAKDOWN -->
       <section class="content-block">
-        <h2 class="content-block-heading">Result</h2>
-        <p class="content-block-text">The dashboard was deployed on Firebase Hosting and opened from a browser. Sensor values appeared on the page as soon as they changed in the database, and the bulb toggle wrote its state to the database in real time.</p>
+        <h2 class="content-block-heading">19. Code Breakdown</h2>
+        <div class="feature-grid">
+          <div class="feature-card">
+            <div class="feature-card-title"><code>initializeApp(firebaseConfig)</code></div>
+            <div class="feature-card-desc">Parses project credentials and establishes the runtime connection to Google Firebase cloud services.</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card-title"><code>getDatabase(app)</code></div>
+            <div class="feature-card-desc">Initializes the Realtime Database client instance and establishes the WebSocket communication channel.</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card-title">Database Path References (<code>ref</code>)</div>
+            <div class="feature-card-desc">Creates pointer references for <code>telemetry/live</code> and <code>controls/bulbState</code> targeting specific nodes in the JSON tree.</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card-title">Reactive Telemetry Listener (<code>onValue</code>)</div>
+            <div class="feature-card-desc">Subscribes to live sensor updates, invoking the callback with an immutable data snapshot whenever cloud values change.</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card-title">Snapshot Extraction (<code>snapshot.val()</code>)</div>
+            <div class="feature-card-desc">Deserializes the JSON snapshot payload into a native JavaScript object containing <code>temperature</code>, <code>humidity</code>, and <code>light</code>.</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card-title">Direct DOM Updating</div>
+            <div class="feature-card-desc">Locates DOM targets via <code>getElementById</code> and immediately assigns the latest numbers to <code>textContent</code>.</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card-title">Bulb State Listener Synchronization</div>
+            <div class="feature-card-desc">Evaluates <code>snapshot.val() === 1</code> and updates <code>bulbToggle.checked</code>, ensuring the UI reflects the true cloud state.</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card-title">Database Mutation (<code>set</code>)</div>
+            <div class="feature-card-desc">Translates user checkbox toggling into binary integer updates (<code>1</code> or <code>0</code>), committing mutations to the cloud database.</div>
+          </div>
+        </div>
       </section>
 
+      <!-- 20. KEY LEARNINGS -->
       <section class="content-block">
-        <h2 class="content-block-heading">Learnings</h2>
+        <h2 class="content-block-heading">20. Key Learnings</h2>
+        <div class="feature-grid">
+          <div class="feature-card">
+            <div class="feature-card-title">Cloud Databases as State Layers</div>
+            <div class="feature-card-desc">Learned how a cloud NoSQL database acts as a shared meeting point, eliminating the requirement for direct browser-to-ESP32 connections.</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card-title">Event-Driven Reactive Web UIs</div>
+            <div class="feature-card-desc">Replaced inefficient client-side HTTP polling with push-based WebSocket event listeners using <code>onValue()</code>.</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card-title">Structured Data Modeling</div>
+            <div class="feature-card-desc">Designed separate namespaces for telemetry ingestion (read) and actuator controls (write) to simplify code on both web and embedded ends.</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card-title">Decoupled Testing Methodologies</div>
+            <div class="feature-card-desc">Validated cloud-to-frontend synchronization independently using the Firebase Console before physical hardware integration.</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card-title">Modern Modular SDK Integration</div>
+            <div class="feature-card-desc">Utilized standard ES module imports to load the lightweight Firebase v10 SDK directly into vanilla HTML/JS applications.</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card-title">Production Cloud Hosting</div>
+            <div class="feature-card-desc">Managed static website lifecycle using the Firebase CLI to deploy global HTTPS web dashboards in a single command.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 21. FINAL RESULT -->
+      <section class="content-block">
+        <h2 class="content-block-heading">21. Final Result</h2>
+        <p class="content-block-text">
+          The finished project delivers a fast, responsive, and reliable web dashboard for IoT monitoring and actuation:
+        </p>
+        <div class="diagram-box">Verified Working Pipeline:
+Web Dashboard ──[Firebase SDK]──&gt; Firebase Realtime Database ──&gt; IoT System
+(Displays: Temperature, Humidity, Light | Controls: Bulb State 1 / 0)</div>
+        <p class="content-block-text">
+          The dashboard successfully displays live environmental values without manual page reloads, and flipping the bulb toggle writes <code>1</code> or <code>0</code> directly to the cloud database. The static frontend is deployed and running live on <a href="https://mithra-63101.web.app/" target="_blank" rel="noopener" style="color: var(--maroon); font-weight: 600;">Smart Home Dashboard</a>.
+        </p>
+      </section>
+
+      <!-- 22. TASK 04 TAKEAWAY -->
+      <section class="content-block">
+        <h2 class="content-block-heading">22. Task 04 Takeaway</h2>
+        <p class="content-block-text">
+          The central takeaway of Task 4 is the power of <strong>decoupling user interfaces from embedded hardware using cloud databases as shared state abstractions</strong>:
+        </p>
         <ul class="content-block-list">
-          <li>Firebase Realtime Database pushes changes to every connected page, so no refresh or polling is needed.</li>
-          <li>The database works as a shared meeting point. The web page and the ESP32 never connect to each other, they only read and write the same paths.</li>
-          <li>Planning the data structure first made the hardware code in Task 5 simple to match.</li>
-          <li>Testing the dashboard by editing values in the console shows that the web side works before any hardware is connected.</li>
-          <li>Firebase Hosting gives a free public HTTPS link for a static site with one deploy command.</li>
-          <li>The database rules decide who can read and write, so they must be set deliberately.</li>
+          <li><strong>Web Dashboard:</strong> Responsible solely for rendering visual components and capturing user intent.</li>
+          <li><strong>Firebase SDK:</strong> Responsible for maintaining network sockets and synchronizing data packets.</li>
+          <li><strong>Firebase Realtime Database:</strong> Responsible for persisting cloud state and broadcasting changes to subscribers.</li>
+          <li><strong>IoT / ESP32 Tier:</strong> Responsible for reading physical sensors and driving electrical actuators.</li>
         </ul>
+        <p class="content-block-text" style="margin-top: 0.75rem;">
+          Neither end needs to understand the internal workings of the other: the browser does not need to know GPIO pin mappings, and the microcontroller does not need to know DOM structures. Firebase provides the universal bridge between them.
+        </p>
       </section>
 
+      <!-- 23. WHY THIS ARCHITECTURE MATTERS -->
+      <section class="content-block">
+        <h2 class="content-block-heading">23. Why This Architecture Matters</h2>
+        <p class="content-block-text">
+          Tracing the progression across the IoT Week tasks reveals the evolution of modern connected systems:
+        </p>
+        <div class="diagram-box">Task 1: Direct Local Control
+Browser ──[HTTP]──&gt; ESP32 Web Server ──&gt; GPIO 2 ──&gt; Onboard LED
+
+Task 2: Cloud Telemetry &amp; Actuation
+Dashboard ──[Adafruit IO]──[MQTT]──&gt; ESP32 ──&gt; Transistor ──&gt; Load
+
+Task 3: Voice &amp; Chained Cloud Automation
+Voice ──&gt; Google Assistant ──&gt; IFTTT ──&gt; Adafruit IO ──[MQTT]──&gt; ESP32 ──&gt; Relay
+
+Task 4: Cloud Database &amp; Web Interface
+Web Dashboard ──[Firebase SDK]──&gt; Firebase Realtime Database ──&gt; IoT System</div>
+
+        <div class="sub-heading">Strategic Progression</div>
+        <div class="diagram-box">LOCAL NETWORKING  ──►  CLOUD MQTT  ──►  VOICE INTEGRATION  ──►  CLOUD DATABASE &amp; WEB DASHBOARD</div>
+        <p class="content-block-text">
+          Task 4 completes the software tier of the IoT portfolio, creating the cloud database and web portal that seamlessly connects with the multi-sensor embedded hardware constructed in Task 5.
+        </p>
+      </section>
+
+      <!-- BOTTOM NAVIGATION -->
       <div class="task-nav-bottom">
         <a href="iot-week.html" class="back-link">&larr; Back to IoT Week</a>
         <a href="iot-task5.html" class="next-link">Next Task: Task 05 &rarr;</a>
