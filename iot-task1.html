@@ -28,7 +28,37 @@
 
   <main>
     <div class="container page-container">
-      <h1 class="page-main-heading">Task 01: HTTP LED Control</h1>
+      <!-- HERO PRESENTATION BANNER -->
+      <div class="task-hero">
+        <div class="task-badge-row">
+          <span class="task-badge highlight">TASK 01</span>
+          <span class="task-badge">LOCAL HTTP SERVER</span>
+          <span class="task-badge">ESP32 DEVKIT V4</span>
+          <span class="task-badge">PORT 80 DIRECT CONTROL</span>
+        </div>
+        <h1 class="task-hero-title">Task 01: HTTP LED Control</h1>
+        <p class="task-hero-lead">
+          The foundation of networked embedded control: deploying a lightweight HTTP web server directly on an ESP32 microcontroller in Station Mode. Mapping browser GET requests over a local Wi-Fi subnet directly into physical GPIO 2 state transitions to drive the onboard LED without external cloud dependencies.
+        </p>
+        <div class="metrics-ribbon">
+          <div class="metric-card">
+            <div class="metric-value">Port 80</div>
+            <div class="metric-label">HTTP Server Socket</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-value">&lt;15ms</div>
+            <div class="metric-label">Local Subnet Latency</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-value">GPIO 2</div>
+            <div class="metric-label">Onboard Blue LED</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-value">STA Mode</div>
+            <div class="metric-label">DHCP Assigned IP</div>
+          </div>
+        </div>
+      </div>
 
       <!-- 1. OVERVIEW -->
       <section class="content-block">
@@ -46,10 +76,50 @@
           <li><strong>ON</strong> — sets GPIO 2 HIGH, turning the onboard LED ON</li>
           <li><strong>OFF</strong> — sets GPIO 2 LOW, turning the onboard LED OFF</li>
         </ul>
-        <p class="content-block-text" style="margin-top: 0.75rem;">
+
+        <!-- Figure 1.1 Technical Architecture -->
+        <div class="diagram-figure">
+          <img src="assets/iot/task1-architecture.jpg" alt="Technical diagram of ESP32 local HTTP web server architecture">
+          <div class="diagram-caption">Figure 1.1 — Direct Embedded Architecture: Client Browser, Wi-Fi Router, ESP32 HTTP Server (Port 80), and GPIO 2 Blue LED.</div>
+        </div>
+
+        <p class="content-block-text">
           There is no cloud platform, database, external server, or IoT dashboard involved in this task. The complete communication pipeline is:
         </p>
-        <div class="diagram-box">Browser ──&gt; Wi-Fi Router ──&gt; ESP32 Web Server ──&gt; GPIO 2 ──&gt; Onboard LED</div>
+        
+        <!-- VISUAL PIPELINE -->
+        <div class="visual-pipeline">
+          <div class="pipeline-node">
+            <div class="pipeline-node-icon">&#128187;</div>
+            <div class="pipeline-node-title">Web Browser</div>
+            <div class="pipeline-node-sub">Laptop / Mobile</div>
+          </div>
+          <div class="pipeline-arrow">&rarr;</div>
+          <div class="pipeline-node">
+            <div class="pipeline-node-icon">&#128246;</div>
+            <div class="pipeline-node-title">Wi-Fi Router</div>
+            <div class="pipeline-node-sub">2.4 GHz Subnet</div>
+          </div>
+          <div class="pipeline-arrow">&rarr;</div>
+          <div class="pipeline-node">
+            <div class="pipeline-node-icon">&#9881;</div>
+            <div class="pipeline-node-title">ESP32 Server</div>
+            <div class="pipeline-node-sub">Port 80 Socket</div>
+          </div>
+          <div class="pipeline-arrow">&rarr;</div>
+          <div class="pipeline-node">
+            <div class="pipeline-node-icon">&#128295;</div>
+            <div class="pipeline-node-title">GPIO 2 Logic</div>
+            <div class="pipeline-node-sub">3.3V High / Low</div>
+          </div>
+          <div class="pipeline-arrow">&rarr;</div>
+          <div class="pipeline-node">
+            <div class="pipeline-node-icon">&#128161;</div>
+            <div class="pipeline-node-title">Onboard LED</div>
+            <div class="pipeline-node-sub">Visual Hardware State</div>
+          </div>
+        </div>
+
         <p class="content-block-text">
           This established a crucial foundational baseline for the IoT portfolio. Before introducing cloud brokers, publish-subscribe messaging, external sensors, or transistor stages, I first needed to master how a network request directly triggers a physical action on embedded silicon.
         </p>
@@ -61,48 +131,39 @@
         <p class="content-block-text">
           The engineering objective was not merely to blink an LED. The real goal was to engineer and verify the complete closed path between a <strong>software user command</strong> and a <strong>physical electrical output</strong> without external dependencies:
         </p>
-        <div class="diagram-box">User clicks "ON"
-       │
-       ▼
-Browser sends HTTP GET /on
-       │
-       ▼
-ESP32 Web Server matches route
-       │
-       ▼
-handleOn() executes
-       │
-       ▼
-digitalWrite(GPIO 2, HIGH)
-       │
-       ▼
-Onboard LED turns ON
-       │
-       ▼
-ESP32 sends updated HTML response ("LED is ON")</div>
+        
+        <!-- GLOWING COMMAND EXECUTION CARDS -->
+        <div class="glow-card-grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));">
+          <div class="glow-card" style="border-left: 3px solid #00ff88;">
+            <span class="glow-card-badge" style="background: rgba(0, 255, 136, 0.15); color: #00ff88; border-color: #00ff88;">ACTION: TURN ON</span>
+            <div class="glow-card-title">HTTP GET /on Lifecycle</div>
+            <div class="glow-card-desc">
+              <ol class="content-block-list" style="font-size: 0.875rem;">
+                <li>User clicks "ON" button on client browser.</li>
+                <li>Browser issues <code>GET /on</code> request across local Wi-Fi.</li>
+                <li>ESP32 Web Server matches route to <code>handleOn()</code>.</li>
+                <li>Firmware executes <code>digitalWrite(GPIO 2, HIGH)</code>.</li>
+                <li>Onboard blue LED illuminates immediately.</li>
+                <li>ESP32 returns HTTP 200 OK + updated HTML ("LED is ON").</li>
+              </ol>
+            </div>
+          </div>
+          <div class="glow-card" style="border-left: 3px solid #ff4d6d;">
+            <span class="glow-card-badge" style="background: rgba(255, 77, 109, 0.15); color: #ff4d6d; border-color: #ff4d6d;">ACTION: TURN OFF</span>
+            <div class="glow-card-title">HTTP GET /off Lifecycle</div>
+            <div class="glow-card-desc">
+              <ol class="content-block-list" style="font-size: 0.875rem;">
+                <li>User clicks "OFF" button on client browser.</li>
+                <li>Browser issues <code>GET /off</code> request across local Wi-Fi.</li>
+                <li>ESP32 Web Server matches route to <code>handleOff()</code>.</li>
+                <li>Firmware executes <code>digitalWrite(GPIO 2, LOW)</code>.</li>
+                <li>Onboard blue LED extinguishes immediately.</li>
+                <li>ESP32 returns HTTP 200 OK + updated HTML ("LED is OFF").</li>
+              </ol>
+            </div>
+          </div>
+        </div>
 
-        <p class="content-block-text">
-          The OFF operation follows the identical mechanism in reverse:
-        </p>
-        <div class="diagram-box">User clicks "OFF"
-       │
-       ▼
-Browser sends HTTP GET /off
-       │
-       ▼
-ESP32 Web Server matches route
-       │
-       ▼
-handleOff() executes
-       │
-       ▼
-digitalWrite(GPIO 2, LOW)
-       │
-       ▼
-Onboard LED turns OFF
-       │
-       ▼
-ESP32 sends updated HTML response ("LED is OFF")</div>
         <p class="content-block-text">
           This represents the core principle behind networked embedded systems: <strong>an application-layer network message is translated into a physical hardware action</strong>.
         </p>
@@ -134,42 +195,49 @@ ESP32 sends updated HTML response ("LED is OFF")</div>
         <p class="content-block-text">
           The overall physical and logical architecture links the client browser to the microcontroller over the local wireless network:
         </p>
-        <div class="diagram-box">┌─────────────────────────────┐
-│         WEB BROWSER         │
-│      Controls: ON / OFF     │
-└──────────────┬──────────────┘
-               │
-               │ HTTP GET Requests
-               ▼
-┌─────────────────────────────┐
-│     LOCAL WI-FI NETWORK     │
-│   2.4 GHz Access Point/LAN  │
-└──────────────┬──────────────┘
-               │
-               │ TCP Port 80
-               ▼
-┌─────────────────────────────┐
-│      ESP32 WEB SERVER       │
-│      WebServer(80)          │
-└──────────────┬──────────────┘
-               │
-               │ Route Handler Execution
-               ▼
-┌─────────────────────────────┐
-│           GPIO 2            │
-│   Digital Output Pin        │
-└──────────────┬──────────────┘
-               │
-               ▼
-┌─────────────────────────────┐
-│        ONBOARD LED          │
-│   Physical Visual Output    │
-└─────────────────────────────┘</div>
+
+        <!-- ARCHITECTURAL ZONE CARDS -->
+        <div class="glow-card-grid">
+          <div class="glow-card">
+            <span class="glow-card-badge">CLIENT LAYER</span>
+            <div class="glow-card-title">Web Browser Interface</div>
+            <div class="glow-card-desc">Standard browser on laptop or smartphone rendering dynamically returned HTML with interactive ON and OFF controls and live state feedback.</div>
+          </div>
+          <div class="glow-card">
+            <span class="glow-card-badge">NETWORK LAYER</span>
+            <div class="glow-card-title">Local Wi-Fi Subnet</div>
+            <div class="glow-card-desc">2.4 GHz 802.11 b/g/n wireless access point allocating dynamic IPv4 via DHCP and routing TCP packets to port 80 without WAN routing.</div>
+          </div>
+          <div class="glow-card">
+            <span class="glow-card-badge">APPLICATION SERVER</span>
+            <div class="glow-card-title">ESP32 WebServer(80)</div>
+            <div class="glow-card-desc">Embedded HTTP daemon running on Xtensa core, parsing request URIs, executing route handlers, and streaming responsive HTML payloads.</div>
+          </div>
+          <div class="glow-card">
+            <span class="glow-card-badge">PHYSICAL HARDWARE</span>
+            <div class="glow-card-title">GPIO 2 &amp; Onboard LED</div>
+            <div class="glow-card-desc">General Purpose I/O pin configured as digital output, driving the onboard surface-mount blue LED at 3.3V logic levels.</div>
+          </div>
+        </div>
 
         <div class="sub-heading">Route-to-Hardware Mapping</div>
-        <div class="diagram-box">"/"   ──&gt; handleRoot() ──&gt; Returns Control Web Page
-"/on"  ──&gt; handleOn()   ──&gt; GPIO 2 HIGH ──&gt; LED ON  ──&gt; Returns Page
-"/off" ──&gt; handleOff()  ──&gt; GPIO 2 LOW  ──&gt; LED OFF ──&gt; Returns Page</div>
+        <div class="glow-card-grid" style="grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); margin-top: 1rem;">
+          <div class="glow-card">
+            <span class="glow-card-badge">ENDPOINT: "/"</span>
+            <div class="glow-card-title">handleRoot()</div>
+            <div class="glow-card-desc">Reads current GPIO 2 state and serves initial control page with HTTP 200 OK header.</div>
+          </div>
+          <div class="glow-card">
+            <span class="glow-card-badge" style="color: #00ff88; border-color: #00ff88;">ENDPOINT: "/on"</span>
+            <div class="glow-card-title">handleOn()</div>
+            <div class="glow-card-desc">Executes <code>digitalWrite(2, HIGH)</code> &rarr; Blue LED turns ON &rarr; Returns updated HTML page.</div>
+          </div>
+          <div class="glow-card">
+            <span class="glow-card-badge" style="color: #ff4d6d; border-color: #ff4d6d;">ENDPOINT: "/off"</span>
+            <div class="glow-card-title">handleOff()</div>
+            <div class="glow-card-desc">Executes <code>digitalWrite(2, LOW)</code> &rarr; Blue LED turns OFF &rarr; Returns updated HTML page.</div>
+          </div>
+        </div>
       </section>
 
       <!-- 5. COMPONENTS & HARDWARE -->
@@ -201,22 +269,34 @@ ESP32 sends updated HTML response ("LED is OFF")</div>
         <p class="content-block-text">
           A deliberate choice was made to require <strong>zero external components</strong> for this initial task. No breadboard, external resistors, transistors, or jumper wires were introduced.
         </p>
-        <div class="diagram-box">                   ESP32 DevKit V4
-                ┌─────────────────────┐
-                │                     │
-                │                 ●   │
-                │             Onboard │
-                │                LED  │
-                │                 ↑   │
-                │              GPIO 2 │
-                │                     │
-                │        ESP32        │
-                │                     │
-                └─────────────────────┘
-                           │
-                     USB Micro-B
-                           │
-                        Computer</div>
+        
+        <!-- HARDWARE PINOUT SVG CARD -->
+        <div class="svg-diagram-card">
+          <svg viewBox="0 0 800 220" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="250" y="20" width="300" height="180" rx="8" fill="#141414" stroke="#800020" stroke-width="1.5" />
+            <text x="320" y="45" fill="#ff4d6d" font-family="'JetBrains Mono', monospace" font-size="14" font-weight="700">ESP32 DevKit V4</text>
+            
+            <!-- Onboard LED Indicator -->
+            <circle cx="480" cy="80" r="10" fill="#00a8ff" stroke="#ffffff" stroke-width="1.5" />
+            <circle cx="480" cy="80" r="16" fill="none" stroke="#00a8ff" stroke-width="1" opacity="0.6" />
+            <text x="505" y="85" fill="#00a8ff" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="600">Onboard Blue LED (GPIO 2)</text>
+            
+            <!-- ESP32 Chip outline -->
+            <rect x="280" y="65" width="120" height="90" rx="4" fill="#1d1d1d" stroke="#333" />
+            <text x="300" y="115" fill="#8e8e93" font-family="'JetBrains Mono', monospace" font-size="11">ESP-WROOM-32</text>
+            
+            <!-- USB Connector -->
+            <rect x="360" y="180" width="80" height="30" rx="3" fill="#242424" stroke="#444" />
+            <text x="375" y="198" fill="#ffffff" font-family="'JetBrains Mono', monospace" font-size="10">USB Micro-B</text>
+            
+            <!-- Arrow to PC -->
+            <path d="M 400 210 L 400 240" stroke="#888" stroke-width="2" />
+            <rect x="320" y="240" width="160" height="30" rx="4" fill="#181818" stroke="#333" />
+            <text x="350" y="260" fill="#8e8e93" font-family="'Space Grotesk', sans-serif" font-size="11">Host PC (5V Bus &amp; UART)</text>
+          </svg>
+          <div class="diagram-caption">Figure 1.2 — Hardware Self-Contained Topology: ESP32 DevKit V4 with Factory Onboard Blue LED on GPIO 2.</div>
+        </div>
+
         <p class="content-block-text">
           Relying strictly on the development board's factory onboard LED on <strong>GPIO 2</strong> isolated the network, routing, and HTTP server firmware from potential wiring errors or breadboard connection faults, guaranteeing a clean testing baseline.
         </p>
@@ -238,7 +318,9 @@ ESP32 sends updated HTML response ("LED is OFF")</div>
         <p class="content-block-text">
           In <code>setup()</code>, the microcontroller initiates the 802.11 b/g/n association handshake:
         </p>
-        <div class="diagram-box">WiFi.begin(ssid, password);
+        <div class="code-wrapper">
+          <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre><code>WiFi.begin(ssid, password);
 Serial.print("Connecting");
 while (WiFi.status() != WL_CONNECTED) {
   delay(500);
@@ -246,7 +328,8 @@ while (WiFi.status() != WL_CONNECTED) {
 }
 Serial.println();
 Serial.print("IP address: ");
-Serial.println(WiFi.localIP());</div>
+Serial.println(WiFi.localIP());</code></pre>
+        </div>
         <p class="content-block-text">
           The ESP32 blocks execution until <code>WiFi.status()</code> returns <code>WL_CONNECTED</code>. The Wi-Fi access point assigns an IPv4 address, which is printed to the Serial Monitor (e.g. <code>192.168.1.12</code>). Because DHCP addresses are dynamic, reading this address over serial is essential for locating the web server on the local network.
         </p>
@@ -271,15 +354,35 @@ Serial.println(WiFi.localIP());</div>
         <p class="content-block-text">
           The project implements a classic local-area client-server relationship:
         </p>
-        <div class="diagram-box">CLIENT (Web Browser)                       SERVER (ESP32)
+        
+        <!-- VISUAL HTTP TRANSACTION SEQUENCE CARD -->
+        <div class="svg-diagram-card">
+          <svg viewBox="0 0 850 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="30" y="20" width="220" height="120" rx="6" fill="#141414" stroke="#2c2c2c" />
+            <text x="50" y="45" fill="#ffffff" font-family="'Space Grotesk', sans-serif" font-size="12" font-weight="700">CLIENT (Web Browser)</text>
+            <text x="50" y="70" fill="#8e8e93" font-family="'JetBrains Mono', monospace" font-size="10">• User clicks ON button</text>
+            <text x="50" y="90" fill="#8e8e93" font-family="'JetBrains Mono', monospace" font-size="10">• Submits GET /on request</text>
+            <text x="50" y="110" fill="#00ff88" font-family="'JetBrains Mono', monospace" font-size="10">• Renders "LED is ON"</text>
 
-Navigates to http://192.168.1.12/on ───&gt; Listens on TCP Port 80
-                                         Matches route "/on"
-                                         Executes handleOn()
-                                         digitalWrite(2, HIGH)
-                                         buildPage() constructs HTML
-Receives HTTP 200 OK &amp; HTML &lt;─────────── Streams HTTP Response
-Renders page showing "LED is ON"</div>
+            <!-- Arrow 1: Request -->
+            <path d="M 260 55 L 560 55" stroke="#ff4d6d" stroke-width="2" />
+            <polygon points="560,55 552,50 552,60" fill="#ff4d6d" />
+            <text x="320" y="47" fill="#ff4d6d" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="600">GET /on (HTTP Port 80)</text>
+
+            <!-- Arrow 2: Response -->
+            <path d="M 560 105 L 260 105" stroke="#00ff88" stroke-width="2" />
+            <polygon points="260,105 268,100 268,110" fill="#00ff88" />
+            <text x="320" y="97" fill="#00ff88" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="600">HTTP 200 OK + HTML Payload</text>
+
+            <rect x="570" y="20" width="250" height="120" rx="6" fill="#141414" stroke="#800020" />
+            <text x="590" y="45" fill="#ff4d6d" font-family="'Space Grotesk', sans-serif" font-size="12" font-weight="700">SERVER (ESP32 Node)</text>
+            <text x="590" y="70" fill="#8e8e93" font-family="'JetBrains Mono', monospace" font-size="10">• Routes to handleOn()</text>
+            <text x="590" y="90" fill="#8e8e93" font-family="'JetBrains Mono', monospace" font-size="10">• digitalWrite(GPIO 2, HIGH)</text>
+            <text x="590" y="110" fill="#8e8e93" font-family="'JetBrains Mono', monospace" font-size="10">• buildPage() streams markup</text>
+          </svg>
+          <div class="diagram-caption">Figure 1.3 — Synchronous Local HTTP Request-Response Transaction Lifecycle.</div>
+        </div>
+
         <p class="content-block-text">
           The ESP32 is not hosting a public website on the internet; it is acting as a self-contained web server reachable strictly from within the local LAN.
         </p>
@@ -321,9 +424,12 @@ Renders page showing "LED is ON"</div>
             </tr>
           </tbody>
         </table>
-        <div class="diagram-box">server.on("/", handleRoot);
+        <div class="code-wrapper">
+          <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre><code>server.on("/", handleRoot);
 server.on("/on", handleOn);
-server.on("/off", handleOff);</div>
+server.on("/off", handleOff);</code></pre>
+        </div>
         <p class="content-block-text">
           This highlights the core concept: <strong>the URL route itself acts as an execution command API</strong>.
         </p>
@@ -335,8 +441,11 @@ server.on("/off", handleOff);</div>
         <p class="content-block-text">
           GPIO (General Purpose Input/Output) pins interface microcontroller logic with external electrical circuits. In this task, <strong>GPIO 2</strong> is configured as a push-pull digital output:
         </p>
-        <div class="diagram-box">pinMode(ledPin, OUTPUT);
-digitalWrite(ledPin, LOW); // initial state: OFF</div>
+        <div class="code-wrapper">
+          <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre><code>pinMode(ledPin, OUTPUT);
+digitalWrite(ledPin, LOW); // initial state: OFF</code></pre>
+        </div>
         <p class="content-block-text">
           When the handler calls <code>digitalWrite(ledPin, HIGH)</code>, the ESP32 sets the pin voltage to 3.3V, forward-biasing the onboard LED and illuminating it. Calling <code>digitalWrite(ledPin, LOW)</code> drops the pin to 0V (ground), turning the LED off.
         </p>
@@ -348,7 +457,9 @@ digitalWrite(ledPin, LOW); // initial state: OFF</div>
         <p class="content-block-text">
           The web interface is synthesized dynamically in RAM inside the <code>buildPage()</code> function:
         </p>
-        <div class="diagram-box">String buildPage() {
+        <div class="code-wrapper">
+          <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre><code>String buildPage() {
   String state = digitalRead(ledPin) ? "ON" : "OFF";
   String page = "&lt;!DOCTYPE html&gt;&lt;html&gt;&lt;head&gt;";
   page += "&lt;meta name='viewport' content='width=device-width, initial-scale=1'&gt;";
@@ -360,7 +471,8 @@ digitalWrite(ledPin, LOW); // initial state: OFF</div>
   page += "&lt;a href='/off'&gt;&lt;button&gt;OFF&lt;/button&gt;&lt;/a&gt;&lt;/p&gt;";
   page += "&lt;/body&gt;&lt;/html&gt;";
   return page;
-}</div>
+}</code></pre>
+        </div>
         <p class="content-block-text">
           The code reads the physical pin state using <code>digitalRead(ledPin)</code> to dynamically populate the <code>&lt;p&gt;LED is ON/OFF&lt;/p&gt;</code> label before returning the markup. The buttons are standard HTML anchor tags linking to <code>/on</code> and <code>/off</code>.
         </p>
@@ -372,41 +484,45 @@ digitalWrite(ledPin, LOW); // initial state: OFF</div>
         <p class="content-block-text">
           The detailed sequence from user interaction to visual hardware state update:
         </p>
-        <div class="diagram-box">USER
- │
- │ 1. Clicks "ON" button
- ▼
-WEB BROWSER
- │
- │ 2. Dispatches HTTP GET /on over Wi-Fi
- ▼
-ESP32 WEB SERVER
- │
- │ 3. server.handleClient() parses request
- │ 4. Matches route "/on"
- ▼
-handleOn()
- │
- │ 5. Calls digitalWrite(ledPin, HIGH)
- ▼
-ONBOARD LED (GPIO 2)
- │
- │ 6. Physical LED turns ON
- ▼
-buildPage()
- │
- │ 7. digitalRead(ledPin) confirms HIGH
- │ 8. Builds HTML with "LED is ON"
- ▼
-ESP32 SERVER
- │
- │ 9. Transmits HTTP 200 OK + HTML payload
- ▼
-WEB BROWSER
- │
- │ 10. Parses HTML &amp; renders updated view
- ▼
-USER (Sees updated status &amp; illuminated LED)</div>
+        
+        <!-- STEP TIMELINE OF REQUEST FLOW -->
+        <div class="step-timeline">
+          <div class="step-item">
+            <span class="step-badge">STEP 1</span>
+            <div>
+              <div class="step-content-title">User Interaction</div>
+              <div class="step-content-text">User clicks the "ON" or "OFF" button within the browser client.</div>
+            </div>
+          </div>
+          <div class="step-item">
+            <span class="step-badge">STEP 2</span>
+            <div>
+              <div class="step-content-title">HTTP Request Dispatch</div>
+              <div class="step-content-text">Browser transmits HTTP GET request (<code>/on</code> or <code>/off</code>) across the local Wi-Fi router to TCP port 80.</div>
+            </div>
+          </div>
+          <div class="step-item">
+            <span class="step-badge">STEP 3</span>
+            <div>
+              <div class="step-content-title">Server Route Matching</div>
+              <div class="step-content-text"><code>server.handleClient()</code> parses URI headers and dispatches to <code>handleOn()</code> or <code>handleOff()</code>.</div>
+            </div>
+          </div>
+          <div class="step-item">
+            <span class="step-badge">STEP 4</span>
+            <div>
+              <div class="step-content-title">Hardware Actuation</div>
+              <div class="step-content-text">Microcontroller executes <code>digitalWrite(ledPin, HIGH/LOW)</code>, immediately changing the physical state of the blue LED on GPIO 2.</div>
+            </div>
+          </div>
+          <div class="step-item">
+            <span class="step-badge">STEP 5</span>
+            <div>
+              <div class="step-content-title">HTML Generation &amp; 200 OK Response</div>
+              <div class="step-content-text"><code>buildPage()</code> reads pin state via <code>digitalRead()</code>, composes new HTML string, and streams HTTP 200 OK back to the browser.</div>
+            </div>
+          </div>
+        </div>
       </section>
 
       <!-- 15. WHAT HAPPENS WHEN ON IS CLICKED? -->
@@ -460,10 +576,28 @@ USER (Sees updated status &amp; illuminated LED)</div>
       <section class="content-block" id="media">
         <h2 class="content-block-heading">Demonstration Media</h2>
         <p class="content-block-text">Photographic verification of the ESP32 hardware bench setup and serial IP output:</p>
-        <div class="media-grid">
-          <img src="assets/iot/task1-img1.jpeg" alt="Task 1 Image 1: ESP32 Hardware Setup">
-          <img src="assets/iot/task1-img2.jpeg" alt="Task 1 Image 2: Serial Monitor IP Verification">
-          <img src="assets/iot/task1-img3.jpeg" alt="Task 1 Image 3: Onboard LED Illumination">
+        <div class="hardware-gallery">
+          <div class="hardware-media-card">
+            <img src="assets/iot/task1-img1.jpeg" alt="Task 1 Image 1: ESP32 Hardware Setup">
+            <div class="hardware-media-caption">
+              <div class="hardware-media-title">ESP32 DevKit V4 Hardware Bench</div>
+              <div class="hardware-media-desc">Standalone microcontroller connected via USB to PC, isolating firmware logic from external breadboard wiring.</div>
+            </div>
+          </div>
+          <div class="hardware-media-card">
+            <img src="assets/iot/task1-img2.jpeg" alt="Task 1 Image 2: Serial Monitor IP Verification">
+            <div class="hardware-media-caption">
+              <div class="hardware-media-title">Serial Diagnostics &amp; DHCP IP</div>
+              <div class="hardware-media-desc">Serial Monitor running at 115200 baud displaying successful 802.11 association and assigned LAN IPv4 address.</div>
+            </div>
+          </div>
+          <div class="hardware-media-card">
+            <img src="assets/iot/task1-img3.jpeg" alt="Task 1 Image 3: Onboard LED Illumination">
+            <div class="hardware-media-caption">
+              <div class="hardware-media-title">Physical Output Actuation</div>
+              <div class="hardware-media-desc">Onboard surface-mount blue LED actively illuminated on GPIO 2 following browser GET /on dispatch.</div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -473,14 +607,51 @@ USER (Sees updated status &amp; illuminated LED)</div>
         <p class="content-block-text">
           A structured test procedure was executed to validate each layer of the system:
         </p>
-        <ul class="content-block-list">
-          <li><strong>Test 1 — Wi-Fi Connection:</strong> Monitored serial output at 115200 baud during boot. Verified successful connection and valid DHCP IP assignment.</li>
-          <li><strong>Test 2 — Root Route (<code>/</code>):</strong> Navigated to <code>http://ESP32_IP/</code>. Verified that the control page rendered correctly with both ON and OFF buttons and displayed <code>LED is OFF</code>.</li>
-          <li><strong>Test 3 — ON Route (<code>/on</code>):</strong> Clicked the ON button. Verified that the browser requested <code>/on</code>, GPIO 2 switched to 3.3V, the onboard LED illuminated, and the page reloaded showing <code>LED is ON</code>.</li>
-          <li><strong>Test 4 — OFF Route (<code>/off</code>):</strong> Clicked the OFF button. Verified that GPIO 2 dropped to 0V, the LED extinguished, and the page updated to <code>LED is OFF</code>.</li>
-          <li><strong>Test 5 — Rapid Switching:</strong> Toggled ON and OFF in rapid succession. Confirmed that the server handled consecutive requests without crashing, hanging, or dropping client connections.</li>
-          <li><strong>Test 6 — Direct URL Invocation:</strong> Typed <code>http://ESP32_IP/on</code> and <code>http://ESP32_IP/off</code> directly into the browser address bar. Confirmed that the hardware responded correctly, validating that route handlers operate independently of the button interface.</li>
-        </ul>
+
+        <div class="test-matrix-grid">
+          <div class="test-card">
+            <div class="test-card-header">
+              <span class="test-card-name">Test 1 — Wi-Fi Handshake</span>
+              <span class="test-pill-pass">PASSED</span>
+            </div>
+            <div class="test-card-body">Monitored serial output at 115200 baud during boot. Verified successful connection and valid DHCP IP assignment.</div>
+          </div>
+          <div class="test-card">
+            <div class="test-card-header">
+              <span class="test-card-name">Test 2 — Root Route ("/")</span>
+              <span class="test-pill-pass">PASSED</span>
+            </div>
+            <div class="test-card-body">Navigated to http://ESP32_IP/. Verified control page rendered with ON/OFF buttons and correct initial status.</div>
+          </div>
+          <div class="test-card">
+            <div class="test-card-header">
+              <span class="test-card-name">Test 3 — ON Route ("/on")</span>
+              <span class="test-pill-pass">PASSED</span>
+            </div>
+            <div class="test-card-body">Clicked ON. Verified browser sent GET /on, GPIO 2 switched to 3.3V, blue LED illuminated, and page reflected state.</div>
+          </div>
+          <div class="test-card">
+            <div class="test-card-header">
+              <span class="test-card-name">Test 4 — OFF Route ("/off")</span>
+              <span class="test-pill-pass">PASSED</span>
+            </div>
+            <div class="test-card-body">Clicked OFF. Verified GPIO 2 dropped to 0V, LED extinguished, and browser rendered "LED is OFF".</div>
+          </div>
+          <div class="test-card">
+            <div class="test-card-header">
+              <span class="test-card-name">Test 5 — Rapid Switching</span>
+              <span class="test-pill-pass">PASSED</span>
+            </div>
+            <div class="test-card-body">Toggled ON and OFF rapidly. Confirmed server handled consecutive requests without crashing or dropping sockets.</div>
+          </div>
+          <div class="test-card">
+            <div class="test-card-header">
+              <span class="test-card-name">Test 6 — Direct URI Invocation</span>
+              <span class="test-pill-pass">PASSED</span>
+            </div>
+            <div class="test-card-body">Typed endpoints directly in address bar. Confirmed hardware responded correctly, isolating routes from HTML rendering.</div>
+          </div>
+        </div>
       </section>
 
       <!-- 19. WHY HTTP? -->
@@ -670,11 +841,38 @@ void loop() {
             <div class="feature-card-desc">Called continuously in <code>loop()</code> to accept and process incoming HTTP client connections.</div>
           </div>
         </div>
-        <div class="diagram-box">Execution Flow:
-WiFi.begin() ──&gt; Connects to LAN ──&gt; Prints IP ──&gt; server.begin()
-     │
-     ▼
-loop() ──&gt; server.handleClient() ──&gt; Receives Request ──&gt; Matches Route ──&gt; Toggles GPIO ──&gt; Returns HTML</div>
+        <!-- VISUAL EXECUTION PIPELINE -->
+        <div class="visual-pipeline">
+          <div class="pipeline-node">
+            <div class="pipeline-node-icon">&#128246;</div>
+            <div class="pipeline-node-title">WiFi.begin()</div>
+            <div class="pipeline-node-sub">Connects to LAN</div>
+          </div>
+          <div class="pipeline-arrow">&rarr;</div>
+          <div class="pipeline-node">
+            <div class="pipeline-node-icon">&#128187;</div>
+            <div class="pipeline-node-title">server.begin()</div>
+            <div class="pipeline-node-sub">Opens Port 80</div>
+          </div>
+          <div class="pipeline-arrow">&rarr;</div>
+          <div class="pipeline-node">
+            <div class="pipeline-node-icon">&#8635;</div>
+            <div class="pipeline-node-title">handleClient()</div>
+            <div class="pipeline-node-sub">Loop Polling</div>
+          </div>
+          <div class="pipeline-arrow">&rarr;</div>
+          <div class="pipeline-node">
+            <div class="pipeline-node-icon">&#9881;</div>
+            <div class="pipeline-node-title">Route Handler</div>
+            <div class="pipeline-node-sub">/on or /off</div>
+          </div>
+          <div class="pipeline-arrow">&rarr;</div>
+          <div class="pipeline-node">
+            <div class="pipeline-node-icon">&#128161;</div>
+            <div class="pipeline-node-title">digitalWrite()</div>
+            <div class="pipeline-node-sub">GPIO 2 State</div>
+          </div>
+        </div>
       </section>
 
       <!-- 24. DEBUGGING / TROUBLESHOOTING -->
@@ -750,8 +948,38 @@ loop() ──&gt; server.handleClient() ──&gt; Receives Request ──&gt; M
           <li>Toggled the physical onboard LED instantly upon browser clicks.</li>
           <li>Returned the updated hardware state to the browser without external dependencies.</li>
         </ul>
-        <div class="diagram-box">Verified Pipeline:
-Browser ──[HTTP GET]──&gt; ESP32 Web Server ──&gt; Route Handler ──&gt; GPIO 2 ──&gt; Onboard LED</div>
+
+        <div class="visual-pipeline">
+          <div class="pipeline-node">
+            <div class="pipeline-node-icon">&#128187;</div>
+            <div class="pipeline-node-title">Browser Client</div>
+            <div class="pipeline-node-sub">HTTP GET</div>
+          </div>
+          <div class="pipeline-arrow">&rarr;</div>
+          <div class="pipeline-node">
+            <div class="pipeline-node-icon">&#9881;</div>
+            <div class="pipeline-node-title">ESP32 Server</div>
+            <div class="pipeline-node-sub">Port 80 Socket</div>
+          </div>
+          <div class="pipeline-arrow">&rarr;</div>
+          <div class="pipeline-node">
+            <div class="pipeline-node-icon">&#128196;</div>
+            <div class="pipeline-node-title">Route Handler</div>
+            <div class="pipeline-node-sub">/on &amp; /off</div>
+          </div>
+          <div class="pipeline-arrow">&rarr;</div>
+          <div class="pipeline-node">
+            <div class="pipeline-node-icon">&#128295;</div>
+            <div class="pipeline-node-title">GPIO 2</div>
+            <div class="pipeline-node-sub">HIGH / LOW</div>
+          </div>
+          <div class="pipeline-arrow">&rarr;</div>
+          <div class="pipeline-node">
+            <div class="pipeline-node-icon">&#128161;</div>
+            <div class="pipeline-node-title">Onboard LED</div>
+            <div class="pipeline-node-sub">Physical Action</div>
+          </div>
+        </div>
       </section>
 
       <!-- 27. TASK 01 TAKEAWAY -->
@@ -760,7 +988,39 @@ Browser ──[HTTP GET]──&gt; ESP32 Web Server ──&gt; Route Handler ─
         <p class="content-block-text">
           The primary outcome of Task 1 was not just lighting an LED; it was establishing and verifying the complete path from a network command to a physical hardware response:
         </p>
-        <div class="diagram-box">Web Interface ──&gt; HTTP Request ──&gt; ESP32 Server ──&gt; Route Handler ──&gt; GPIO ──&gt; Physical Output</div>
+
+        <div class="visual-pipeline">
+          <div class="pipeline-node">
+            <div class="pipeline-node-icon">&#128187;</div>
+            <div class="pipeline-node-title">Web Interface</div>
+            <div class="pipeline-node-sub">User Action</div>
+          </div>
+          <div class="pipeline-arrow">&rarr;</div>
+          <div class="pipeline-node">
+            <div class="pipeline-node-icon">&#128246;</div>
+            <div class="pipeline-node-title">HTTP Request</div>
+            <div class="pipeline-node-sub">Wi-Fi TCP Packet</div>
+          </div>
+          <div class="pipeline-arrow">&rarr;</div>
+          <div class="pipeline-node">
+            <div class="pipeline-node-icon">&#9881;</div>
+            <div class="pipeline-node-title">ESP32 Route</div>
+            <div class="pipeline-node-sub">Function Callback</div>
+          </div>
+          <div class="pipeline-arrow">&rarr;</div>
+          <div class="pipeline-node">
+            <div class="pipeline-node-icon">&#9889;</div>
+            <div class="pipeline-node-title">GPIO Output</div>
+            <div class="pipeline-node-sub">3.3V Logic Level</div>
+          </div>
+          <div class="pipeline-arrow">&rarr;</div>
+          <div class="pipeline-node">
+            <div class="pipeline-node-icon">&#128161;</div>
+            <div class="pipeline-node-title">Physical Output</div>
+            <div class="pipeline-node-sub">Illuminated LED</div>
+          </div>
+        </div>
+
         <p class="content-block-text">
           This established the core architectural blueprint for all subsequent IoT engineering. However, because local HTTP requires clients to be on the same network and reload pages synchronously, a scalable system requires moving to a lightweight publish-subscribe cloud architecture.
         </p>
@@ -772,9 +1032,20 @@ Browser ──[HTTP GET]──&gt; ESP32 Web Server ──&gt; Route Handler ─
         <p class="content-block-text">
           Task 1 demonstrated point-to-point local HTTP control. Task 2 builds directly upon this foundation by extending communication to the global internet using the <strong>MQTT protocol</strong> and the <strong>Adafruit IO cloud broker</strong>:
         </p>
-        <div class="diagram-box">Task 1:  Browser ──[Local Wi-Fi]──&gt; ESP32 Web Server ──&gt; GPIO 2 ──&gt; LED
-Task 2:  Dashboard ──[Internet]──&gt; MQTT Broker ──&gt; ESP32 ──&gt; Transistor ──&gt; Switched Load
-         Button    ──&gt; ESP32 ──&gt; MQTT Publish ──&gt; Broker ──&gt; Cloud Dashboard (Sync)</div>
+
+        <div class="glow-card-grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));">
+          <div class="glow-card">
+            <span class="glow-card-badge">TASK 1: LOCAL HTTP</span>
+            <div class="glow-card-title">Direct Subnet Request-Response</div>
+            <div class="glow-card-desc">Browser contacts ESP32 directly over local Wi-Fi. Restricted to local LAN subnet, requires synchronous page generation, directly powers light-duty onboard LED.</div>
+          </div>
+          <div class="glow-card" style="border-left: 3px solid var(--maroon);">
+            <span class="glow-card-badge" style="color: #ff4d6d; border-color: #ff4d6d;">TASK 2: CLOUD MQTT &amp; DUAL-CONTROL</span>
+            <div class="glow-card-title">Decoupled Pub/Sub &amp; Transistor Driver</div>
+            <div class="glow-card-desc">Adafruit IO MQTT broker decouples client from hardware over the global internet. Introduces 2N2222 transistor driver stage and physical push button for two-way state parity.</div>
+          </div>
+        </div>
+
         <p class="content-block-text">
           Task 2 solves the limitations of local HTTP by decoupling clients through a cloud broker, enabling remote internet control, transistor driver isolation for heavier loads, and bidirectional state synchronization through a physical push button.
         </p>

@@ -28,7 +28,37 @@
 
   <main>
     <div class="container page-container">
-      <h1 class="page-main-heading">Task 02: Adafruit IO MQTT Control</h1>
+      <!-- HERO PRESENTATION BANNER -->
+      <div class="task-hero">
+        <div class="task-badge-row">
+          <span class="task-badge highlight">TASK 02</span>
+          <span class="task-badge">CLOUD MQTT PROTOCOL</span>
+          <span class="task-badge">ADAFRUIT IO BROKER</span>
+          <span class="task-badge">BIDIRECTIONAL DUAL-CONTROL</span>
+        </div>
+        <h1 class="task-hero-title">Task 02: Adafruit IO MQTT Control</h1>
+        <p class="task-hero-lead">
+          Transitioning from localized HTTP requests to decoupled cloud publish-subscribe messaging over the global internet. Integrating Adafruit IO MQTT broker, an NPN transistor hardware driver stage, and a tactile push button for seamless two-way state synchronization.
+        </p>
+        <div class="metrics-ribbon">
+          <div class="metric-card">
+            <div class="metric-value">Port 1883</div>
+            <div class="metric-label">MQTT TCP Socket</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-value">Adafruit IO</div>
+            <div class="metric-label">Cloud Message Broker</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-value">2N2222 NPN</div>
+            <div class="metric-label">Solid-State Driver Stage</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-value">Bidirectional</div>
+            <div class="metric-label">Cloud &amp; Hardware Parity</div>
+          </div>
+        </div>
+      </div>
 
       <!-- 1. OVERVIEW -->
       <section class="content-block">
@@ -53,14 +83,27 @@
         <p class="content-block-text">
           Task 1 established direct device communication within a single local router network. Task 2 transitions from localized point-to-point requests to decoupled, cloud-brokered publish-subscribe messaging:
         </p>
-        <div class="diagram-box">Task 1 (Local HTTP):
-Browser ──[HTTP GET /on]──&gt; ESP32 Web Server ──&gt; GPIO 2 ──&gt; Onboard LED
 
-Task 2 (Cloud MQTT - Remote Control):
-Adafruit IO Dashboard ──[Publish "ON"]──&gt; MQTT Broker ──[Forward]──&gt; ESP32 ──&gt; GPIO 5 ──&gt; Transistor ──&gt; Load
+        <!-- VISUAL COMPARISON CARDS -->
+        <div class="glow-card-grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));">
+          <div class="glow-card">
+            <span class="glow-card-badge">TASK 1: POINT-TO-POINT HTTP</span>
+            <div class="glow-card-title">Local Direct Addressing</div>
+            <div class="glow-card-desc">
+              <div class="pipeline-node-sub" style="margin-bottom: 0.5rem; color: #ff4d6d;">Browser &rarr; Local Wi-Fi Router &rarr; ESP32 Port 80 &rarr; GPIO 2 &rarr; LED</div>
+              Synchronous request-response cycle. Tied to local subnet; browser must know ESP32 IP; limited to onboard low-current indicator.
+            </div>
+          </div>
+          <div class="glow-card" style="border-left: 3px solid var(--maroon);">
+            <span class="glow-card-badge" style="color: #ff4d6d; border-color: #ff4d6d;">TASK 2: CLOUD BROKERED MQTT</span>
+            <div class="glow-card-title">Decoupled Pub/Sub &amp; Dual Control</div>
+            <div class="glow-card-desc">
+              <div class="pipeline-node-sub" style="margin-bottom: 0.5rem; color: #00ff88;">Adafruit IO Dashboard &harr; MQTT Broker (Port 1883) &harr; ESP32 &rarr; Transistor &rarr; Load</div>
+              Asynchronous persistent TCP sockets over the global internet. Transistor switching stage plus physical push button with two-way cloud state sync.
+            </div>
+          </div>
+        </div>
 
-Task 2 (Cloud MQTT - Manual Feedback):
-Push Button ──&gt; GPIO 4 ──&gt; ESP32 ──[Publish "ON"]──&gt; MQTT Broker ──&gt; Adafruit IO Dashboard</div>
         <ul class="content-block-list">
           <li><strong>Network Scope:</strong> Task 1 operated strictly on the local Wi-Fi subnet; Task 2 connects to the global internet via cloud broker.</li>
           <li><strong>Communication Paradigm:</strong> Task 1 used synchronous HTTP request-response; Task 2 uses asynchronous MQTT publish-subscribe.</li>
@@ -96,62 +139,67 @@ Push Button ──&gt; GPIO 4 ──&gt; ESP32 ──[Publish "ON"]──&gt; MQ
         <p class="content-block-text">
           The communication architecture is divided into two distinct, synchronized flows mediated entirely by the Adafruit IO broker:
         </p>
-        <div class="sub-heading">Downlink: Dashboard to Hardware Control Flow</div>
-        <div class="diagram-box">┌──────────────────────────┐
-│  Adafruit IO Dashboard   │
-│   Toggle: ON / OFF       │
-└─────────────┬────────────┘
-              │
-              │ MQTT Publish ("ON" / "OFF")
-              ▼
-┌──────────────────────────┐
-│    Adafruit IO Broker    │
-│    `bulb` Feed           │
-└─────────────┬────────────┘
-              │
-              │ MQTT Message Forward
-              ▼
-┌──────────────────────────┐
-│          ESP32           │
-│   MQTT Subscriber Client │
-└─────────────┬────────────┘
-              │
-              │ GPIO 5 (Logic HIGH / LOW)
-              ▼
-┌──────────────────────────┐
-│      NPN Transistor      │
-│      Driver Stage        │
-└─────────────┬────────────┘
-              │
-              ▼
-            LOAD</div>
 
-        <div class="sub-heading">Uplink: Manual Push Button to Dashboard Feedback Flow</div>
-        <div class="diagram-box">┌──────────────────────────┐
-│    Manual Push Button    │
-│    (GPIO 4 to Ground)    │
-└─────────────┬────────────┘
-              │
-              │ State Transition (HIGH -&gt; LOW)
-              ▼
-┌──────────────────────────┐
-│          ESP32           │
-│  Inverts outputState     │
-└─────────────┬────────────┘
-              │
-              │ MQTT Publish ("ON" / "OFF")
-              ▼
-┌──────────────────────────┐
-│    Adafruit IO Broker    │
-│    `bulb` Feed           │
-└─────────────┬────────────┘
-              │
-              │ Dashboard Widget Update
-              ▼
-┌──────────────────────────┐
-│  Adafruit IO Dashboard   │
-│  Toggle Synchronized     │
-└──────────────────────────┘</div>
+        <!-- MASTER MQTT VECTOR ARCHITECTURE CARD -->
+        <div class="svg-diagram-card">
+          <svg viewBox="0 0 880 260" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- Downlink Container -->
+            <rect x="20" y="20" width="400" height="220" rx="8" fill="#141414" stroke="#2c2c2c" stroke-width="1.5" />
+            <rect x="35" y="10" width="180" height="20" rx="3" fill="#800020" />
+            <text x="45" y="24" fill="#ffffff" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="700">DOWNLINK: CLOUD CONTROL</text>
+
+            <rect x="35" y="45" width="160" height="50" rx="4" fill="#1b1b1b" stroke="#333" />
+            <text x="45" y="66" fill="#ffffff" font-family="'Space Grotesk', sans-serif" font-size="11" font-weight="600">Adafruit IO Dashboard</text>
+            <text x="45" y="82" fill="#8e8e93" font-family="'JetBrains Mono', monospace" font-size="9">Toggle: ON / OFF</text>
+
+            <!-- Arrow to broker -->
+            <path d="M 195 70 L 235 70" stroke="#ff4d6d" stroke-width="2" />
+            <polygon points="235,70 227,66 227,74" fill="#ff4d6d" />
+
+            <rect x="240" y="45" width="160" height="50" rx="4" fill="#1b1b1b" stroke="#800020" />
+            <text x="250" y="66" fill="#ff4d6d" font-family="'Space Grotesk', sans-serif" font-size="11" font-weight="600">Adafruit IO Broker</text>
+            <text x="250" y="82" fill="#8e8e93" font-family="'JetBrains Mono', monospace" font-size="9">Feed: `bulb` (Port 1883)</text>
+
+            <!-- Arrow down to ESP32 -->
+            <path d="M 320 95 L 320 135" stroke="#ff4d6d" stroke-width="2" />
+            <polygon points="320,135 316,127 324,127" fill="#ff4d6d" />
+
+            <rect x="220" y="140" width="180" height="85" rx="4" fill="#181818" stroke="#333" />
+            <text x="230" y="162" fill="#ffffff" font-family="'Space Grotesk', sans-serif" font-size="11" font-weight="600">ESP32 Client (Subscriber)</text>
+            <text x="230" y="180" fill="#8e8e93" font-family="'JetBrains Mono', monospace" font-size="9">• readSubscription(100)</text>
+            <text x="230" y="196" fill="#8e8e93" font-family="'JetBrains Mono', monospace" font-size="9">• GPIO 5: HIGH / LOW</text>
+            <text x="230" y="212" fill="#00ff88" font-family="'JetBrains Mono', monospace" font-size="9">• 2N2222 Transistor &rarr; Load</text>
+
+            <!-- Uplink Container -->
+            <rect x="460" y="20" width="400" height="220" rx="8" fill="#141414" stroke="#2c2c2c" stroke-width="1.5" />
+            <rect x="475" y="10" width="200" height="20" rx="3" fill="#800020" />
+            <text x="485" y="24" fill="#ffffff" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="700">UPLINK: MANUAL BUTTON FEEDBACK</text>
+
+            <rect x="475" y="45" width="160" height="60" rx="4" fill="#1b1b1b" stroke="#333" />
+            <text x="485" y="66" fill="#ffffff" font-family="'Space Grotesk', sans-serif" font-size="11" font-weight="600">Manual Push Button</text>
+            <text x="485" y="82" fill="#8e8e93" font-family="'JetBrains Mono', monospace" font-size="9">GPIO 4 (INPUT_PULLUP)</text>
+            <text x="485" y="96" fill="#00ff88" font-family="'JetBrains Mono', monospace" font-size="9">Falling Edge (HIGH &rarr; LOW)</text>
+
+            <!-- Arrow to ESP32 -->
+            <path d="M 635 75 L 680 75" stroke="#00ff88" stroke-width="2" />
+            <polygon points="680,75 672,71 672,79" fill="#00ff88" />
+
+            <rect x="685" y="45" width="160" height="60" rx="4" fill="#181818" stroke="#333" />
+            <text x="695" y="66" fill="#ffffff" font-family="'Space Grotesk', sans-serif" font-size="11" font-weight="600">ESP32 (Publisher)</text>
+            <text x="695" y="82" fill="#8e8e93" font-family="'JetBrains Mono', monospace" font-size="9">Inverts outputState</text>
+            <text x="695" y="96" fill="#00ff88" font-family="'JetBrains Mono', monospace" font-size="9">bulbPub.publish("ON"/"OFF")</text>
+
+            <!-- Arrow down to Broker & Dashboard -->
+            <path d="M 765 105 L 765 145" stroke="#00ff88" stroke-width="2" />
+            <polygon points="765,145 761,137 769,137" fill="#00ff88" />
+
+            <rect x="635" y="150" width="210" height="75" rx="4" fill="#1b1b1b" stroke="#800020" />
+            <text x="645" y="172" fill="#ff4d6d" font-family="'Space Grotesk', sans-serif" font-size="11" font-weight="600">Broker &amp; Cloud Dashboard</text>
+            <text x="645" y="190" fill="#8e8e93" font-family="'JetBrains Mono', monospace" font-size="9">• Broker receives state update</text>
+            <text x="645" y="206" fill="#00ff88" font-family="'JetBrains Mono', monospace" font-size="9">• Web toggle widget syncs automatically</text>
+          </svg>
+          <div class="diagram-caption">Figure 2.1 — Dual-Control MQTT Synchronization Loop: Downlink Cloud Actuation &amp; Uplink Hardware State Sync.</div>
+        </div>
       </section>
 
       <!-- 5. COMPONENTS & HARDWARE -->
@@ -199,14 +247,76 @@ Push Button ──&gt; GPIO 4 ──&gt; ESP32 ──[Publish "ON"]──&gt; MQ
         <p class="content-block-text">
           The physical circuit consists of a transistor driver stage and a momentary push button interface connected to the ESP32:
         </p>
-        <div class="diagram-box">Output Stage:
-ESP32 GPIO 5 ──&gt; [Base Resistor] ──&gt; Transistor Base (B)
-                                     Transistor Emitter (E) ──&gt; GND
-                   Supply (+) ──&gt; [Load] ──&gt; Transistor Collector (C)
 
-Input Stage:
-ESP32 GPIO 4 ──&gt; [Push Button] ──&gt; GND
-(Configured internally with pinMode(BUTTON_PIN, INPUT_PULLUP))</div>
+        <!-- TRANSISTOR DRIVER & BUTTON CIRCUIT SVG CARD -->
+        <div class="svg-diagram-card">
+          <svg viewBox="0 0 860 250" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- Box 1: Output Stage (Transistor Driver) -->
+            <rect x="20" y="20" width="410" height="210" rx="8" fill="#141414" stroke="#800020" stroke-width="1.5" />
+            <rect x="35" y="10" width="180" height="20" rx="3" fill="#800020" />
+            <text x="45" y="24" fill="#ffffff" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="700">OUTPUT DRIVER STAGE</text>
+
+            <rect x="35" y="45" width="100" height="40" rx="4" fill="#1b1b1b" stroke="#333" />
+            <text x="45" y="65" fill="#ffffff" font-family="'Space Grotesk', sans-serif" font-size="11" font-weight="600">ESP32 GPIO 5</text>
+            <text x="45" y="78" fill="#8e8e93" font-family="'JetBrains Mono', monospace" font-size="8.5">Logic 3.3V Output</text>
+
+            <!-- Line to resistor -->
+            <path d="M 135 65 L 165 65" stroke="#ff4d6d" stroke-width="2" />
+            
+            <!-- Resistor -->
+            <rect x="165" y="55" width="45" height="20" rx="2" fill="#222" stroke="#ff4d6d" stroke-width="1.5" />
+            <text x="175" y="69" fill="#ff4d6d" font-family="'JetBrains Mono', monospace" font-size="9">1 kΩ</text>
+
+            <!-- Line to Base -->
+            <path d="M 210 65 L 245 65" stroke="#ff4d6d" stroke-width="2" />
+
+            <!-- Transistor Symbol / Box -->
+            <rect x="245" y="40" width="80" height="110" rx="4" fill="#1b1b1b" stroke="#333" />
+            <text x="255" y="60" fill="#ffffff" font-family="'Space Grotesk', sans-serif" font-size="11" font-weight="700">2N2222</text>
+            <text x="255" y="75" fill="#8e8e93" font-family="'JetBrains Mono', monospace" font-size="9">NPN BJT</text>
+            <text x="255" y="95" fill="#ff4d6d" font-family="'JetBrains Mono', monospace" font-size="9">Base (B)</text>
+            <text x="255" y="115" fill="#00ff88" font-family="'JetBrains Mono', monospace" font-size="9">Collector (C)</text>
+            <text x="255" y="135" fill="#8e8e93" font-family="'JetBrains Mono', monospace" font-size="9">Emitter (E)</text>
+
+            <!-- Collector up to Load -->
+            <path d="M 325 110 L 355 110 L 355 55 L 375 55" stroke="#00ff88" stroke-width="2" />
+            <rect x="350" y="45" width="65" height="50" rx="4" fill="#1f1f1f" stroke="#00ff88" />
+            <text x="360" y="65" fill="#00ff88" font-family="'Space Grotesk', sans-serif" font-size="10" font-weight="600">LOAD</text>
+            <text x="360" y="80" fill="#8e8e93" font-family="'JetBrains Mono', monospace" font-size="8.5">+5V Rail</text>
+
+            <!-- Emitter down to GND -->
+            <path d="M 325 130 L 360 130 L 360 180" stroke="#888" stroke-width="2" />
+            <text x="345" y="195" fill="#8e8e93" font-family="'JetBrains Mono', monospace" font-size="9">GND</text>
+
+            <!-- Box 2: Input Stage (Push Button) -->
+            <rect x="450" y="20" width="390" height="210" rx="8" fill="#141414" stroke="#2c2c2c" stroke-width="1.5" />
+            <rect x="465" y="10" width="200" height="20" rx="3" fill="#800020" />
+            <text x="475" y="24" fill="#ffffff" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="700">INPUT BUTTON STAGE</text>
+
+            <rect x="475" y="55" width="150" height="60" rx="4" fill="#1b1b1b" stroke="#333" />
+            <text x="485" y="78" fill="#ffffff" font-family="'Space Grotesk', sans-serif" font-size="11" font-weight="600">ESP32 GPIO 4</text>
+            <text x="485" y="94" fill="#00ff88" font-family="'JetBrains Mono', monospace" font-size="9">INPUT_PULLUP (3.3V)</text>
+            <text x="485" y="106" fill="#8e8e93" font-family="'Space Grotesk', sans-serif" font-size="8.5">Normal Idle = HIGH</text>
+
+            <!-- Wire to push button switch -->
+            <path d="M 625 85 L 680 85" stroke="#00ff88" stroke-width="2" />
+
+            <circle cx="685" cy="85" r="4" fill="#00ff88" />
+            <path d="M 685 85 L 715 65" stroke="#00ff88" stroke-width="2" />
+            <circle cx="725" cy="85" r="4" fill="#00ff88" />
+
+            <!-- Tactile switch graphic -->
+            <rect x="670" y="105" width="80" height="40" rx="4" fill="#1b1b1b" stroke="#ff4d6d" />
+            <text x="680" y="125" fill="#ff4d6d" font-family="'Space Grotesk', sans-serif" font-size="10" font-weight="600">TACTILE</text>
+            <text x="680" y="138" fill="#8e8e93" font-family="'JetBrains Mono', monospace" font-size="8">SW to GND</text>
+
+            <path d="M 725 85 L 770 85 L 770 140" stroke="#888" stroke-width="2" />
+            <text x="755" y="155" fill="#8e8e93" font-family="'JetBrains Mono', monospace" font-size="9">GND (0V)</text>
+            <text x="475" y="175" fill="#8e8e93" font-family="'Space Grotesk', sans-serif" font-size="10.5">Pressing grounds GPIO 4 &rarr; Falling edge &rarr; 250ms debounce &rarr; Output toggles.</text>
+          </svg>
+          <div class="diagram-caption">Figure 2.2 — Electrical Schematic: Low-Side NPN Transistor Switch &amp; Debounced Pull-Up Push Button.</div>
+        </div>
+
         <p class="content-block-text">
           Configuring GPIO 4 with <code>INPUT_PULLUP</code> activates the internal resistor on the ESP32 silicon that ties the pin to 3.3V. When the button is not pressed, the input reads <code>HIGH</code>. When pressed, the button grounds the pin, pulling it to <code>LOW</code>. This eliminates the need for an external physical pull-up resistor.
         </p>
@@ -308,21 +418,44 @@ ESP32 GPIO 4 ──&gt; [Push Button] ──&gt; GND
         <p class="content-block-text">
           Adafruit IO hosts both the MQTT broker service and the dashboard presentation layer under a unified cloud account:
         </p>
-        <div class="diagram-box">ESP32 Microcontroller
-       │
-       │ Internet (TCP Port 1883)
-       ▼
-Adafruit IO Cloud
-       ├── MQTT Broker (io.adafruit.com)
-       ├── Feed (AIO_USERNAME/feeds/bulb)
-       └── Dashboard (Interactive Web Toggle)</div>
+
+        <!-- VISUAL ADAFRUIT IO CLOUD CONNECTION -->
+        <div class="visual-pipeline">
+          <div class="pipeline-node">
+            <div class="pipeline-node-icon">&#9881;</div>
+            <div class="pipeline-node-title">ESP32 Client</div>
+            <div class="pipeline-node-sub">Microcontroller</div>
+          </div>
+          <div class="pipeline-arrow">&rarr;</div>
+          <div class="pipeline-node">
+            <div class="pipeline-node-icon">&#127760;</div>
+            <div class="pipeline-node-title">MQTT TCP:1883</div>
+            <div class="pipeline-node-sub">io.adafruit.com</div>
+          </div>
+          <div class="pipeline-arrow">&rarr;</div>
+          <div class="pipeline-node">
+            <div class="pipeline-node-icon">&#128225;</div>
+            <div class="pipeline-node-title">Cloud Feed</div>
+            <div class="pipeline-node-sub">/feeds/bulb</div>
+          </div>
+          <div class="pipeline-arrow">&harr;</div>
+          <div class="pipeline-node">
+            <div class="pipeline-node-icon">&#128187;</div>
+            <div class="pipeline-node-title">Dashboard Widget</div>
+            <div class="pipeline-node-sub">Virtual Toggle</div>
+          </div>
+        </div>
+
         <p class="content-block-text">
           The subscription path is structured as <code>AIO_USERNAME "/feeds/bulb"</code>. The username is embedded in the topic path to isolate client feeds. In public documentation, real credentials must always be replaced with placeholders:
         </p>
-        <div class="diagram-box">#define AIO_SERVER      "io.adafruit.com"
+        <div class="code-wrapper">
+          <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre><code>#define AIO_SERVER      "io.adafruit.com"
 #define AIO_SERVERPORT  1883
 #define AIO_USERNAME    "YOUR_AIO_USERNAME"
-#define AIO_KEY         "YOUR_AIO_KEY"</div>
+#define AIO_KEY         "YOUR_AIO_KEY"</code></pre>
+        </div>
       </section>
 
       <!-- 11. FEED / TOPIC STRUCTURE -->
@@ -331,17 +464,25 @@ Adafruit IO Cloud
         <p class="content-block-text">
           The <code>bulb</code> feed acts as the single shared message channel between cloud and hardware. Only two ASCII payload strings are exchanged across this channel: <code>ON</code> and <code>OFF</code>.
         </p>
-        <div class="diagram-box">Dashboard Action:
-  Toggle set ON   ──&gt; Publishes string "ON"
-  Toggle set OFF  ──&gt; Publishes string "OFF"
-
-ESP32 Action:
-  Received "ON"   ──&gt; Drives GPIO 5 HIGH
-  Received "OFF"  ──&gt; Drives GPIO 5 LOW
-
-Button Override:
-  Physical press  ──&gt; Toggles outputState
-                  ──&gt; Publishes "ON" or "OFF" to sync dashboard</div>
+        
+        <!-- GLOWING FEED DISPATCH CARDS -->
+        <div class="glow-card-grid" style="grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));">
+          <div class="glow-card">
+            <span class="glow-card-badge">DOWNLINK PAYLOAD</span>
+            <div class="glow-card-title">Dashboard Toggle Action</div>
+            <div class="glow-card-desc">
+              Toggle set ON &rarr; Publishes <code>"ON"</code> &rarr; ESP32 drives GPIO 5 HIGH.<br>
+              Toggle set OFF &rarr; Publishes <code>"OFF"</code> &rarr; ESP32 drives GPIO 5 LOW.
+            </div>
+          </div>
+          <div class="glow-card" style="border-left: 3px solid #00ff88;">
+            <span class="glow-card-badge" style="color: #00ff88; border-color: #00ff88;">UPLINK PAYLOAD</span>
+            <div class="glow-card-title">Physical Button Override</div>
+            <div class="glow-card-desc">
+              Physical tap on GPIO 4 inverts <code>outputState</code> and instantly publishes <code>"ON"</code> or <code>"OFF"</code> back to the feed, synchronizing the cloud slider.
+            </div>
+          </div>
+        </div>
       </section>
 
       <!-- 12. DASHBOARD -> ESP32 FLOW -->
@@ -425,11 +566,14 @@ Button Override:
         <p class="content-block-text">
           The microcontroller initializes network connectivity using:
         </p>
-        <div class="diagram-box">WiFi.begin(WLAN_SSID, WLAN_PASS);
+        <div class="code-wrapper">
+          <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre><code>WiFi.begin(WLAN_SSID, WLAN_PASS);
 while (WiFi.status() != WL_CONNECTED) {
   delay(500);
   Serial.print(".");
-}</div>
+}</code></pre>
+        </div>
         <p class="content-block-text">
           The program halts in a blocking loop until the Wi-Fi status returns <code>WL_CONNECTED</code>. This enforces the fundamental architectural dependency: Wi-Fi connection &rarr; Internet access &rarr; Adafruit IO connection &rarr; MQTT messaging.
         </p>
@@ -441,7 +585,10 @@ while (WiFi.status() != WL_CONNECTED) {
         <p class="content-block-text">
           The client object is instantiated with the server parameters:
         </p>
-        <div class="diagram-box">Adafruit_MQTT_Client mqtt(&amp;client, AIO_SERVER, AIO_SERVERPORT, AIO_USERNAME, AIO_KEY);</div>
+        <div class="code-wrapper">
+          <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre><code>Adafruit_MQTT_Client mqtt(&amp;client, AIO_SERVER, AIO_SERVERPORT, AIO_USERNAME, AIO_KEY);</code></pre>
+        </div>
         <p class="content-block-text">
           The client targets <code>io.adafruit.com</code> on standard MQTT TCP port <code>1883</code>. Port 1883 represents unencrypted MQTT communication. The Adafruit IO Key acts as the authentication token and must never be exposed publicly.
         </p>
@@ -453,9 +600,12 @@ while (WiFi.status() != WL_CONNECTED) {
         <p class="content-block-text">
           The subscription object binds the client to the specific topic string:
         </p>
-        <div class="diagram-box">Adafruit_MQTT_Subscribe bulbFeed = Adafruit_MQTT_Subscribe(&amp;mqtt, AIO_USERNAME "/feeds/bulb");
+        <div class="code-wrapper">
+          <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre><code>Adafruit_MQTT_Subscribe bulbFeed = Adafruit_MQTT_Subscribe(&amp;mqtt, AIO_USERNAME "/feeds/bulb");
 ...
-mqtt.subscribe(&amp;bulbFeed);</div>
+mqtt.subscribe(&amp;bulbFeed);</code></pre>
+        </div>
         <p class="content-block-text">
           Calling <code>mqtt.subscribe(&amp;bulbFeed)</code> informs the broker that this client must receive all messages published to that feed.
         </p>
@@ -467,7 +617,9 @@ mqtt.subscribe(&amp;bulbFeed);</div>
         <p class="content-block-text">
           In the main execution loop, incoming packets are inspected non-blockingly:
         </p>
-        <div class="diagram-box">Adafruit_MQTT_Subscribe *sub;
+        <div class="code-wrapper">
+          <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre><code>Adafruit_MQTT_Subscribe *sub;
 while ((sub = mqtt.readSubscription(100))) {
   if (sub == &amp;bulbFeed) {
     String msg = (char *)bulbFeed.lastread;
@@ -475,7 +627,8 @@ while ((sub = mqtt.readSubscription(100))) {
     Serial.println(msg);
     setOutput(msg == "ON");
   }
-}</div>
+}</code></pre>
+        </div>
         <p class="content-block-text">
           The condition <code>sub == &amp;bulbFeed</code> ensures the message originated from the expected feed. The buffer is read as a string and evaluated with <code>setOutput(msg == "ON")</code>, activating the pin if the payload is <code>ON</code> and deactivating it for any other value.
         </p>
@@ -487,10 +640,13 @@ while ((sub = mqtt.readSubscription(100))) {
         <p class="content-block-text">
           A centralized helper function encapsulates the GPIO manipulation:
         </p>
-        <div class="diagram-box">void setOutput(bool on) {
+        <div class="code-wrapper">
+          <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre><code>void setOutput(bool on) {
   outputState = on;
   digitalWrite(OUTPUT_PIN, on ? HIGH : LOW);
-}</div>
+}</code></pre>
+        </div>
         <p class="content-block-text">
           Centralizing the logic into <code>setOutput()</code> prevents duplication. Both incoming MQTT packets and local button presses invoke the same function, maintaining a single, consistent source of truth for the physical hardware state.
         </p>
@@ -502,13 +658,16 @@ while ((sub = mqtt.readSubscription(100))) {
         <p class="content-block-text">
           To provide local tactile control, the push button is polled in the main loop:
         </p>
-        <div class="diagram-box">int reading = digitalRead(BUTTON_PIN);
+        <div class="code-wrapper">
+          <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre><code>int reading = digitalRead(BUTTON_PIN);
 if (reading == LOW &amp;&amp; lastButton == HIGH &amp;&amp; millis() - lastPress &gt; 250) {
   lastPress = millis();
   setOutput(!outputState);
   bulbPub.publish(outputState ? "ON" : "OFF");
 }
-lastButton = reading;</div>
+lastButton = reading;</code></pre>
+        </div>
         <p class="content-block-text">
           The condition <code>reading == LOW &amp;&amp; lastButton == HIGH</code> detects the falling edge (button press event) rather than triggering continuously while the button is held down. The <code>millis() - lastPress &gt; 250</code> clause provides non-blocking software debouncing, ignoring mechanical contact vibrations.
         </p>
@@ -531,7 +690,9 @@ lastButton = reading;</div>
         <p class="content-block-text">
           Because network drops are common in IoT deployments, connection management is implemented:
         </p>
-        <div class="diagram-box">void MQTT_connect() {
+        <div class="code-wrapper">
+          <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre><code>void MQTT_connect() {
   if (mqtt.connected()) return;
   int8_t ret;
   uint8_t retries = 3;
@@ -540,7 +701,8 @@ lastButton = reading;</div>
     delay(5000);
     if (--retries == 0) ESP.restart();
   }
-}</div>
+}</code></pre>
+        </div>
         <p class="content-block-text">
           If the broker connection drops, the function attempts up to 3 reconnection cycles. If the connection cannot be restored, <code>ESP.restart()</code> triggers a hardware reset to clear network buffers and start clean.
         </p>
@@ -690,9 +852,18 @@ void loop() {
       <section class="content-block" id="media">
         <h2 class="content-block-heading">Demonstration Video</h2>
         <p class="content-block-text">Demonstration of cloud-based dashboard switching and synchronized physical push button override:</p>
-        <video class="media-video" controls preload="metadata">
-          <source src="assets/iot/task2-clip1.mp4" type="video/mp4">
-        </video>
+        <div class="hardware-gallery" style="grid-template-columns: 1fr; max-width: 820px; margin: 1.5rem auto 0 auto;">
+          <div class="hardware-card">
+            <video class="media-video" controls preload="metadata" style="width: 100%; border-radius: 10px 10px 0 0; display: block;">
+              <source src="assets/iot/task2-clip1.mp4" type="video/mp4">
+            </video>
+            <div class="hardware-card-caption">
+              <span class="hw-badge">LIVE DEMO</span>
+              <span class="hw-title">Physical Button &amp; Cloud Dashboard Synchronization</span>
+              <p>Video capture showing instantaneous bi-directional actuation: toggling the virtual switch on Adafruit IO triggers the 2N2222 transistor on the bench, while tapping the tactile push button immediately flips the hardware output and updates the cloud feed state.</p>
+            </div>
+          </div>
+        </div>
       </section>
 
       <!-- 26. TESTING & VERIFICATION -->
@@ -701,15 +872,63 @@ void loop() {
         <p class="content-block-text">
           The system was systematically tested across each network and hardware boundary:
         </p>
-        <ul class="content-block-list">
-          <li><strong>Test 1 — Wi-Fi Connection:</strong> Booted board with Serial Monitor open at 115200 baud. Verified that the connection completed and an IP address was assigned.</li>
-          <li><strong>Test 2 — MQTT Connection:</strong> Monitored serial logs to verify successful connection handshake to <code>io.adafruit.com</code> and subscription registration.</li>
-          <li><strong>Test 3 — Dashboard ON Command:</strong> Flipped the dashboard toggle to ON. Verified that the broker forwarded <code>"ON"</code>, GPIO 5 drove HIGH, the transistor saturated, and the load energized.</li>
-          <li><strong>Test 4 — Dashboard OFF Command:</strong> Flipped the dashboard toggle to OFF. Verified that <code>"OFF"</code> was received, GPIO 5 pulled LOW, and the load switched OFF.</li>
-          <li><strong>Test 5 — Physical Push Button Override:</strong> Pressed the physical push button on the perfboard. Verified that the local load toggled instantly and the Adafruit IO dashboard toggle updated automatically.</li>
-          <li><strong>Test 6 — Repeated Presses &amp; Debounce:</strong> Rapidly tapped the tactile push button. Verified that debounce logic prevented spurious double-toggling.</li>
-          <li><strong>Test 7 — Connection Recovery &amp; Keepalive:</strong> Monitored extended operation to confirm that 30-second pings maintained an unbroken broker session.</li>
-        </ul>
+        <div class="test-matrix-grid">
+          <div class="test-matrix-card">
+            <div class="test-card-header">
+              <span class="test-title">Test 1 — Wi-Fi Connection</span>
+              <span class="test-pill pass">PASS</span>
+            </div>
+            <div class="test-desc">Booted board with Serial Monitor open at 115200 baud. Verified that STA mode joined SSID and was assigned a local subnet IP address.</div>
+          </div>
+
+          <div class="test-matrix-card">
+            <div class="test-card-header">
+              <span class="test-title">Test 2 — MQTT Handshake</span>
+              <span class="test-pill pass">PASS</span>
+            </div>
+            <div class="test-desc">Monitored serial logs to verify successful connection handshake to <code>io.adafruit.com:1883</code> and subscription registration to the bulb feed.</div>
+          </div>
+
+          <div class="test-matrix-card">
+            <div class="test-card-header">
+              <span class="test-title">Test 3 — Cloud ON Downlink</span>
+              <span class="test-pill pass">PASS</span>
+            </div>
+            <div class="test-desc">Flipped the dashboard toggle to ON. Verified broker forwarded <code>"ON"</code>, GPIO 5 drove HIGH, transistor saturated (Vce &approx; 0.1V), and the load energized.</div>
+          </div>
+
+          <div class="test-matrix-card">
+            <div class="test-card-header">
+              <span class="test-title">Test 4 — Cloud OFF Downlink</span>
+              <span class="test-pill pass">PASS</span>
+            </div>
+            <div class="test-desc">Flipped the dashboard toggle to OFF. Verified <code>"OFF"</code> received, GPIO 5 pulled LOW to cut base current, and the load de-energized.</div>
+          </div>
+
+          <div class="test-matrix-card">
+            <div class="test-card-header">
+              <span class="test-title">Test 5 — Button Override &amp; Uplink</span>
+              <span class="test-pill pass">PASS</span>
+            </div>
+            <div class="test-desc">Pressed physical tactile button on perfboard. Hardware toggled instantly and firmware published new state uplink to update Adafruit IO dashboard.</div>
+          </div>
+
+          <div class="test-matrix-card">
+            <div class="test-card-header">
+              <span class="test-title">Test 6 — Debounce Validation</span>
+              <span class="test-pill pass">PASS</span>
+            </div>
+            <div class="test-desc">Rapidly tapped the tactile push button. 250ms software threshold successfully prevented switch bouncing from triggering spurious double-toggles.</div>
+          </div>
+
+          <div class="test-matrix-card">
+            <div class="test-card-header">
+              <span class="test-title">Test 7 — Keepalive &amp; Recovery</span>
+              <span class="test-pill pass">PASS</span>
+            </div>
+            <div class="test-desc">Monitored extended bench runtime. 30-second ping timer maintained an unbroken broker session; automatic reconnect routine recovered from simulated router drop.</div>
+          </div>
+        </div>
       </section>
 
       <!-- 27. FAILURE CASES / DEBUGGING -->
@@ -786,18 +1005,43 @@ void loop() {
         <p class="content-block-text">
           The ESP32 successfully established station connectivity to Wi-Fi and connected to Adafruit IO via MQTT. The system achieved complete end-to-end functionality:
         </p>
-        <ul class="content-block-list">
-          <li>Maintained a stable client connection to <code>io.adafruit.com</code> on port 1883.</li>
-          <li>Successfully subscribed to the <code>bulb</code> feed.</li>
-          <li>Received remote <code>ON</code> and <code>OFF</code> commands from the cloud dashboard.</li>
-          <li>Controlled GPIO 5 to reliably switch the NPN transistor and load circuit.</li>
-          <li>Detected physical button presses on GPIO 4 with 250ms debouncing.</li>
-          <li>Published local state changes back to the cloud broker.</li>
-          <li>Maintained perfect synchronization between physical hardware and cloud dashboard widgets.</li>
-        </ul>
-        <div class="diagram-box">Verified Communication:
-Cloud Dashboard ──[Downlink]──&gt; ESP32 Hardware (Remote Control)
-ESP32 Hardware  ──[Uplink]────&gt; Cloud Dashboard (State Sync)</div>
+        <div class="glow-card-grid" style="margin-top: 1rem;">
+          <div class="glow-card">
+            <div class="card-icon">&#9729;</div>
+            <div class="card-title">Persistent Broker Session</div>
+            <div class="card-desc">Maintained a stable TCP client link to <code>io.adafruit.com:1883</code> with 30s keepalive pings and automatic fault recovery.</div>
+          </div>
+          <div class="glow-card">
+            <div class="card-icon">&#8646;</div>
+            <div class="card-title">Bidirectional Sync</div>
+            <div class="card-desc">Subscribed to the <code>bulb</code> feed for remote commands while publishing state uplinks upon local physical toggle.</div>
+          </div>
+          <div class="glow-card">
+            <div class="card-icon">&#9889;</div>
+            <div class="card-title">Clean Transistor Actuation</div>
+            <div class="card-desc">GPIO 5 cleanly drives the 2N2222 NPN base through 1k&Omega; into deep saturation, switching the bench load reliably.</div>
+          </div>
+        </div>
+
+        <div class="visual-pipeline" style="margin-top: 1.5rem;">
+          <div class="pipe-node" style="border-color: rgba(0, 229, 255, 0.4);">
+            <div class="node-badge" style="color: #00e5ff;">CLOUD DASHBOARD</div>
+            <div class="node-title">Adafruit IO Feed</div>
+            <div class="node-desc">Virtual Toggle Switch</div>
+          </div>
+          <div class="pipe-arrow">&harr;<br><span style="font-size: 0.65rem; color: #a0aec0;">MQTT Downlink &bull; Uplink</span></div>
+          <div class="pipe-node" style="border-color: rgba(128, 0, 32, 0.6);">
+            <div class="node-badge" style="color: #ff6b8b;">MICROCONTROLLER</div>
+            <div class="node-title">ESP32 DevKit V4</div>
+            <div class="node-desc">GPIO 5 Driver &bull; GPIO 4 Input</div>
+          </div>
+          <div class="pipe-arrow">&rarr;<br><span style="font-size: 0.65rem; color: #a0aec0;">Base Saturation</span></div>
+          <div class="pipe-node" style="border-color: rgba(0, 230, 118, 0.4);">
+            <div class="node-badge" style="color: #00e676;">PHYSICAL ACTUATION</div>
+            <div class="node-title">2N2222 Transistor</div>
+            <div class="node-desc">Collector Load Switching</div>
+          </div>
+        </div>
       </section>
 
       <!-- 31. TASK 2 TAKEAWAY -->

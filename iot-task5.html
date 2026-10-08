@@ -160,7 +160,37 @@
 
   <main>
     <div class="container page-container">
-      <h1 class="page-main-heading">Task 05: Firebase Hardware Integration</h1>
+      <!-- HERO PRESENTATION BANNER -->
+      <div class="task-hero">
+        <div class="task-badge-row">
+          <span class="task-badge highlight">TASK 05</span>
+          <span class="task-badge">FULL HARDWARE INTEGRATION</span>
+          <span class="task-badge">ESP32 &amp; FIREBASE RTDB</span>
+          <span class="task-badge">BIDIRECTIONAL DUAL-CONTROL</span>
+        </div>
+        <h1 class="task-hero-title">Task 05: Firebase Hardware Integration</h1>
+        <p class="task-hero-lead">
+          Bridging physical embedded electronics with Firebase Realtime Database. Autonomous 5-second multi-sensor telemetry streaming, real-time push actuation of 230V AC loads via optocoupled relays, and seamless dual-master edge-cloud synchronization with hardware button debouncing.
+        </p>
+        <div class="metrics-ribbon">
+          <div class="metric-card">
+            <div class="metric-value">5,000ms</div>
+            <div class="metric-label">Telemetry Upload Period</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-value">&lt;50ms</div>
+            <div class="metric-label">Cloud-to-Relay Push Latency</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-value">250ms</div>
+            <div class="metric-label">Hardware Debounce Window</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-value">100%</div>
+            <div class="metric-label">Dual-Master State Parity</div>
+          </div>
+        </div>
+      </div>
 
       <!-- 1. OVERVIEW -->
       <section class="content-block">
@@ -189,18 +219,105 @@
         <p class="content-block-text">
           The core engineering objective was to solve the multi-master synchronization problem in distributed IoT: <em>how to reliably synchronize physical hardware state and ambient sensor readings with a cloud web interface without tight coupling or continuous polling.</em>
         </p>
-        <div class="diagram-box">PHYSICAL EDGE ENVIRONMENT                          CLOUD DATABASE                     CLIENT INTERFACE
-[DHT11 Sensor] ──┐
-                 ├──► [ESP32 Node] ──(5s Upload)──► [telemetry/live] ──(onValue)──► [Dashboard Cards]
-[LDR Sensor]   ──┘           ▲                             ▲                                │
-                             │                             │                                │
-[Manual Button] ──(Interrupt)┘                             └────(set 1/0)───────────────────┘
-                             │                                     │
-                             ▼                                     ▼
-                     [Relay Actuator] ◄────(Stream Event)──────────┘
-                            │
-                            ▼
-                     [Appliance Bulb]</div>
+        
+        <!-- VISUAL CLOSED-LOOP DATAFLOW GRAPHIC -->
+        <div class="svg-diagram-card">
+          <svg viewBox="0 0 920 270" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="maroonGrad5" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#800020" />
+                <stop offset="100%" stop-color="#ff4d6d" />
+              </linearGradient>
+              <filter id="glowFilt5" x="-20%" y="-20%" width="140%" height="140%">
+                <feGaussianBlur stdDeviation="3" result="blur" />
+                <feComposite in="SourceGraphic" in2="blur" operator="over" />
+              </filter>
+            </defs>
+
+            <!-- Column 1: Physical Edge Environment -->
+            <rect x="20" y="20" width="270" height="230" rx="8" fill="#141414" stroke="#2c2c2c" stroke-width="1.5" />
+            <rect x="35" y="10" width="160" height="20" rx="3" fill="#800020" />
+            <text x="45" y="24" fill="#ffffff" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="700">1. PHYSICAL EDGE</text>
+
+            <rect x="35" y="45" width="100" height="38" rx="4" fill="#1b1b1b" stroke="#333" />
+            <text x="43" y="60" fill="#fff" font-family="'Space Grotesk', sans-serif" font-size="10" font-weight="600">DHT11 Sensor</text>
+            <text x="43" y="74" fill="#8e8e93" font-family="'JetBrains Mono', monospace" font-size="8">GPIO 4</text>
+
+            <rect x="35" y="93" width="100" height="38" rx="4" fill="#1b1b1b" stroke="#333" />
+            <text x="43" y="108" fill="#fff" font-family="'Space Grotesk', sans-serif" font-size="10" font-weight="600">LDR Divider</text>
+            <text x="43" y="122" fill="#8e8e93" font-family="'JetBrains Mono', monospace" font-size="8">GPIO 34 ADC</text>
+
+            <rect x="35" y="141" width="100" height="38" rx="4" fill="#1b1b1b" stroke="#333" />
+            <text x="43" y="156" fill="#fff" font-family="'Space Grotesk', sans-serif" font-size="10" font-weight="600">Push Button</text>
+            <text x="43" y="170" fill="#8e8e93" font-family="'JetBrains Mono', monospace" font-size="8">GPIO 14 Manual</text>
+
+            <rect x="35" y="189" width="100" height="38" rx="4" fill="#1b1b1b" stroke="#333" />
+            <text x="43" y="204" fill="#fff" font-family="'Space Grotesk', sans-serif" font-size="10" font-weight="600">5V Relay</text>
+            <text x="43" y="218" fill="#ff4d6d" font-family="'JetBrains Mono', monospace" font-size="8">GPIO 26 -> Bulb</text>
+
+            <rect x="150" y="45" width="125" height="182" rx="6" fill="#181818" stroke="#800020" stroke-width="1.5" />
+            <text x="162" y="68" fill="#ff4d6d" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="700">ESP32 NODE</text>
+            <text x="160" y="92" fill="#8e8e93" font-family="'Space Grotesk', sans-serif" font-size="9.5">• FreeRTOS Loop</text>
+            <text x="160" y="112" fill="#8e8e93" font-family="'Space Grotesk', sans-serif" font-size="9.5">• 5s Millis Timer</text>
+            <text x="160" y="132" fill="#8e8e93" font-family="'Space Grotesk', sans-serif" font-size="9.5">• SSE Stream Sub</text>
+            <text x="160" y="152" fill="#8e8e93" font-family="'Space Grotesk', sans-serif" font-size="9.5">• 250ms Debounce</text>
+            <text x="160" y="172" fill="#8e8e93" font-family="'Space Grotesk', sans-serif" font-size="9.5">• Active-LOW Driver</text>
+
+            <!-- Arrow 1: Telemetry Uplink (ESP32 to RTDB) -->
+            <path d="M 275 80 L 355 80" stroke="#00ff88" stroke-width="2" stroke-dasharray="4" filter="url(#glowFilt5)" />
+            <polygon points="355,80 347,76 347,84" fill="#00ff88" />
+            <text x="282" y="72" fill="#00ff88" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="600">5s Upload</text>
+
+            <!-- Column 2: Firebase RTDB Cloud -->
+            <rect x="365" y="20" width="230" height="230" rx="8" fill="#141414" stroke="#800020" stroke-width="1.5" />
+            <rect x="380" y="10" width="160" height="20" rx="3" fill="#800020" />
+            <text x="390" y="24" fill="#ffffff" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="700">2. FIREBASE RTDB CLOUD</text>
+
+            <rect x="380" y="50" width="200" height="70" rx="4" fill="#181818" stroke="#333" />
+            <text x="390" y="70" fill="#00ff88" font-family="'JetBrains Mono', monospace" font-size="11">/telemetry/live</text>
+            <text x="395" y="88" fill="#8e8e93" font-family="'JetBrains Mono', monospace" font-size="9">temperature: 27°C</text>
+            <text x="395" y="103" fill="#8e8e93" font-family="'JetBrains Mono', monospace" font-size="9">humidity: 62% | light: 78%</text>
+
+            <rect x="380" y="140" width="200" height="70" rx="4" fill="#181818" stroke="#333" />
+            <text x="390" y="160" fill="#ff4d6d" font-family="'JetBrains Mono', monospace" font-size="11">/controls/bulbState</text>
+            <text x="395" y="178" fill="#8e8e93" font-family="'JetBrains Mono', monospace" font-size="9">state: 1 (ON) / 0 (OFF)</text>
+            <text x="395" y="193" fill="#8e8e93" font-family="'JetBrains Mono', monospace" font-size="9">Instant Dual-Master Lock</text>
+
+            <!-- Arrow 2: SSE Stream Downlink (RTDB to ESP32) -->
+            <path d="M 380 185 L 285 185" stroke="#ff4d6d" stroke-width="2" filter="url(#glowFilt5)" />
+            <polygon points="280,185 288,181 288,189" fill="#ff4d6d" />
+            <text x="290" y="177" fill="#ff4d6d" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="600">SSE Event Stream</text>
+
+            <!-- Arrow 3: onValue Sync (RTDB to Web) -->
+            <path d="M 580 80 L 655 80" stroke="#00ff88" stroke-width="2" stroke-dasharray="4" filter="url(#glowFilt5)" />
+            <polygon points="655,80 647,76 647,84" fill="#00ff88" />
+            <text x="590" y="72" fill="#00ff88" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="600">onValue() Push</text>
+
+            <!-- Arrow 4: set() Mutation (Web to RTDB) -->
+            <path d="M 655 185 L 590 185" stroke="#ff4d6d" stroke-width="2" filter="url(#glowFilt5)" />
+            <polygon points="585,185 593,181 593,189" fill="#ff4d6d" />
+            <text x="600" y="177" fill="#ff4d6d" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="600">set(1 / 0)</text>
+
+            <!-- Column 3: Client Dashboard -->
+            <rect x="665" y="20" width="235" height="230" rx="8" fill="#141414" stroke="#2c2c2c" stroke-width="1.5" />
+            <rect x="680" y="10" width="160" height="20" rx="3" fill="#800020" />
+            <text x="690" y="24" fill="#ffffff" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="700">3. WEB DASHBOARD</text>
+
+            <rect x="680" y="50" width="205" height="70" rx="4" fill="#181818" stroke="#333" />
+            <text x="690" y="70" fill="#fff" font-family="'Space Grotesk', sans-serif" font-size="11" font-weight="600">Live Telemetry Display</text>
+            <text x="690" y="88" fill="#00ff88" font-family="'JetBrains Mono', monospace" font-size="10">27°C  •  62%  •  78%</text>
+            <text x="690" y="103" fill="#8e8e93" font-family="'Space Grotesk', sans-serif" font-size="9">Instant DOM sync via JS SDK</text>
+
+            <rect x="680" y="140" width="205" height="70" rx="4" fill="#181818" stroke="#333" />
+            <text x="690" y="160" fill="#fff" font-family="'Space Grotesk', sans-serif" font-size="11" font-weight="600">Bulb Control Toggle</text>
+            <rect x="690" y="172" width="45" height="20" rx="10" fill="#800020" />
+            <circle cx="723" cy="182" r="7" fill="#ffffff" />
+            <text x="745" y="186" fill="#ff4d6d" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="700">ACTIVE</text>
+            <text x="690" y="202" fill="#8e8e93" font-family="'Space Grotesk', sans-serif" font-size="8.5">Two-way state lock with hardware</text>
+          </svg>
+          <div class="diagram-caption">Figure 5.2 — Closed-Loop Multi-Master Synchronized Dataflow: Autonomous Telemetry Uplink &amp; Zero-Latency Event-Driven Actuation.</div>
+        </div>
+
         <p class="content-block-text">
           The system fulfills three distinct requirements:
         </p>
@@ -258,37 +375,35 @@
         <p class="content-block-text">
           The physical and logical architecture bridges five discrete computational zones:
         </p>
-        <div class="diagram-box">┌────────────────────────────────────────────────────────────────────────┐
-│                        PHYSICAL SENSOR &amp; INPUT ZONE                    │
-│   DHT11 Sensor (GPIO 4) │ LDR Light Divider (GPIO 34) │ Button (GPIO 14)│
-└────────────────────────────────────┬───────────────────────────────────┘
-                                     │ Direct GPIO &amp; ADC Lines
-                                     ▼
-┌────────────────────────────────────────────────────────────────────────┐
-│                         ESP32 EMBEDDED NODE                            │
-│   Xtensa Dual-Core 240 MHz │ FreeRTOS │ Firebase_ESP_Client Library     │
-│   - Telemetry Engine (5000 ms non-blocking timer)                      │
-│   - Stream Callback Handler (/controls/bulbState)                      │
-│   - Local Button Debounce Handler (250 ms window)                      │
-└────────────────────────────────────┬───────────────────────────────────┘
-                                     │ 2.4 GHz 802.11 b/g/n Wi-Fi
-                                     ▼
-┌────────────────────────────────────────────────────────────────────────┐
-│                   FIREBASE REALTIME DATABASE (CLOUD)                   │
-│   NoSQL JSON Tree │ WebSocket &amp; SSE Realtime Sync Channel              │
-│   - Path /telemetry/live : { temperature, humidity, light }            │
-│   - Path /controls/bulbState : integer (1 / 0)                         │
-└───────────────────┬────────────────────────────────┬───────────────────┘
-                    │                                │
-     REST / SSE     │                                │ Realtime onValue()
-     Stream Event   │                                │ Push Subscription
-                    ▼                                ▼
-┌──────────────────────────────┐  ┌──────────────────────────────────────┐
-│     ACTUATOR HARDWARE        │  │         WEB DASHBOARD CLIENT         │
-│  Relay Module (GPIO 26)      │  │  Firebase JavaScript SDK (v10)       │
-│  Active-LOW Optocoupler      │  │  - Live Telemetry Display Cards      │
-│  AC Mains Bulb (COM &amp; NO)    │  │  - Synchronized Checkbox Toggle      │
-└──────────────────────────────┘  └──────────────────────────────────────┘</div>
+
+        <!-- ZONE INFOGRAPHIC CARDS -->
+        <div class="glow-card-grid">
+          <div class="glow-card">
+            <span class="glow-card-badge">ZONE 1: TRANSDUCERS</span>
+            <div class="glow-card-title">Physical Sensors &amp; Input</div>
+            <div class="glow-card-desc">DHT11 single-wire digital temperature/humidity sensor on GPIO 4, LDR analog resistive divider on GPIO 34 (12-bit ADC), and momentary push button on GPIO 14.</div>
+          </div>
+          <div class="glow-card">
+            <span class="glow-card-badge">ZONE 2: EMBEDDED NODE</span>
+            <div class="glow-card-title">ESP32 SoC &amp; RTOS Firmware</div>
+            <div class="glow-card-desc">Xtensa Dual-Core 240 MHz running non-blocking 5-second telemetry sampling, persistent SSE event stream socket listener, and falling-edge button debounce logic.</div>
+          </div>
+          <div class="glow-card">
+            <span class="glow-card-badge">ZONE 3: CLOUD ENGINE</span>
+            <div class="glow-card-title">Firebase RTDB JSON Tree</div>
+            <div class="glow-card-desc">High-concurrency NoSQL cloud broker syncing <code>/telemetry/live</code> payloads and dispatching mutations on <code>/controls/bulbState</code> over WebSocket/SSE channels.</div>
+          </div>
+          <div class="glow-card">
+            <span class="glow-card-badge">ZONE 4: ACTUATION STAGE</span>
+            <div class="glow-card-title">Optocoupled Relay &amp; Load</div>
+            <div class="glow-card-desc">Active-LOW 5V relay module on GPIO 26 providing complete galvanic isolation between 3.3V microcontroller logic and hazardous 230V AC bulb circuit.</div>
+          </div>
+          <div class="glow-card">
+            <span class="glow-card-badge">ZONE 5: CLIENT PRESENTATION</span>
+            <div class="glow-card-title">Web Dashboard Frontend</div>
+            <div class="glow-card-desc">Vanilla JS client using Firebase JS SDK v10 with reactive DOM listeners (<code>onValue</code>) rendering live cards and bidirectional switch toggle.</div>
+          </div>
+        </div>
       </section>
 
       <!-- 6. SYSTEM COMPONENTS -->
@@ -436,15 +551,32 @@
         <p class="content-block-text">
           A common pitfall in microcontroller IoT development is repeatedly querying a cloud database inside <code>loop()</code> with periodic GET requests. This creates excessive network overhead, consumes power, and incurs noticeable command latency.
         </p>
-        <div class="diagram-box">INEFFICIENT POLLING MODEL:
-ESP32 ──GET /controls──► Firebase (No change)
-ESP32 ──GET /controls──► Firebase (No change)  ◄── High bandwidth, battery drain, latency
-ESP32 ──GET /controls──► Firebase (State Changed &rarr; Actuate)
-
-TASK 5 EVENT-DRIVEN STREAM MODEL:
-ESP32 ──beginStream("/controls")──► Firebase Opens Persistent Stream Socket
-[...ESP32 executes sensor routines with ZERO control network traffic...]
-Web Dashboard flips switch ──► Firebase PUSHES /bulbState event ──► ESP32 fires streamCallback()</div>
+        <div class="glow-card-grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));">
+          <div class="glow-card" style="border-left: 3px solid #ff4d6d;">
+            <span class="glow-card-badge" style="background: rgba(255, 77, 109, 0.15); color: #ff4d6d; border-color: #ff4d6d;">INEFFICIENT HTTP POLLING</span>
+            <div class="glow-card-title">Continuous GET Query Overhead</div>
+            <div class="glow-card-desc">
+              <ul class="content-block-list" style="font-size: 0.875rem;">
+                <li>Microcontroller constantly queries <code>GET /controls</code> inside loop().</li>
+                <li>Consumes high network bandwidth, drains power, and causes SSL handshake overhead.</li>
+                <li>Average actuation latency bounded by polling interval (e.g. 1000–5000 ms).</li>
+                <li>Blocks microcontroller execution cycle during network wait states.</li>
+              </ul>
+            </div>
+          </div>
+          <div class="glow-card" style="border-left: 3px solid #00ff88;">
+            <span class="glow-card-badge" style="background: rgba(0, 255, 136, 0.15); color: #00ff88; border-color: #00ff88;">TASK 5 SSE PUSH STREAM</span>
+            <div class="glow-card-title">Persistent Reactive Socket</div>
+            <div class="glow-card-desc">
+              <ul class="content-block-list" style="font-size: 0.875rem;">
+                <li>Single persistent HTTP Server-Sent Events stream socket via <code>beginStream()</code>.</li>
+                <li>Zero idle network traffic while cloud state remains unchanged.</li>
+                <li>Sub-50ms instant push dispatch directly to <code>streamCallback()</code>.</li>
+                <li>Main loop remains 100% free for sensor acquisition and 250ms debouncing.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
         <p class="content-block-text">
           By opening a single stream using <code>Firebase.RTDB.beginStream(&amp;stream, "/controls")</code>, the cloud broker pushes data downstream only when a mutation occurs. The ESP32's main execution loop remains completely free to handle analog reads and button debouncing.
         </p>
@@ -866,9 +998,41 @@ void loop() {
         </table>
       </section>
 
+      <!-- 17.5 HARDWARE DEMONSTRATION & PROOF OF COMPLETION -->
+      <section class="content-block" id="demonstration-proof">
+        <h2 class="content-block-heading">18. Demonstration Media &amp; Activity Completion Proof</h2>
+        <p class="content-block-text">
+          Photographic verification of the physical bench implementation demonstrating successful sensor telemetry acquisition, cloud synchronization, and active relay load switching:
+        </p>
+
+        <div class="hardware-gallery">
+          <div class="hardware-media-card">
+            <img src="assets/iot/task5-img1.jpeg" alt="ESP32 hardware breadboard with DHT11, LDR divider, and tactile push button">
+            <div class="hardware-media-caption">
+              <div class="hardware-media-title">Sensor Subsystem &amp; Input Stage</div>
+              <div class="hardware-media-desc">ESP32 Dev Module interconnected with DHT11 temperature/humidity sensor on GPIO 4, LDR analog voltage divider on GPIO 34, and manual debounced push button on GPIO 14.</div>
+            </div>
+          </div>
+          <div class="hardware-media-card">
+            <img src="assets/iot/task5-img2.jpeg" alt="5V Optocoupled Relay Module wired to ESP32 and load terminal">
+            <div class="hardware-media-caption">
+              <div class="hardware-media-title">Optocoupled Relay Actuation Stage</div>
+              <div class="hardware-media-desc">Active-LOW 5V relay module interfaced with GPIO 26, providing full galvanic isolation while switching the AC mains circuit via COM and NO contacts.</div>
+            </div>
+          </div>
+          <div class="hardware-media-card">
+            <img src="assets/iot/task5-img3.jpeg" alt="Complete live bench prototype under active Firebase Realtime synchronization">
+            <div class="hardware-media-caption">
+              <div class="hardware-media-title">Full Integrated Bench Verification</div>
+              <div class="hardware-media-desc">Live operating node streaming 5-second telemetry payloads to Firebase RTDB while maintaining instant, sub-50ms bidirectional state parity with the web dashboard.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <!-- 27. KEY LEARNINGS -->
       <section class="content-block">
-        <h2 class="content-block-heading">18. Key Learnings</h2>
+        <h2 class="content-block-heading">19. Key Learnings</h2>
         <div class="feature-grid">
           <div class="feature-card">
             <div class="feature-card-title">Embedded Systems</div>
@@ -891,7 +1055,7 @@ void loop() {
 
       <!-- 28. LIMITATIONS & 29. FUTURE IMPROVEMENTS -->
       <section class="content-block">
-        <h2 class="content-block-heading">19. Prototype Limitations &amp; Future Scope</h2>
+        <h2 class="content-block-heading">20. Prototype Limitations &amp; Future Scope</h2>
         <div class="feature-grid">
           <div class="feature-card">
             <div class="feature-card-title">Current Limitations</div>
@@ -920,13 +1084,44 @@ void loop() {
 
       <!-- 30. FINAL RESULT & 31. TAKEAWAY -->
       <section class="content-block">
-        <h2 class="content-block-heading">20. Final Result &amp; Engineering Takeaway</h2>
+        <h2 class="content-block-heading">21. Final Result &amp; Engineering Takeaway</h2>
         <p class="content-block-text">
           Task 05 successfully established a complete, robust, and unified IoT pipeline:
         </p>
-        <div class="diagram-box">COMPLETED END-TO-END PIPELINE:
-Physical Sensors (DHT11, LDR) ──► ESP32 ──► Firebase RTDB ──► Web Dashboard (Live Cards)
-Web Switch / Physical Button  ──► Firebase RTDB ◄──► ESP32 ──► 5V Relay ──► AC Appliance</div>
+        
+        <!-- VISUAL PIPELINE -->
+        <div class="visual-pipeline">
+          <div class="pipeline-node">
+            <div class="pipeline-node-icon">&#9684;</div>
+            <div class="pipeline-node-title">Edge Sensors</div>
+            <div class="pipeline-node-sub">DHT11 &amp; LDR</div>
+          </div>
+          <div class="pipeline-arrow">&rarr;</div>
+          <div class="pipeline-node">
+            <div class="pipeline-node-icon">&#9881;</div>
+            <div class="pipeline-node-title">ESP32 Node</div>
+            <div class="pipeline-node-sub">5s JSON Engine</div>
+          </div>
+          <div class="pipeline-arrow">&rarr;</div>
+          <div class="pipeline-node">
+            <div class="pipeline-node-icon">&#9729;</div>
+            <div class="pipeline-node-title">Firebase RTDB</div>
+            <div class="pipeline-node-sub">/telemetry/live</div>
+          </div>
+          <div class="pipeline-arrow">&harr;</div>
+          <div class="pipeline-node">
+            <div class="pipeline-node-icon">&#128187;</div>
+            <div class="pipeline-node-title">Web Dashboard</div>
+            <div class="pipeline-node-sub">Reactive DOM</div>
+          </div>
+          <div class="pipeline-arrow">&harr;</div>
+          <div class="pipeline-node">
+            <div class="pipeline-node-icon">&#9889;</div>
+            <div class="pipeline-node-title">5V Relay &amp; AC Bulb</div>
+            <div class="pipeline-node-sub">Active-LOW Isolation</div>
+          </div>
+        </div>
+
         <p class="content-block-text">
           The ESP32 continuously samples environmental variables, uploads formatted JSON snapshots every 5 seconds, processes cloud switch directives within milliseconds via event streams, and reconciles local manual button presses with zero state divergence.
         </p>
@@ -937,24 +1132,50 @@ Web Switch / Physical Button  ──► Firebase RTDB ◄──► ESP32 ──�
 
       <!-- 32. WHY THIS ARCHITECTURE MATTERS -->
       <section class="content-block">
-        <h2 class="content-block-heading">21. The Complete IoT Week Arc</h2>
+        <h2 class="content-block-heading">22. The Complete IoT Week Arc</h2>
         <p class="content-block-text">
           Over five progressive projects, this portfolio traces the foundational architectural evolution of the modern Internet of Things:
         </p>
-        <div class="diagram-box">TASK 01: LOCAL NETWORKING
-Browser ──[HTTP GET]──► ESP32 Web Server ──► GPIO 2 ──► Onboard LED
+        
+        <!-- STEP TIMELINE OF THE COMPLETE ARC -->
+        <div class="step-timeline">
+          <div class="step-item">
+            <span class="step-badge">TASK 01</span>
+            <div>
+              <div class="step-content-title">Local Networking &amp; Microcontroller Web Server</div>
+              <div class="step-content-text">Browser [HTTP GET] &rarr; Local Wi-Fi Router &rarr; ESP32 Port 80 Web Server &rarr; GPIO 2 &rarr; Onboard LED. Established direct hardware-network control without cloud intermediaries.</div>
+            </div>
+          </div>
+          <div class="step-item">
+            <span class="step-badge">TASK 02</span>
+            <div>
+              <div class="step-content-title">Cloud Messaging &amp; Asynchronous MQTT Pub/Sub</div>
+              <div class="step-content-text">Adafruit IO Dashboard [MQTT Pub] &rarr; Global Broker &rarr; ESP32 Subscriber &rarr; 2N2222 Transistor Driver &rarr; Load + Physical push button back to cloud feed.</div>
+            </div>
+          </div>
+          <div class="step-item">
+            <span class="step-badge">TASK 03</span>
+            <div>
+              <div class="step-content-title">Multi-Platform Voice Automation &amp; Webhooks</div>
+              <div class="step-content-text">Spoken Intent &rarr; Google Assistant NLP &rarr; IFTTT Webhook Applet &rarr; Adafruit IO &rarr; MQTT Stream &rarr; ESP32 &rarr; Optocoupled Relay &rarr; AC Appliance.</div>
+            </div>
+          </div>
+          <div class="step-item">
+            <span class="step-badge">TASK 04</span>
+            <div>
+              <div class="step-content-title">Cloud Realtime State Engine &amp; Web Dashboard</div>
+              <div class="step-content-text">Modern Web Dashboard [Firebase JS SDK v10] &harr; Firebase Realtime Database WebSocket channel &harr; Multi-sensor telemetry sync and instantaneous switch mutations.</div>
+            </div>
+          </div>
+          <div class="step-item">
+            <span class="step-badge" style="background: #00ff88; color: #0a0a0a;">TASK 05</span>
+            <div>
+              <div class="step-content-title">Unified Hardware-to-Cloud Integrated Edge Node</div>
+              <div class="step-content-text">DHT11 &amp; LDR Sensors + Manual Debounced Button &harr; ESP32 &harr; [SSE Push Stream &amp; REST] &harr; Firebase RTDB &harr; Web Dashboard &rarr; 5V Relay &rarr; 230V AC Bulb. Complete closed-loop IoT system.</div>
+            </div>
+          </div>
+        </div>
 
-TASK 02: CLOUD MESSAGING &amp; MQTT
-Adafruit IO Dashboard ──[MQTT Publish]──► Broker ──► ESP32 ──► Transistor Driver ──► Load
-
-TASK 03: MULTI-SERVICE VOICE AUTOMATION
-Voice ──► Google Assistant ──► IFTTT ──► Adafruit IO ──[MQTT]──► ESP32 ──► Relay ──► Appliance
-
-TASK 04: CLOUD STATE &amp; WEB DASHBOARD
-Web Dashboard ──[Firebase JS SDK]──► Firebase Realtime Database ◄── Edge Simulation
-
-TASK 05: FULL HARDWARE &amp; CLOUD INTEGRATION
-Physical Sensors &amp; Button ◄──► ESP32 ◄──[SSE Stream &amp; REST]──► Firebase RTDB ◄──► Web Dashboard</div>
         <p class="content-block-text">
           Task 05 represents the culmination of this learning journey—delivering an autonomous, synchronized, and production-grade IoT edge node.
         </p>

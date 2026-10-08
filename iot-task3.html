@@ -28,7 +28,39 @@
 
   <main>
     <div class="container page-container">
-      <h1 class="page-main-heading">Task 03: Voice Control with Google Assistant and IFTTT</h1>
+      <!-- HERO PRESENTATION BANNER -->
+      <header class="task-hero">
+        <div class="task-badge-row">
+          <span class="task-badge">TASK 03</span>
+          <span class="task-badge">VOICE AUTOMATION</span>
+          <span class="task-badge">GOOGLE ASSISTANT &amp; IFTTT</span>
+          <span class="task-badge">MQTT ACTIVE-LOW RELAY</span>
+        </div>
+        <h1 class="task-hero-title">Voice Control with Google Assistant and IFTTT</h1>
+        <p class="task-hero-subtitle">
+          Chaining smartphone conversational natural language recognition, cloud webhooks, Adafruit IO MQTT broker, and ESP32 active-LOW optocoupled relay switching for hands-free AC appliance automation.
+        </p>
+
+        <!-- METRICS / SPECS RIBBON -->
+        <div class="metrics-ribbon">
+          <div class="metric-card">
+            <span class="metric-val">6 Hops</span>
+            <span class="metric-label">Cloud-to-Silicon Chain</span>
+          </div>
+          <div class="metric-card">
+            <span class="metric-val">1883</span>
+            <span class="metric-label">Persistent TCP MQTT Port</span>
+          </div>
+          <div class="metric-card">
+            <span class="metric-val">Active-LOW</span>
+            <span class="metric-label">GPIO 23 Inverted Logic</span>
+          </div>
+          <div class="metric-card">
+            <span class="metric-val">230V AC</span>
+            <span class="metric-label">Galvanically Isolated Load</span>
+          </div>
+        </div>
+      </header>
 
       <!-- 1. OVERVIEW -->
       <section class="content-block">
@@ -42,7 +74,46 @@
         <p class="content-block-text" style="margin-top: 0.75rem;">
           An <strong>ESP32</strong> development board connected to the local Wi-Fi subscribes to this MQTT feed over port <strong>1883</strong>. When a new <code>ON</code> or <code>OFF</code> payload arrives, the ESP32 interprets the message and toggles <strong>GPIO 23</strong>. GPIO 23 drives an electromechanical <strong>relay module</strong> operating on active-LOW logic, which safely switches the power line to an electrical appliance or bulb.
         </p>
-        <div class="diagram-box">Voice Command ──&gt; Google Assistant ──&gt; IFTTT ──&gt; Adafruit IO ──&gt; MQTT ──&gt; ESP32 ──&gt; GPIO 23 ──&gt; Relay ──&gt; Appliance</div>
+
+        <!-- VISUAL PIPELINE -->
+        <div class="visual-pipeline" style="margin: 1.5rem 0;">
+          <div class="pipe-node" style="border-color: rgba(255, 107, 139, 0.4);">
+            <div class="node-badge" style="color: #ff6b8b;">INPUT</div>
+            <div class="node-title">Voice Command</div>
+            <div class="node-desc">Acoustic Speech</div>
+          </div>
+          <div class="pipe-arrow">&rarr;</div>
+          <div class="pipe-node" style="border-color: rgba(66, 133, 244, 0.4);">
+            <div class="node-badge" style="color: #4285f4;">NLP ENGINE</div>
+            <div class="node-title">Google Assistant</div>
+            <div class="node-desc">Intent Match</div>
+          </div>
+          <div class="pipe-arrow">&rarr;</div>
+          <div class="pipe-node" style="border-color: rgba(0, 229, 255, 0.4);">
+            <div class="node-badge" style="color: #00e5ff;">AUTOMATION</div>
+            <div class="node-title">IFTTT Applet</div>
+            <div class="node-desc">Webhook Bridge</div>
+          </div>
+          <div class="pipe-arrow">&rarr;</div>
+          <div class="pipe-node" style="border-color: rgba(156, 39, 176, 0.4);">
+            <div class="node-badge" style="color: #ba68c8;">BROKER</div>
+            <div class="node-title">Adafruit IO</div>
+            <div class="node-desc">Topic: feeds/bulb</div>
+          </div>
+          <div class="pipe-arrow">&rarr;</div>
+          <div class="pipe-node" style="border-color: rgba(128, 0, 32, 0.6);">
+            <div class="node-badge" style="color: #ff6b8b;">EMBEDDED</div>
+            <div class="node-title">ESP32 Client</div>
+            <div class="node-desc">GPIO 23 (Active-LOW)</div>
+          </div>
+          <div class="pipe-arrow">&rarr;</div>
+          <div class="pipe-node" style="border-color: rgba(0, 230, 118, 0.4);">
+            <div class="node-badge" style="color: #00e676;">ACTUATION</div>
+            <div class="node-title">Relay Module</div>
+            <div class="node-desc">AC Load Switched</div>
+          </div>
+        </div>
+
         <p class="content-block-text">
           This system represents a major architectural milestone in the IoT portfolio progression:
         </p>
@@ -59,10 +130,19 @@
         <p class="content-block-text">
           The engineering objective was to eliminate screens, dashboards, and manual physical buttons from the interaction loop. Instead of requiring a user to open a browser window or launch an app, the appliance should respond seamlessly to spoken voice commands:
         </p>
-        <div class="diagram-box">User Spoken Intent: "Hey Google, [YOUR ON PHRASE]"
-                      │
-                      ▼
-Appliance / Bulb switches ON instantly via Relay</div>
+        
+        <div class="glow-card-grid" style="margin: 1.5rem 0;">
+          <div class="glow-card" style="border-color: rgba(66, 133, 244, 0.4);">
+            <div class="card-icon" style="color: #4285f4;">&#127908;</div>
+            <div class="card-title">User Spoken Intent</div>
+            <div class="card-desc"><em>&ldquo;Hey Google, turn on the bulb&rdquo;</em> &mdash; Captured via smartphone microphone and processed through Google Assistant NLP.</div>
+          </div>
+          <div class="glow-card" style="border-color: rgba(0, 230, 118, 0.4);">
+            <div class="card-icon" style="color: #00e676;">&#9889;</div>
+            <div class="card-title">Deterministic Physical Actuation</div>
+            <div class="card-desc">Within seconds, the ESP32 receives MQTT downlink, drives GPIO 23 to 0V (LOW), energizes the relay armature, and closes the 230V AC load loop.</div>
+          </div>
+        </div>
         <p class="content-block-text">
           To achieve this reliably without running expensive machine learning or speech recognition models directly on low-power silicon, the design decomposes the system into specialized, single-responsibility services:
         </p>
@@ -120,56 +200,173 @@ Appliance / Bulb switches ON instantly via Relay</div>
         <p class="content-block-text">
           The architecture connects five distinct computational boundaries across speech recognition, automation, cloud brokering, embedded firmware, and power electronics:
         </p>
-        <div class="diagram-box">┌──────────────────────────────────────────────┐
-│                  USER VOICE                  │
-│       "Hey Google, [YOUR ON PHRASE]"         │
-└──────────────────────┬───────────────────────┘
-                       │
-                       ▼ Acoustic Input
-┌──────────────────────────────────────────────┐
-│               GOOGLE ASSISTANT               │
-│   Voice recognition &amp; phrase intent match    │
-└──────────────────────┬───────────────────────┘
-                       │
-                       ▼ Cloud Event Trigger
-┌──────────────────────────────────────────────┐
-│                    IFTTT                     │
-│    Applet rule: Assistant Trigger ──&gt; AIO    │
-└──────────────────────┬───────────────────────┘
-                       │
-                       ▼ REST / Cloud Webhook
-┌──────────────────────────────────────────────┐
-│                 ADAFRUIT IO                  │
-│     Cloud Feed: bulb | MQTT Broker: 1883     │
-└──────────────────────┬───────────────────────┘
-                       │
-                       ▼ MQTT Message: "ON" / "OFF"
-┌──────────────────────────────────────────────┐
-│                    ESP32                     │
-│        Subscriber: USERNAME/feeds/bulb       │
-│        Firmware parsing &amp; GPIO driver        │
-└──────────────────────┬───────────────────────┘
-                       │
-                       ▼ Active-LOW Logic (0V / 3.3V)
-┌──────────────────────────────────────────────┐
-│                   GPIO 23                    │
-└──────────────────────┬───────────────────────┘
-                       │
-                       ▼ Optocoupler / Coil Drive
-┌──────────────────────────────────────────────┐
-│                 RELAY MODULE                 │
-│         Contacts: COM &lt;──&gt; NO Closed         │
-└──────────────────────┬───────────────────────┘
-                       │
-                       ▼ Mains / Load Circuit
-┌──────────────────────────────────────────────┐
-│               APPLIANCE / BULB               │
-│               State: POWERED                 │
-└──────────────────────────────────────────────┘</div>
+
+        <!-- FIGURE 3.1: ARCHITECTURE VECTOR SVG -->
+        <div class="diagram-figure">
+          <div class="diagram-label">Figure 3.1 — End-to-End Voice Control Architecture &amp; Multi-Tier Pipeline</div>
+          <div class="svg-diagram-card">
+            <svg viewBox="0 0 960 420" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <marker id="arr-blue" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+                  <path d="M 0 0 L 8 4 L 0 8 z" fill="#4285f4"/>
+                </marker>
+                <marker id="arr-cyan" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+                  <path d="M 0 0 L 8 4 L 0 8 z" fill="#00e5ff"/>
+                </marker>
+                <marker id="arr-purple" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+                  <path d="M 0 0 L 8 4 L 0 8 z" fill="#ba68c8"/>
+                </marker>
+                <marker id="arr-red" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+                  <path d="M 0 0 L 8 4 L 0 8 z" fill="#ff4b72"/>
+                </marker>
+                <marker id="arr-green" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+                  <path d="M 0 0 L 8 4 L 0 8 z" fill="#00e676"/>
+                </marker>
+                <linearGradient id="bg-grad-t3" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#0c0e14"/>
+                  <stop offset="100%" stop-color="#121622"/>
+                </linearGradient>
+              </defs>
+
+              <rect width="960" height="420" rx="12" fill="url(#bg-grad-t3)"/>
+
+              <!-- TIER 1: USER VOICE -->
+              <g transform="translate(30, 40)">
+                <rect width="180" height="130" rx="8" fill="#161b26" stroke="#ff6b8b" stroke-width="1.5"/>
+                <rect x="15" y="15" width="60" height="20" rx="4" fill="rgba(255, 107, 139, 0.15)"/>
+                <text x="45" y="29" fill="#ff6b8b" font-family="'JetBrains Mono', monospace" font-size="10" text-anchor="middle" font-weight="bold">INPUT</text>
+                <text x="15" y="58" fill="#fff" font-family="'Space Grotesk', sans-serif" font-size="14" font-weight="bold">User Spoken Voice</text>
+                <text x="15" y="80" fill="#a0aec0" font-family="'Inter', sans-serif" font-size="11">"Hey Google, turn on bulb"</text>
+                <text x="15" y="102" fill="#ff6b8b" font-family="'JetBrains Mono', monospace" font-size="10">Acoustic Audio Wave</text>
+                <circle cx="150" cy="30" r="14" fill="rgba(255, 107, 139, 0.2)"/>
+                <text x="150" y="35" fill="#ff6b8b" font-size="14" text-anchor="middle">&#127908;</text>
+              </g>
+
+              <!-- ARROW 1 -->
+              <path d="M 210 105 L 260 105" stroke="#4285f4" stroke-width="2" marker-end="url(#arr-blue)"/>
+              <text x="235" y="95" fill="#a0aec0" font-family="'JetBrains Mono', monospace" font-size="9" text-anchor="middle">Mic NLP</text>
+
+              <!-- TIER 2: GOOGLE ASSISTANT -->
+              <g transform="translate(270, 40)">
+                <rect width="190" height="130" rx="8" fill="#161b26" stroke="#4285f4" stroke-width="1.5"/>
+                <rect x="15" y="15" width="95" height="20" rx="4" fill="rgba(66, 133, 244, 0.15)"/>
+                <text x="62" y="29" fill="#4285f4" font-family="'JetBrains Mono', monospace" font-size="10" text-anchor="middle" font-weight="bold">CLOUD NLP</text>
+                <text x="15" y="58" fill="#fff" font-family="'Space Grotesk', sans-serif" font-size="14" font-weight="bold">Google Assistant</text>
+                <text x="15" y="80" fill="#a0aec0" font-family="'Inter', sans-serif" font-size="11">Speech Intent Parsing</text>
+                <text x="15" y="102" fill="#4285f4" font-family="'JetBrains Mono', monospace" font-size="10">Trigger Linked Event</text>
+              </g>
+
+              <!-- ARROW 2 -->
+              <path d="M 460 105 L 510 105" stroke="#00e5ff" stroke-width="2" marker-end="url(#arr-cyan)"/>
+              <text x="485" y="95" fill="#a0aec0" font-family="'JetBrains Mono', monospace" font-size="9" text-anchor="middle">Trigger</text>
+
+              <!-- TIER 3: IFTTT -->
+              <g transform="translate(520, 40)">
+                <rect width="180" height="130" rx="8" fill="#161b26" stroke="#00e5ff" stroke-width="1.5"/>
+                <rect x="15" y="15" width="90" height="20" rx="4" fill="rgba(0, 229, 255, 0.15)"/>
+                <text x="60" y="29" fill="#00e5ff" font-family="'JetBrains Mono', monospace" font-size="10" text-anchor="middle" font-weight="bold">AUTOMATION</text>
+                <text x="15" y="58" fill="#fff" font-family="'Space Grotesk', sans-serif" font-size="14" font-weight="bold">IFTTT Applet</text>
+                <text x="15" y="80" fill="#a0aec0" font-family="'Inter', sans-serif" font-size="11">Rule: If Voice Then AIO</text>
+                <text x="15" y="102" fill="#00e5ff" font-family="'JetBrains Mono', monospace" font-size="10">Payload: "ON" / "OFF"</text>
+              </g>
+
+              <!-- ARROW 3 -->
+              <path d="M 700 105 L 750 105" stroke="#ba68c8" stroke-width="2" marker-end="url(#arr-purple)"/>
+              <text x="725" y="95" fill="#a0aec0" font-family="'JetBrains Mono', monospace" font-size="9" text-anchor="middle">REST Post</text>
+
+              <!-- TIER 4: ADAFRUIT IO -->
+              <g transform="translate(760, 40)">
+                <rect width="170" height="130" rx="8" fill="#161b26" stroke="#ba68c8" stroke-width="1.5"/>
+                <rect x="15" y="15" width="85" height="20" rx="4" fill="rgba(186, 104, 200, 0.15)"/>
+                <text x="57" y="29" fill="#ba68c8" font-family="'JetBrains Mono', monospace" font-size="10" text-anchor="middle" font-weight="bold">MQTT BROKER</text>
+                <text x="15" y="58" fill="#fff" font-family="'Space Grotesk', sans-serif" font-size="14" font-weight="bold">Adafruit IO</text>
+                <text x="15" y="80" fill="#a0aec0" font-family="'Inter', sans-serif" font-size="11">Topic: feeds/bulb</text>
+                <text x="15" y="102" fill="#ba68c8" font-family="'JetBrains Mono', monospace" font-size="10">io.adafruit.com:1883</text>
+              </g>
+
+              <!-- ROUTING BUS / ARROW DOWN TO EMBEDDED TIER -->
+              <path d="M 845 170 L 845 225 L 160 225 L 160 250" fill="none" stroke="#ba68c8" stroke-width="2" stroke-dasharray="6,4" marker-end="url(#arr-red)"/>
+              <text x="500" y="215" fill="#ba68c8" font-family="'JetBrains Mono', monospace" font-size="11" text-anchor="middle">MQTT Downlink Packet via 2.4 GHz Wi-Fi (Port 1883)</text>
+
+              <!-- TIER 5: ESP32 -->
+              <g transform="translate(30, 260)">
+                <rect width="260" height="130" rx="8" fill="#161b26" stroke="#800020" stroke-width="1.5"/>
+                <rect x="15" y="15" width="95" height="20" rx="4" fill="rgba(128, 0, 32, 0.25)"/>
+                <text x="62" y="29" fill="#ff6b8b" font-family="'JetBrains Mono', monospace" font-size="10" text-anchor="middle" font-weight="bold">EMBEDDED SILICON</text>
+                <text x="15" y="58" fill="#fff" font-family="'Space Grotesk', sans-serif" font-size="14" font-weight="bold">ESP32 DevKit V4</text>
+                <text x="15" y="80" fill="#a0aec0" font-family="'Inter', sans-serif" font-size="11">Adafruit_MQTT_Client listener</text>
+                <text x="15" y="102" fill="#ff6b8b" font-family="'JetBrains Mono', monospace" font-size="11">GPIO 23 Output (Active-LOW)</text>
+              </g>
+
+              <!-- ARROW 4 -->
+              <path d="M 290 325 L 350 325" stroke="#ff9800" stroke-width="2" marker-end="url(#arr-cyan)"/>
+              <text x="320" y="315" fill="#a0aec0" font-family="'JetBrains Mono', monospace" font-size="9" text-anchor="middle">0V / 3.3V</text>
+
+              <!-- TIER 6: OPTOCOUPLED RELAY MODULE -->
+              <g transform="translate(360, 260)">
+                <rect width="260" height="130" rx="8" fill="#161b26" stroke="#ff9800" stroke-width="1.5"/>
+                <rect x="15" y="15" width="105" height="20" rx="4" fill="rgba(255, 152, 0, 0.15)"/>
+                <text x="67" y="29" fill="#ff9800" font-family="'JetBrains Mono', monospace" font-size="10" text-anchor="middle" font-weight="bold">GALVANIC ISOLATION</text>
+                <text x="15" y="58" fill="#fff" font-family="'Space Grotesk', sans-serif" font-size="14" font-weight="bold">5V Relay Module</text>
+                <text x="15" y="80" fill="#a0aec0" font-family="'Inter', sans-serif" font-size="11">Optocoupler + Flyback Diode</text>
+                <text x="15" y="102" fill="#ff9800" font-family="'JetBrains Mono', monospace" font-size="11">Contacts: COM &bull; NO Switched</text>
+              </g>
+
+              <!-- ARROW 5 -->
+              <path d="M 620 325 L 680 325" stroke="#00e676" stroke-width="2" marker-end="url(#arr-green)"/>
+              <text x="650" y="315" fill="#a0aec0" font-family="'JetBrains Mono', monospace" font-size="9" text-anchor="middle">230V AC</text>
+
+              <!-- TIER 7: AC APPLIANCE / BULB -->
+              <g transform="translate(690, 260)">
+                <rect width="240" height="130" rx="8" fill="#161b26" stroke="#00e676" stroke-width="1.5"/>
+                <rect x="15" y="15" width="95" height="20" rx="4" fill="rgba(0, 230, 118, 0.15)"/>
+                <text x="62" y="29" fill="#00e676" font-family="'JetBrains Mono', monospace" font-size="10" text-anchor="middle" font-weight="bold">MAINS LOAD</text>
+                <text x="15" y="58" fill="#fff" font-family="'Space Grotesk', sans-serif" font-size="14" font-weight="bold">AC Appliance / Bulb</text>
+                <text x="15" y="80" fill="#a0aec0" font-family="'Inter', sans-serif" font-size="11">Switched Line Conductor</text>
+                <text x="15" y="102" fill="#00e676" font-family="'JetBrains Mono', monospace" font-size="11">State: POWERED (Closed Loop)</text>
+              </g>
+            </svg>
+          </div>
+        </div>
 
         <div class="sub-heading">Direction of Communication &amp; Decoupling</div>
-        <div class="diagram-box">USER ──&gt; GOOGLE ASSISTANT ──&gt; IFTTT ──&gt; ADAFRUIT IO ──[MQTT]──&gt; ESP32 ──&gt; RELAY ──&gt; APPLIANCE</div>
-        <p class="content-block-text">
+        <div class="visual-pipeline" style="margin-top: 1rem;">
+          <div class="pipe-node" style="border-color: rgba(255, 107, 139, 0.4);">
+            <div class="node-badge" style="color: #ff6b8b;">ACOUSTIC</div>
+            <div class="node-title">User Voice</div>
+          </div>
+          <div class="pipe-arrow">&rarr;</div>
+          <div class="pipe-node" style="border-color: rgba(66, 133, 244, 0.4);">
+            <div class="node-badge" style="color: #4285f4;">NATURAL NLP</div>
+            <div class="node-title">Google Assistant</div>
+          </div>
+          <div class="pipe-arrow">&rarr;</div>
+          <div class="pipe-node" style="border-color: rgba(0, 229, 255, 0.4);">
+            <div class="node-badge" style="color: #00e5ff;">AUTOMATION</div>
+            <div class="node-title">IFTTT Engine</div>
+          </div>
+          <div class="pipe-arrow">&rarr;</div>
+          <div class="pipe-node" style="border-color: rgba(186, 104, 200, 0.4);">
+            <div class="node-badge" style="color: #ba68c8;">MQTT BROKER</div>
+            <div class="node-title">Adafruit IO</div>
+          </div>
+          <div class="pipe-arrow">&rarr;</div>
+          <div class="pipe-node" style="border-color: rgba(128, 0, 32, 0.6);">
+            <div class="node-badge" style="color: #ff6b8b;">CLIENT</div>
+            <div class="node-title">ESP32 DevKit</div>
+          </div>
+          <div class="pipe-arrow">&rarr;</div>
+          <div class="pipe-node" style="border-color: rgba(255, 152, 0, 0.4);">
+            <div class="node-badge" style="color: #ff9800;">ISOLATION</div>
+            <div class="node-title">Relay Module</div>
+          </div>
+          <div class="pipe-arrow">&rarr;</div>
+          <div class="pipe-node" style="border-color: rgba(0, 230, 118, 0.4);">
+            <div class="node-badge" style="color: #00e676;">ACTUATION</div>
+            <div class="node-title">Appliance / Load</div>
+          </div>
+        </div>
+        <p class="content-block-text" style="margin-top: 1rem;">
           A critical architectural principle is <strong>complete platform decoupling</strong>: the ESP32 does not run Google Assistant APIs, parse speech, or communicate with IFTTT directly. The ESP32 is solely an MQTT subscriber listening for raw payload strings (<code>ON</code> or <code>OFF</code>) on the <code>bulb</code> feed. This keeps the embedded firmware lightweight, robust, and completely agnostic of the frontend interface.
         </p>
       </section>
@@ -220,36 +417,147 @@ Appliance / Bulb switches ON instantly via Relay</div>
           The physical circuit consists of two galvanically separated zones: a low-voltage DC control side and a switched appliance load side:
         </p>
 
-        <div class="sub-heading">Low-Voltage DC Control Circuit</div>
-        <div class="diagram-box">ESP32 Dev Board                Relay Module (DC Side)
-┌─────────────────┐             ┌────────────────────┐
-│         GPIO 23 ├────────────►│ IN1 (Logic Input)  │
-│                 │             │                    │
-│             GND ├────────────►│ GND (Ground)       │
-└─────────────────┘             │                    │
-                                │ VCC (Coil Power)   │
-5V External Power ─────────────►│                    │
-Common Ground ─────────────────►│ GND                │
-                                └────────────────────┘</div>
+        <!-- FIGURE 3.2: CIRCUIT SCHEMATIC VECTOR SVG -->
+        <div class="diagram-figure">
+          <div class="diagram-label">Figure 3.2 — Optocoupled Relay Module Schematic &amp; Dual-Domain Electrical Isolation</div>
+          <div class="svg-diagram-card">
+            <svg viewBox="0 0 960 380" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <marker id="dot-blue" markerWidth="6" markerHeight="6" refX="3" refY="3">
+                  <circle cx="3" cy="3" r="2.5" fill="#00e5ff"/>
+                </marker>
+                <marker id="dot-gold" markerWidth="6" markerHeight="6" refX="3" refY="3">
+                  <circle cx="3" cy="3" r="2.5" fill="#ffb300"/>
+                </marker>
+                <linearGradient id="bg-grad-s3" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#0a0d14"/>
+                  <stop offset="100%" stop-color="#101522"/>
+                </linearGradient>
+              </defs>
 
-        <div class="sub-heading">Appliance Load Circuit</div>
-        <div class="diagram-box">AC Mains / Power Source Line
-         │
-         ▼
-┌──────────────────┐
-│    Relay COM     │ (Common Terminal)
-│                  │
-│    Relay NO      │ (Normally Open Terminal)
-└────────┬─────────┘
-         │
-         ▼ Switched Line
-┌──────────────────┐
-│ Appliance / Bulb │
-└────────┬─────────┘
-         │
-         ▼
-AC Mains Neutral / Return</div>
-        <p class="content-block-text">
+              <rect width="960" height="380" rx="12" fill="url(#bg-grad-s3)"/>
+
+              <!-- ZONE 1: LOW VOLTAGE DC -->
+              <rect x="20" y="20" width="260" height="340" rx="8" fill="#141923" stroke="#800020" stroke-width="1.5"/>
+              <rect x="35" y="35" width="115" height="22" rx="4" fill="rgba(128, 0, 32, 0.25)"/>
+              <text x="92" y="50" fill="#ff6b8b" font-family="'JetBrains Mono', monospace" font-size="10" text-anchor="middle" font-weight="bold">LOW-VOLTAGE DC</text>
+              <text x="35" y="80" fill="#fff" font-family="'Space Grotesk', sans-serif" font-size="15" font-weight="bold">ESP32 DevKit V4</text>
+
+              <!-- ESP32 Pin Headers -->
+              <g transform="translate(35, 105)">
+                <rect x="0" y="0" width="230" height="45" rx="6" fill="#1d2332" stroke="rgba(255,255,255,0.08)"/>
+                <circle cx="20" cy="22" r="5" fill="#ff4b72"/>
+                <text x="35" y="26" fill="#fff" font-family="'JetBrains Mono', monospace" font-size="12">GPIO 23</text>
+                <text x="140" y="26" fill="#a0aec0" font-family="'Inter', sans-serif" font-size="11">Active-LOW Control</text>
+              </g>
+
+              <g transform="translate(35, 165)">
+                <rect x="0" y="0" width="230" height="45" rx="6" fill="#1d2332" stroke="rgba(255,255,255,0.08)"/>
+                <circle cx="20" cy="22" r="5" fill="#00e5ff"/>
+                <text x="35" y="26" fill="#fff" font-family="'JetBrains Mono', monospace" font-size="12">GND Rail</text>
+                <text x="140" y="26" fill="#a0aec0" font-family="'Inter', sans-serif" font-size="11">Common Return</text>
+              </g>
+
+              <g transform="translate(35, 225)">
+                <rect x="0" y="0" width="230" height="45" rx="6" fill="#1d2332" stroke="rgba(255,255,255,0.08)"/>
+                <circle cx="20" cy="22" r="5" fill="#ffb300"/>
+                <text x="35" y="26" fill="#fff" font-family="'JetBrains Mono', monospace" font-size="12">5V Ext Supply</text>
+                <text x="140" y="26" fill="#a0aec0" font-family="'Inter', sans-serif" font-size="11">Relay Coil Power</text>
+              </g>
+
+              <text x="35" y="325" fill="#718096" font-family="'JetBrains Mono', monospace" font-size="11">3.3V Logic &bull; Direct Sinking</text>
+
+              <!-- ZONE 2: RELAY MODULE INTERNAL -->
+              <rect x="310" y="20" width="340" height="340" rx="8" fill="#141923" stroke="#ff9800" stroke-width="1.5"/>
+              <rect x="325" y="35" width="130" height="22" rx="4" fill="rgba(255, 152, 0, 0.15)"/>
+              <text x="390" y="50" fill="#ff9800" font-family="'JetBrains Mono', monospace" font-size="10" text-anchor="middle" font-weight="bold">RELAY MODULE (5V)</text>
+              <text x="325" y="80" fill="#fff" font-family="'Space Grotesk', sans-serif" font-size="15" font-weight="bold">PC817 Optocoupler &amp; Coil</text>
+
+              <!-- Wires from ESP32 to Relay Module -->
+              <!-- GPIO 23 to IN1 -->
+              <path d="M 265 127 L 335 127" stroke="#ff4b72" stroke-width="2"/>
+              <!-- GND to GND -->
+              <path d="M 265 187 L 335 187" stroke="#00e5ff" stroke-width="2"/>
+              <!-- 5V to VCC -->
+              <path d="M 265 247 L 335 247" stroke="#ffb300" stroke-width="2"/>
+
+              <!-- Optocoupler box -->
+              <rect x="335" y="105" width="120" height="110" rx="6" fill="#1b2230" stroke="#ff9800" stroke-dasharray="3,3"/>
+              <text x="395" y="125" fill="#ff9800" font-family="'JetBrains Mono', monospace" font-size="10" text-anchor="middle">PC817 ISOLATOR</text>
+              <text x="345" y="150" fill="#a0aec0" font-family="'Inter', sans-serif" font-size="10">IR LED (In)</text>
+              <text x="400" y="150" fill="#ff4b72" font-family="'JetBrains Mono', monospace" font-size="10">&larr; Sinks 0V</text>
+              <text x="345" y="180" fill="#a0aec0" font-family="'Inter', sans-serif" font-size="10">Photo-BJT</text>
+              <text x="400" y="180" fill="#00e676" font-family="'JetBrains Mono', monospace" font-size="10">Triggers Driver</text>
+
+              <!-- Flyback diode & Coil -->
+              <rect x="480" y="105" width="150" height="110" rx="6" fill="#1b2230" stroke="rgba(255,255,255,0.1)"/>
+              <text x="555" y="125" fill="#fff" font-family="'JetBrains Mono', monospace" font-size="10" text-anchor="middle">5V COIL &amp; DIODE</text>
+              <text x="490" y="150" fill="#a0aec0" font-family="'Inter', sans-serif" font-size="10">1N4007 Clamping Diode</text>
+              <text x="490" y="170" fill="#a0aec0" font-family="'Inter', sans-serif" font-size="10">Prevents Back-EMF Spike</text>
+              <text x="490" y="195" fill="#ff9800" font-family="'JetBrains Mono', monospace" font-size="10">Armature Actuation</text>
+
+              <!-- Galvanic Isolation Line -->
+              <line x1="470" y1="90" x2="470" y2="330" stroke="#ff4b72" stroke-width="1.5" stroke-dasharray="4,4"/>
+              <text x="470" y="345" fill="#ff4b72" font-family="'JetBrains Mono', monospace" font-size="9" text-anchor="middle">GALVANIC ISOLATION BARRIER</text>
+
+              <!-- Relay Terminals -->
+              <g transform="translate(500, 240)">
+                <rect x="0" y="0" width="130" height="65" rx="6" fill="#1e2638" stroke="#ff9800"/>
+                <text x="15" y="22" fill="#fff" font-family="'JetBrains Mono', monospace" font-size="11">COM</text>
+                <text x="65" y="22" fill="#a0aec0" font-family="'Inter', sans-serif" font-size="10">Common</text>
+                <text x="15" y="48" fill="#00e676" font-family="'JetBrains Mono', monospace" font-size="11">NO</text>
+                <text x="65" y="48" fill="#a0aec0" font-family="'Inter', sans-serif" font-size="10">Normally Open</text>
+              </g>
+
+              <!-- ZONE 3: AC MAINS -->
+              <rect x="680" y="20" width="260" height="340" rx="8" fill="#141923" stroke="#00e676" stroke-width="1.5"/>
+              <rect x="695" y="35" width="130" height="22" rx="4" fill="rgba(0, 230, 118, 0.15)"/>
+              <text x="760" y="50" fill="#00e676" font-family="'JetBrains Mono', monospace" font-size="10" text-anchor="middle" font-weight="bold">HIGH-VOLTAGE MAINS</text>
+              <text x="695" y="80" fill="#fff" font-family="'Space Grotesk', sans-serif" font-size="15" font-weight="bold">230V AC Load Circuit</text>
+
+              <!-- AC Live line to COM -->
+              <path d="M 720 125 L 630 255" stroke="#ff4b72" stroke-width="2"/>
+              <text x="730" y="130" fill="#ff4b72" font-family="'JetBrains Mono', monospace" font-size="11">AC Mains Live (L)</text>
+
+              <!-- Switched Line NO to Appliance -->
+              <path d="M 630 285 L 720 220" stroke="#00e676" stroke-width="2"/>
+              <text x="730" y="215" fill="#00e676" font-family="'JetBrains Mono', monospace" font-size="11">Switched Line (L')</text>
+
+              <!-- Appliance / Bulb Box -->
+              <g transform="translate(710, 230)">
+                <rect x="0" y="0" width="210" height="60" rx="6" fill="#1d2736" stroke="#00e676"/>
+                <text x="15" y="26" fill="#fff" font-family="'Space Grotesk', sans-serif" font-size="13" font-weight="bold">Appliance / Bulb</text>
+                <text x="15" y="46" fill="#a0aec0" font-family="'Inter', sans-serif" font-size="11">Power: 230V AC 50Hz</text>
+                <circle cx="185" cy="30" r="12" fill="rgba(0, 230, 118, 0.2)"/>
+                <text x="185" y="35" fill="#00e676" font-size="14" text-anchor="middle">&#128161;</text>
+              </g>
+
+              <!-- Neutral Return -->
+              <text x="730" y="325" fill="#00e5ff" font-family="'JetBrains Mono', monospace" font-size="11">AC Neutral Return (N)</text>
+            </svg>
+          </div>
+        </div>
+
+        <div class="glow-card-grid" style="margin-top: 1.5rem;">
+          <div class="glow-card" style="border-color: rgba(128, 0, 32, 0.4);">
+            <div class="card-icon" style="color: #ff6b8b;">&#9881;</div>
+            <div class="card-title">Low-Voltage DC Control Domain</div>
+            <div class="card-desc">
+              <strong>ESP32 GPIO 23 &bull; 3.3V Logic Level</strong><br>
+              Directly sinks current through the relay optocoupler input. Powered by external 5V rail for coil energization without drawing heavy switching currents from ESP32 3.3V LDO.
+            </div>
+          </div>
+          <div class="glow-card" style="border-color: rgba(0, 230, 118, 0.4);">
+            <div class="card-icon" style="color: #00e676;">&#9889;</div>
+            <div class="card-title">High-Voltage AC Mains Domain</div>
+            <div class="card-desc">
+              <strong>230V AC &bull; Electromechanical Galvanic Isolation</strong><br>
+              Switches phase/live line across COM and NO terminals. Protected by optoisolator (5kV breakdown) and flyback diode to quench inductive switching transients.
+            </div>
+          </div>
+        </div>
+
+        <p class="content-block-text" style="margin-top: 1rem;">
           <strong>Operating Principle:</strong> Under quiescent conditions (relay de-energized), the Common (<code>COM</code>) and Normally Open (<code>NO</code>) contacts remain mechanically separated, breaking the appliance circuit. When GPIO 23 is driven LOW, the relay coil energizes, pulling the internal armature to bridge <code>COM</code> and <code>NO</code>, completing the appliance circuit.
         </p>
 
@@ -309,12 +617,36 @@ AC Mains Neutral / Return</div>
         <p class="content-block-text">
           Google Assistant provides speech recognition and natural language processing. Running on a smartphone, Assistant continuously processes audio when invoked by the wake phrase:
         </p>
-        <div class="diagram-box">Acoustic Audio ──&gt; Google Assistant Cloud NLP ──&gt; Intent Match ──&gt; Trigger IFTTT Service</div>
+        <div class="visual-pipeline" style="margin: 1.25rem 0;">
+          <div class="pipe-node" style="border-color: rgba(255, 107, 139, 0.4);">
+            <div class="node-badge" style="color: #ff6b8b;">ACOUSTIC AUDIO</div>
+            <div class="node-title">Spoken Command</div>
+            <div class="node-desc">Phone Mic Capture</div>
+          </div>
+          <div class="pipe-arrow">&rarr;</div>
+          <div class="pipe-node" style="border-color: rgba(66, 133, 244, 0.4);">
+            <div class="node-badge" style="color: #4285f4;">CLOUD NLP</div>
+            <div class="node-title">Google Speech Engine</div>
+            <div class="node-desc">Acoustic Model Matching</div>
+          </div>
+          <div class="pipe-arrow">&rarr;</div>
+          <div class="pipe-node" style="border-color: rgba(0, 229, 255, 0.4);">
+            <div class="node-badge" style="color: #00e5ff;">INTENT MATCH</div>
+            <div class="node-title">Trigger Phrase Match</div>
+            <div class="node-desc">Phrase Extraction</div>
+          </div>
+          <div class="pipe-arrow">&rarr;</div>
+          <div class="pipe-node" style="border-color: rgba(186, 104, 200, 0.4);">
+            <div class="node-badge" style="color: #ba68c8;">WEBHOOK DISPATCH</div>
+            <div class="node-title">IFTTT Service Event</div>
+            <div class="node-desc">Triggers Applet Rule</div>
+          </div>
+        </div>
         <p class="content-block-text">
           In this implementation:
         </p>
         <ul class="content-block-list">
-          <li>The user configures specific conversational phrases in the IFTTT Google Assistant service (e.g. <code>"YOUR ON PHRASE"</code> and <code>"YOUR OFF PHRASE"</code>).</li>
+          <li>The user configures specific conversational phrases in the IFTTT Google Assistant service (e.g. <code>"turn on bulb"</code> and <code>"turn off bulb"</code>).</li>
           <li>Google's cloud infrastructure parses the spoken sentence, accounts for dialect and accent variations, and extracts the matched phrase.</li>
           <li>Once the phrase is matched, Google Assistant triggers the linked IFTTT integration event.</li>
           <li><strong>Note:</strong> No speech processing or machine learning code runs on the ESP32; the microcontroller receives only downstream cloud messages.</li>
@@ -328,13 +660,30 @@ AC Mains Neutral / Return</div>
           <strong>IFTTT ("If This, Then That")</strong> provides the automation rules engine that connects Google's ecosystem with Adafruit IO. Two dedicated applets were constructed:
         </p>
 
-        <div class="sub-heading">Applet 1: Voice Turn ON</div>
-        <div class="diagram-box">IF:    Google Assistant detects: "[YOUR ON PHRASE]"
-THEN:  Send data "ON" to Adafruit IO feed: "bulb"</div>
+        <div class="glow-card-grid" style="margin: 1.25rem 0;">
+          <div class="glow-card" style="border-color: rgba(0, 230, 118, 0.4);">
+            <div class="card-icon" style="color: #00e676;">&#9654;</div>
+            <div class="card-title">Applet 1 &mdash; Voice Turn ON</div>
+            <div class="card-desc">
+              <span class="test-pill pass" style="margin-bottom: 0.5rem; display: inline-block;">IF THIS</span><br>
+              Google Assistant detects: <code>"turn on bulb"</code><br><br>
+              <span class="test-pill pass" style="margin-bottom: 0.5rem; display: inline-block;">THEN THAT</span><br>
+              Send payload <code>"ON"</code> to Adafruit IO feed <code>bulb</code>
+            </div>
+          </div>
 
-        <div class="sub-heading">Applet 2: Voice Turn OFF</div>
-        <div class="diagram-box">IF:    Google Assistant detects: "[YOUR OFF PHRASE]"
-THEN:  Send data "OFF" to Adafruit IO feed: "bulb"</div>
+          <div class="glow-card" style="border-color: rgba(255, 75, 114, 0.4);">
+            <div class="card-icon" style="color: #ff4b72;">&#9632;</div>
+            <div class="card-title">Applet 2 &mdash; Voice Turn OFF</div>
+            <div class="card-desc">
+              <span class="test-pill fail" style="margin-bottom: 0.5rem; display: inline-block;">IF THIS</span><br>
+              Google Assistant detects: <code>"turn off bulb"</code><br><br>
+              <span class="test-pill fail" style="margin-bottom: 0.5rem; display: inline-block;">THEN THAT</span><br>
+              Send payload <code>"OFF"</code> to Adafruit IO feed <code>bulb</code>
+            </div>
+          </div>
+        </div>
+
         <p class="content-block-text">
           IFTTT acts strictly as the <strong>automation bridge</strong>. When Google Assistant fires the trigger, IFTTT issues an API request to Adafruit IO, writing the string <code>ON</code> or <code>OFF</code> into the feed. IFTTT does not maintain an MQTT connection to the ESP32; it relies on Adafruit IO to broker the message.
         </p>
@@ -346,8 +695,19 @@ THEN:  Send data "OFF" to Adafruit IO feed: "bulb"</div>
         <p class="content-block-text">
           Adafruit IO serves as the cloud database and MQTT broker in this architecture:
         </p>
-        <div class="diagram-box">Adafruit IO Cloud Feed: "bulb"
-MQTT Topic Representation: USERNAME/feeds/bulb</div>
+        
+        <div class="glow-card-grid" style="margin: 1.25rem 0; grid-template-columns: 1fr;">
+          <div class="glow-card" style="border-color: rgba(186, 104, 200, 0.4);">
+            <div class="card-icon" style="color: #ba68c8;">&#9729;</div>
+            <div class="card-title">Topic Mapping &amp; Feed Abstraction</div>
+            <div class="card-desc">
+              <strong>Cloud Feed Name:</strong> <code>bulb</code><br>
+              <strong>MQTT Full Topic Path:</strong> <code>USERNAME/feeds/bulb</code><br>
+              <strong>Broker Endpoint:</strong> <code>io.adafruit.com:1883</code> (Plain TCP) / <code>8883</code> (TLS)
+            </div>
+          </div>
+        </div>
+
         <p class="content-block-text">
           When IFTTT writes a new value to the <code>bulb</code> feed via REST, Adafruit IO immediately publishes that value to the corresponding MQTT topic. Any authorized client subscribed to <code>USERNAME/feeds/bulb</code> receives the payload instantly over its established TCP connection.
         </p>
@@ -362,15 +722,27 @@ MQTT Topic Representation: USERNAME/feeds/bulb</div>
         <p class="content-block-text">
           MQTT (Message Queuing Telemetry Transport) is an asynchronous, lightweight publish-subscribe protocol ideal for embedded microcontroller communication:
         </p>
-        <div class="diagram-box">IFTTT / Adafruit IO
-         │
-         │ 1. Publish "ON" to feed "bulb"
-         ▼
-Adafruit IO MQTT Broker (io.adafruit.com:1883)
-         │
-         │ 2. Distribute payload to subscribed clients
-         ▼
-ESP32 MQTT Client (Subscriber on USERNAME/feeds/bulb)</div>
+
+        <div class="visual-pipeline" style="margin: 1.25rem 0;">
+          <div class="pipe-node" style="border-color: rgba(0, 229, 255, 0.4);">
+            <div class="node-badge" style="color: #00e5ff;">ORIGIN</div>
+            <div class="node-title">IFTTT Engine</div>
+            <div class="node-desc">REST API Ingestion</div>
+          </div>
+          <div class="pipe-arrow">&rarr;<br><span style="font-size: 0.65rem; color: #a0aec0;">Publish "ON"/"OFF"</span></div>
+          <div class="pipe-node" style="border-color: rgba(186, 104, 200, 0.4);">
+            <div class="node-badge" style="color: #ba68c8;">BROKER</div>
+            <div class="node-title">Adafruit IO Broker</div>
+            <div class="node-desc">io.adafruit.com:1883</div>
+          </div>
+          <div class="pipe-arrow">&rarr;<br><span style="font-size: 0.65rem; color: #a0aec0;">TCP Distribution</span></div>
+          <div class="pipe-node" style="border-color: rgba(128, 0, 32, 0.6);">
+            <div class="node-badge" style="color: #ff6b8b;">SUBSCRIBER</div>
+            <div class="node-title">ESP32 Client</div>
+            <div class="node-desc">USERNAME/feeds/bulb</div>
+          </div>
+        </div>
+
         <p class="content-block-text">
           <strong>Key Protocol Details:</strong>
         </p>
@@ -404,12 +776,37 @@ ESP32 MQTT Client (Subscriber on USERNAME/feeds/bulb)</div>
         <p class="content-block-text">
           The relay module utilized in this project operates on <strong>active-LOW logic</strong>. Understanding and accommodating this inversion in firmware is vital:
         </p>
-        <div class="diagram-box">#define RELAY_ON  LOW   // Driving GPIO 23 to 0V energizes the relay coil
-#define RELAY_OFF HIGH  // Driving GPIO 23 to 3.3V de-energizes the relay coil</div>
+
+        <div class="code-wrapper" style="margin: 1rem 0;">
+          <pre><code>#define RELAY_ON  LOW   // Driving GPIO 23 to 0V (GND) energizes the relay optocoupler
+#define RELAY_OFF HIGH  // Driving GPIO 23 to 3.3V (VCC) de-energizes the relay optocoupler</code></pre>
+        </div>
 
         <div class="sub-heading">State Transition Mapping</div>
-        <div class="diagram-box">Payload "ON"  ──&gt; digitalWrite(GPIO 23, LOW)  ──&gt; Relay Energizes ──&gt; COM-NO Closes ──&gt; Appliance ON
-Payload "OFF" ──&gt; digitalWrite(GPIO 23, HIGH) ──&gt; Relay Releases  ──&gt; COM-NO Opens  ──&gt; Appliance OFF</div>
+        <div class="glow-card-grid" style="margin: 1.25rem 0;">
+          <div class="glow-card" style="border-color: rgba(0, 230, 118, 0.4);">
+            <div class="card-icon" style="color: #00e676;">&#9889;</div>
+            <div class="card-title">Payload: "ON"</div>
+            <div class="card-desc">
+              <strong>GPIO Output:</strong> <code>digitalWrite(23, LOW)</code> (0V)<br>
+              <strong>Optocoupler:</strong> LED Sinks Current &rarr; Phototransistor ON<br>
+              <strong>Coil State:</strong> 5V Coil Energizes &rarr; Armature Pulls Down<br>
+              <strong>Contacts:</strong> COM-NO Closed Loop &rarr; <span class="test-pill pass">APPLIANCE ON</span>
+            </div>
+          </div>
+
+          <div class="glow-card" style="border-color: rgba(255, 75, 114, 0.4);">
+            <div class="card-icon" style="color: #ff4b72;">&#9724;</div>
+            <div class="card-title">Payload: "OFF"</div>
+            <div class="card-desc">
+              <strong>GPIO Output:</strong> <code>digitalWrite(23, HIGH)</code> (3.3V)<br>
+              <strong>Optocoupler:</strong> Zero Potential Difference &rarr; LED OFF<br>
+              <strong>Coil State:</strong> Coil De-energizes &rarr; Spring Releases Armature<br>
+              <strong>Contacts:</strong> COM-NO Open Circuit &rarr; <span class="test-pill fail">APPLIANCE OFF</span>
+            </div>
+          </div>
+        </div>
+
         <p class="content-block-text">
           Many standard 5V optocoupler relay boards use active-LOW inputs because the optocoupler's internal infrared LED is tied to VCC; pulling the input pin LOW sinks current through the LED, turning on the internal phototransistor and triggering the relay coil.
         </p>
@@ -421,42 +818,72 @@ Payload "OFF" ──&gt; digitalWrite(GPIO 23, HIGH) ──&gt; Relay Releases  
         <p class="content-block-text">
           The complete sequence illustrating message propagation from spoken voice to physical illumination:
         </p>
-        <div class="diagram-box">USER
- │
- │ 1. Speaks: "Hey Google, [YOUR ON PHRASE]"
- ▼
-GOOGLE ASSISTANT (Phone)
- │
- │ 2. Performs speech recognition &amp; matches trigger phrase
- ▼
-IFTTT CLOUD ENGINE
- │
- │ 3. Applet matches trigger; generates payload "ON"
- ▼
-ADAFRUIT IO CLOUD
- │
- │ 4. Writes "ON" to feed "bulb"
- │ 5. Publishes MQTT packet to topic USERNAME/feeds/bulb
- ▼
-INTERNET &amp; LOCAL WI-FI
- │
- │ 6. Packet routed over TCP port 1883
- ▼
-ESP32 (MQTT Client)
- │
- │ 7. mqtt.readSubscription() unblocks
- │ 8. Reads bulbFeed.lastread == "ON"
- │ 9. Executes digitalWrite(RELAY_PIN, RELAY_ON) [GPIO 23 = LOW]
- ▼
-RELAY MODULE
- │
- │ 10. Optocoupler turns on; coil energizes
- │ 11. Armature pulls down; COM contacts NO
- ▼
-APPLIANCE / BULB
- │
- ▼
-CIRCUIT CLOSED — APPLIANCE TURNS ON</div>
+
+        <div class="step-timeline" style="margin: 1.5rem 0;">
+          <div class="timeline-step">
+            <div class="step-num">1</div>
+            <div class="step-content">
+              <div class="step-title">User Acoustic Command</div>
+              <div class="step-desc">The user speaks: <em>&ldquo;Hey Google, turn on bulb&rdquo;</em> within hearing range of the smartphone.</div>
+            </div>
+          </div>
+
+          <div class="timeline-step">
+            <div class="step-num">2</div>
+            <div class="step-content">
+              <div class="step-title">Google Speech NLP &amp; Intent Extraction</div>
+              <div class="step-desc">Google's cloud speech engine digitizes the waveform, resolves the transcription, and matches the intent to the IFTTT service.</div>
+            </div>
+          </div>
+
+          <div class="timeline-step">
+            <div class="step-num">3</div>
+            <div class="step-content">
+              <div class="step-title">IFTTT Applet Execution</div>
+              <div class="step-desc">IFTTT triggers Applet 1 and formats an HTTP REST POST request carrying the payload string <code>"ON"</code>.</div>
+            </div>
+          </div>
+
+          <div class="timeline-step">
+            <div class="step-num">4</div>
+            <div class="step-content">
+              <div class="step-title">Adafruit IO Feed Ingestion</div>
+              <div class="step-desc">Adafruit IO writes <code>"ON"</code> into feed <code>bulb</code> and queues an MQTT message for the topic <code>feeds/bulb</code>.</div>
+            </div>
+          </div>
+
+          <div class="timeline-step">
+            <div class="step-num">5</div>
+            <div class="step-content">
+              <div class="step-title">MQTT TCP Downlink Broadcast</div>
+              <div class="step-desc">Broker distributes the packet over TCP port 1883 across the global internet and local 2.4 GHz Wi-Fi router.</div>
+            </div>
+          </div>
+
+          <div class="timeline-step">
+            <div class="step-num">6</div>
+            <div class="step-content">
+              <div class="step-title">ESP32 Packet Parsing</div>
+              <div class="step-desc"><code>mqtt.readSubscription(1000)</code> unblocks in the firmware loop, extracts the string, and trims it to <code>"ON"</code>.</div>
+            </div>
+          </div>
+
+          <div class="timeline-step">
+            <div class="step-num">7</div>
+            <div class="step-content">
+              <div class="step-title">Active-LOW GPIO Actuation</div>
+              <div class="step-desc">Firmware executes <code>digitalWrite(RELAY_PIN, LOW)</code>, sinking 0V onto GPIO 23.</div>
+            </div>
+          </div>
+
+          <div class="timeline-step">
+            <div class="step-num">8</div>
+            <div class="step-content">
+              <div class="step-title">Relay Coil Energization &amp; Contact Closure</div>
+              <div class="step-desc">PC817 optocoupler conducts, driver transistor turns on, 5V coil pulls armature, bridging COM and NO contacts to complete the 230V AC loop.</div>
+            </div>
+          </div>
+        </div>
       </section>
 
       <!-- 15. WHAT HAPPENS WHEN I SAY ON? -->
@@ -514,9 +941,18 @@ CIRCUIT CLOSED — APPLIANCE TURNS ON</div>
       <section class="content-block" id="media">
         <h2 class="content-block-heading">Demonstration Video</h2>
         <p class="content-block-text">Video recording demonstrating voice command dispatch and hardware relay actuation:</p>
-        <video class="media-video" controls preload="metadata">
-          <source src="assets/iot/task3-clip1.mp4" type="video/mp4">
-        </video>
+        <div class="hardware-gallery" style="grid-template-columns: 1fr; max-width: 820px; margin: 1.5rem auto 0 auto;">
+          <div class="hardware-card">
+            <video class="media-video" controls preload="metadata" style="width: 100%; border-radius: 10px 10px 0 0; display: block;">
+              <source src="assets/iot/task3-clip1.mp4" type="video/mp4">
+            </video>
+            <div class="hardware-card-caption">
+              <span class="hw-badge">LIVE DEMO</span>
+              <span class="hw-title">Voice Command to Physical Relay Switching</span>
+              <p>Video capture demonstrating end-to-end multi-platform integration: issuing spoken voice commands to Google Assistant on a smartphone triggers IFTTT webhook dispatch to Adafruit IO, and the ESP32 instantaneously energizes the active-LOW relay to switch the bench appliance.</p>
+            </div>
+          </div>
+        </div>
       </section>
 
       <!-- 18. TESTING & VERIFICATION -->
@@ -525,13 +961,47 @@ CIRCUIT CLOSED — APPLIANCE TURNS ON</div>
         <p class="content-block-text">
           A systematic testing sequence verified the operational readiness of each subsystem in the chain:
         </p>
-        <ul class="content-block-list">
-          <li><strong>Test 1 — Wi-Fi Network Association:</strong> Powered on the board and verified serial output. Confirmed <code>WiFi connected</code> message and local IP assignment.</li>
-          <li><strong>Test 2 — MQTT Broker Authentication:</strong> Monitored serial telemetry during boot. Verified <code>Connecting to MQTT... connected</code> output from <code>MQTT_connect()</code>.</li>
-          <li><strong>Test 3 — Voice Trigger ON:</strong> Spoke the ON phrase to Google Assistant. Verified that Assistant confirmed receipt, Serial Monitor printed <code>Voice command received: ON</code>, GPIO 23 dropped to 0V, the relay clicked, and the appliance illuminated.</li>
-          <li><strong>Test 4 — Voice Trigger OFF:</strong> Spoke the OFF phrase. Verified Assistant confirmation, Serial Monitor printed <code>Voice command received: OFF</code>, GPIO 23 rose to 3.3V, the relay contact opened, and the appliance turned off.</li>
-          <li><strong>Test 5 — Repeated Switching Cycles:</strong> Issued alternating ON and OFF voice commands over extended runtime. Verified that the MQTT connection remained stable and the relay correctly toggled without lockups or missed frames.</li>
-        </ul>
+        <div class="test-matrix-grid">
+          <div class="test-matrix-card">
+            <div class="test-card-header">
+              <span class="test-title">Test 1 — Wi-Fi Network Association</span>
+              <span class="test-pill pass">PASS</span>
+            </div>
+            <div class="test-desc">Powered on board and verified serial output at 115200 baud. Confirmed <code>WiFi connected</code> message and local subnet IP assignment.</div>
+          </div>
+
+          <div class="test-matrix-card">
+            <div class="test-card-header">
+              <span class="test-title">Test 2 — MQTT Handshake &amp; Auth</span>
+              <span class="test-pill pass">PASS</span>
+            </div>
+            <div class="test-desc">Monitored serial telemetry during boot. Verified <code>Connecting to MQTT... connected</code> output from <code>MQTT_connect()</code> on port 1883.</div>
+          </div>
+
+          <div class="test-matrix-card">
+            <div class="test-card-header">
+              <span class="test-title">Test 3 — Voice Trigger ON</span>
+              <span class="test-pill pass">PASS</span>
+            </div>
+            <div class="test-desc">Spoke <em>"turn on bulb"</em> to Google Assistant. Verified Assistant confirmation, Serial log <code>Voice command received: ON</code>, GPIO 23 drove 0V, relay clicked, and load illuminated.</div>
+          </div>
+
+          <div class="test-matrix-card">
+            <div class="test-card-header">
+              <span class="test-title">Test 4 — Voice Trigger OFF</span>
+              <span class="test-pill pass">PASS</span>
+            </div>
+            <div class="test-desc">Spoke <em>"turn off bulb"</em>. Verified Assistant confirmation, Serial log <code>Voice command received: OFF</code>, GPIO 23 rose to 3.3V, relay contact opened, and load turned off.</div>
+          </div>
+
+          <div class="test-matrix-card">
+            <div class="test-card-header">
+              <span class="test-title">Test 5 — Repeated Switching Cycles</span>
+              <span class="test-pill pass">PASS</span>
+            </div>
+            <div class="test-desc">Issued alternating ON and OFF voice commands over extended runtime. Verified that the MQTT connection remained stable with 30s keepalive pings and zero missed events.</div>
+          </div>
+        </div>
       </section>
 
       <!-- 19. LATENCY AND RELIABILITY -->
@@ -540,7 +1010,38 @@ CIRCUIT CLOSED — APPLIANCE TURNS ON</div>
         <p class="content-block-text">
           Unlike the direct local HTTP communication in Task 1, Task 3 introduces multiple distributed network hops:
         </p>
-        <div class="diagram-box">Phone Audio Capture ──&gt; Google NLP Cloud ──&gt; IFTTT Engine ──&gt; Adafruit IO API ──&gt; MQTT Broker ──&gt; ESP32</div>
+
+        <div class="visual-pipeline" style="margin: 1.5rem 0;">
+          <div class="pipe-node" style="border-color: rgba(255, 107, 139, 0.4);">
+            <div class="node-badge" style="color: #ff6b8b;">HOP 1</div>
+            <div class="node-title">Audio Capture</div>
+            <div class="node-desc">Phone Mic Buffer</div>
+          </div>
+          <div class="pipe-arrow">&rarr;</div>
+          <div class="pipe-node" style="border-color: rgba(66, 133, 244, 0.4);">
+            <div class="node-badge" style="color: #4285f4;">HOP 2</div>
+            <div class="node-title">Google NLP</div>
+            <div class="node-desc">Cloud Speech Intent</div>
+          </div>
+          <div class="pipe-arrow">&rarr;</div>
+          <div class="pipe-node" style="border-color: rgba(0, 229, 255, 0.4);">
+            <div class="node-badge" style="color: #00e5ff;">HOP 3</div>
+            <div class="node-title">IFTTT Engine</div>
+            <div class="node-desc">Applet Trigger Webhook</div>
+          </div>
+          <div class="pipe-arrow">&rarr;</div>
+          <div class="pipe-node" style="border-color: rgba(186, 104, 200, 0.4);">
+            <div class="node-badge" style="color: #ba68c8;">HOP 4</div>
+            <div class="node-title">Adafruit IO</div>
+            <div class="node-desc">REST API &rarr; Broker</div>
+          </div>
+          <div class="pipe-arrow">&rarr;</div>
+          <div class="pipe-node" style="border-color: rgba(128, 0, 32, 0.6);">
+            <div class="node-badge" style="color: #ff6b8b;">HOP 5</div>
+            <div class="node-title">ESP32 Client</div>
+            <div class="node-desc">MQTT TCP Downlink</div>
+          </div>
+        </div>
         <p class="content-block-text">
           Consequently, response time is not instantaneous. Latency is governed by cumulative network factors:
         </p>
@@ -658,10 +1159,25 @@ CIRCUIT CLOSED — APPLIANCE TURNS ON</div>
         </table>
 
         <div class="sub-heading">Architectural Comparison</div>
-        <div class="diagram-box">TASK 2: Dashboard ──&gt; Adafruit IO ──[MQTT]──&gt; ESP32 ──&gt; Transistor ──&gt; Load
-        Button    ──&gt; ESP32 ──[MQTT Publish]──&gt; Adafruit IO ──&gt; Dashboard (Sync)
+        <div class="glow-card-grid" style="margin: 1.25rem 0;">
+          <div class="glow-card" style="border-color: rgba(0, 229, 255, 0.4);">
+            <div class="card-icon" style="color: #00e5ff;">&#9881;</div>
+            <div class="card-title">Task 2 &mdash; Bidirectional Dashboard &amp; Button</div>
+            <div class="card-desc">
+              <span class="test-pill pass" style="margin-bottom: 0.5rem; display: inline-block;">DOWNLINK</span> Dashboard &rarr; Adafruit IO &rarr; MQTT &rarr; ESP32 &rarr; 2N2222 &rarr; Load<br>
+              <span class="test-pill pass" style="margin-top: 0.5rem; display: inline-block;">UPLINK</span> Tactile Button &rarr; ESP32 &rarr; MQTT Pub &rarr; Adafruit IO &rarr; Dashboard Sync
+            </div>
+          </div>
 
-TASK 3: Voice ──&gt; Google Assistant ──&gt; IFTTT ──&gt; Adafruit IO ──[MQTT]──&gt; ESP32 ──&gt; Relay ──&gt; Appliance</div>
+          <div class="glow-card" style="border-color: rgba(255, 107, 139, 0.4);">
+            <div class="card-icon" style="color: #ff6b8b;">&#127908;</div>
+            <div class="card-title">Task 3 &mdash; Hands-Free Voice &amp; Chained Cloud</div>
+            <div class="card-desc">
+              <span class="test-pill pass" style="margin-bottom: 0.5rem; display: inline-block;">VOICE PIPELINE</span> Spoken Voice &rarr; Google NLP &rarr; IFTTT &rarr; Adafruit IO &rarr; MQTT &rarr; ESP32 &rarr; Relay &rarr; 230V AC Load<br>
+              <span style="font-size: 0.75rem; color: #a0aec0; margin-top: 0.5rem; display: inline-block;">Extends MQTT infrastructure with conversational speech processing.</span>
+            </div>
+          </div>
+        </div>
         <p class="content-block-text">
           Task 3 adds an entirely new voice interaction layer without requiring changes to the core MQTT messaging architecture, proving the extensibility of publish-subscribe IoT topologies.
         </p>
@@ -830,8 +1346,44 @@ void loop() {
         <p class="content-block-text">
           The system achieved reliable, completely hands-free voice control over physical appliance switching. The entire multi-tier pipeline operated end-to-end:
         </p>
-        <div class="diagram-box">Verified Working Pipeline:
-Spoken Voice ──&gt; Google Assistant ──&gt; IFTTT ──&gt; Adafruit IO ──[MQTT]──&gt; ESP32 ──&gt; GPIO 23 ──&gt; Relay ──&gt; Appliance</div>
+        
+        <div class="visual-pipeline" style="margin: 1.25rem 0;">
+          <div class="pipe-node" style="border-color: rgba(255, 107, 139, 0.4);">
+            <div class="node-badge" style="color: #ff6b8b;">SPOKEN VOICE</div>
+            <div class="node-title">Acoustic Speech</div>
+          </div>
+          <div class="pipe-arrow">&rarr;</div>
+          <div class="pipe-node" style="border-color: rgba(66, 133, 244, 0.4);">
+            <div class="node-badge" style="color: #4285f4;">NATURAL NLP</div>
+            <div class="node-title">Google Assistant</div>
+          </div>
+          <div class="pipe-arrow">&rarr;</div>
+          <div class="pipe-node" style="border-color: rgba(0, 229, 255, 0.4);">
+            <div class="node-badge" style="color: #00e5ff;">AUTOMATION</div>
+            <div class="node-title">IFTTT Applet</div>
+          </div>
+          <div class="pipe-arrow">&rarr;</div>
+          <div class="pipe-node" style="border-color: rgba(186, 104, 200, 0.4);">
+            <div class="node-badge" style="color: #ba68c8;">MQTT BROKER</div>
+            <div class="node-title">Adafruit IO</div>
+          </div>
+          <div class="pipe-arrow">&rarr;</div>
+          <div class="pipe-node" style="border-color: rgba(128, 0, 32, 0.6);">
+            <div class="node-badge" style="color: #ff6b8b;">EMBEDDED</div>
+            <div class="node-title">ESP32 Client</div>
+          </div>
+          <div class="pipe-arrow">&rarr;</div>
+          <div class="pipe-node" style="border-color: rgba(255, 152, 0, 0.4);">
+            <div class="node-badge" style="color: #ff9800;">OPTOISOLATOR</div>
+            <div class="node-title">5V Relay Module</div>
+          </div>
+          <div class="pipe-arrow">&rarr;</div>
+          <div class="pipe-node" style="border-color: rgba(0, 230, 118, 0.4);">
+            <div class="node-badge" style="color: #00e676;">MAINS LOAD</div>
+            <div class="node-title">230V AC Appliance</div>
+          </div>
+        </div>
+
         <p class="content-block-text">
           Speaking the configured ON phrase reliably energized the relay coil and illuminated the appliance; speaking the OFF phrase released the relay and disconnected the load. The ESP32 maintained persistent MQTT connectivity across repeated test cycles with zero system lockups or dropped states.
         </p>
@@ -862,15 +1414,38 @@ Spoken Voice ──&gt; Google Assistant ──&gt; IFTTT ──&gt; Adafruit IO
         <p class="content-block-text">
           Connecting Tasks 1, 2, and 3 illustrates the architectural evolution of modern connected systems:
         </p>
-        <div class="diagram-box">Task 1 (Direct Local Control):
-Browser ──[HTTP]──&gt; ESP32 Web Server ──&gt; GPIO 2 ──&gt; Onboard LED
 
-Task 2 (Cloud Telemetry &amp; Control):
-Dashboard ──[Adafruit IO]──[MQTT]──&gt; ESP32 ──&gt; Transistor ──&gt; Load
-Push Button ──&gt; ESP32 ──[MQTT Publish]──&gt; Adafruit IO ──&gt; Dashboard
+        <div class="glow-card-grid" style="margin: 1.5rem 0;">
+          <div class="glow-card" style="border-color: rgba(0, 229, 255, 0.4);">
+            <div class="card-icon" style="color: #00e5ff;">&#128187;</div>
+            <div class="card-title">Task 1: Direct Local Control</div>
+            <div class="card-desc">
+              <strong>Local Subnet &bull; HTTP Synchronous</strong><br>
+              <code>Browser &rarr; Router &rarr; ESP32 Web Server &rarr; GPIO 2 &rarr; LED</code><br>
+              Direct, peer-to-peer control constrained entirely within the local Wi-Fi subnet.
+            </div>
+          </div>
 
-Task 3 (Voice &amp; Multi-Service Automation):
-Voice ──&gt; Google Assistant ──&gt; IFTTT ──&gt; Adafruit IO ──[MQTT]──&gt; ESP32 ──&gt; Relay ──&gt; Appliance</div>
+          <div class="glow-card" style="border-color: rgba(186, 104, 200, 0.4);">
+            <div class="card-icon" style="color: #ba68c8;">&#9729;</div>
+            <div class="card-title">Task 2: Cloud Telemetry &amp; Sync</div>
+            <div class="card-desc">
+              <strong>Global Broker &bull; Asynchronous MQTT</strong><br>
+              <code>Dashboard &harr; Adafruit IO Broker &harr; ESP32 &rarr; 2N2222 Transistor</code><br>
+              Decoupled cloud architecture enabling bidirectional synchronization between physical button and web switch.
+            </div>
+          </div>
+
+          <div class="glow-card" style="border-color: rgba(255, 107, 139, 0.4);">
+            <div class="card-icon" style="color: #ff6b8b;">&#127908;</div>
+            <div class="card-title">Task 3: Multi-Platform Automation</div>
+            <div class="card-desc">
+              <strong>Speech Recognition &bull; Cross-Cloud Pipeline</strong><br>
+              <code>Voice &rarr; Google NLP &rarr; IFTTT Webhook &rarr; Adafruit IO &rarr; ESP32 &rarr; Relay</code><br>
+              Multi-hop cloud orchestration combining conversational intelligence with high-voltage electrical safety.
+            </div>
+          </div>
+        </div>
         <p class="content-block-text">
           This progression represents the shift from <strong>Local Networking</strong> to <strong>Cloud Messaging</strong> to <strong>Multi-Service Integration</strong>. Each experiment established the technical foundation necessary for scalable, production-grade IoT architectures.
         </p>

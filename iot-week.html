@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>IoT Week — Mithra Ravi</title>
+  <title>IoT Week — Engineering Case Studies &amp; System Architecture — Mithra Ravi</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -27,20 +27,153 @@
   </header>
 
   <main>
-    <div class="hub-header">
-      <div class="container">
-        <h1 class="hub-title">IoT Week</h1>
-      </div>
-    </div>
+    <div class="container page-container">
+      <!-- HERO PRESENTATION BANNER -->
+      <header class="task-hero">
+        <div class="task-badge-row">
+          <span class="task-badge">IOT WEEK</span>
+          <span class="task-badge">ESP32 EMBEDDED SYSTEMS</span>
+          <span class="task-badge">5 TECHNICAL CASE STUDIES</span>
+          <span class="task-badge">MITHRA RAVI</span>
+        </div>
+        <h1 class="task-hero-title">IoT Engineering Case Studies &amp; System Architecture</h1>
+        <p class="task-hero-subtitle">
+          An evolutionary five-stage embedded systems portfolio: progressing from localized HTTP micro-servers to global MQTT brokers, cross-platform voice automation pipelines, Firebase distributed real-time sync, and ambient multi-sensor telemetry.
+        </p>
 
-    <div class="container">
-      <div class="hub-cards-grid">
-        <a href="iot-task1.html" class="hub-large-card">Task 01</a>
-        <a href="iot-task2.html" class="hub-large-card">Task 02</a>
-        <a href="iot-task3.html" class="hub-large-card">Task 03</a>
-        <a href="iot-task4.html" class="hub-large-card">Task 04</a>
-        <a href="iot-task5.html" class="hub-large-card">Task 05</a>
-      </div>
+        <!-- METRICS / SPECS RIBBON -->
+        <div class="metrics-ribbon">
+          <div class="metric-card">
+            <span class="metric-val">5 Stages</span>
+            <span class="metric-label">System Progression</span>
+          </div>
+          <div class="metric-card">
+            <span class="metric-val">ESP32</span>
+            <span class="metric-label">Xtensa Dual-Core Silicon</span>
+          </div>
+          <div class="metric-card">
+            <span class="metric-val">MQTT &amp; HTTP</span>
+            <span class="metric-label">Protocols Implemented</span>
+          </div>
+          <div class="metric-card">
+            <span class="metric-val">Firebase RTDB</span>
+            <span class="metric-label">Distributed Cloud State</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- TASK SELECTION GRID -->
+      <section class="content-block">
+        <h2 class="content-block-heading">Technical Project Showcase</h2>
+        <p class="content-block-text">
+          Select any project below to inspect the interactive visual architectures, circuit schematics, firmware implementations, and bench verification logs:
+        </p>
+
+        <div class="glow-card-grid" style="grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); margin-top: 1.5rem;">
+          
+          <!-- TASK 1 -->
+          <a href="iot-task1.html" style="text-decoration: none; display: block;">
+            <div class="glow-card" style="height: 100%; border-color: rgba(255, 107, 139, 0.3);">
+              <div class="card-icon" style="color: #ff6b8b;">01</div>
+              <div class="card-title" style="color: #fff;">Task 01: HTTP LED Control</div>
+              <div class="card-desc">
+                <strong>Local Wi-Fi &bull; HTTP Station Mode &bull; Port 80</strong><br>
+                Embedded web server serving lightweight HTML controls to actuate onboard GPIO 2 with zero external cloud dependencies.
+                <div style="margin-top: 1rem; color: #ff6b8b; font-family: var(--font-mono); font-size: 0.8rem;">Explore Case Study &rarr;</div>
+              </div>
+            </div>
+          </a>
+
+          <!-- TASK 2 -->
+          <a href="iot-task2.html" style="text-decoration: none; display: block;">
+            <div class="glow-card" style="height: 100%; border-color: rgba(0, 229, 255, 0.3);">
+              <div class="card-icon" style="color: #00e5ff;">02</div>
+              <div class="card-title" style="color: #fff;">Task 02: Bidirectional MQTT Control</div>
+              <div class="card-desc">
+                <strong>Adafruit IO &bull; MQTT Broker 1883 &bull; 2N2222 BJT</strong><br>
+                Decoupled pub/sub loop with synchronized physical tactile button override and real-time cloud dashboard state reflection.
+                <div style="margin-top: 1rem; color: #00e5ff; font-family: var(--font-mono); font-size: 0.8rem;">Explore Case Study &rarr;</div>
+              </div>
+            </div>
+          </a>
+
+          <!-- TASK 3 -->
+          <a href="iot-task3.html" style="text-decoration: none; display: block;">
+            <div class="glow-card" style="height: 100%; border-color: rgba(186, 104, 200, 0.3);">
+              <div class="card-icon" style="color: #ba68c8;">03</div>
+              <div class="card-title" style="color: #fff;">Task 03: Voice Control (Assistant &amp; IFTTT)</div>
+              <div class="card-desc">
+                <strong>Natural NLP &bull; IFTTT Webhook &bull; Active-LOW Relay</strong><br>
+                Hands-free conversational automation chaining smartphone speech intent to an optocoupled relay switching 230V AC mains loads.
+                <div style="margin-top: 1rem; color: #ba68c8; font-family: var(--font-mono); font-size: 0.8rem;">Explore Case Study &rarr;</div>
+              </div>
+            </div>
+          </a>
+
+          <!-- TASK 4 -->
+          <a href="iot-task4.html" style="text-decoration: none; display: block;">
+            <div class="glow-card" style="height: 100%; border-color: rgba(255, 179, 0, 0.3);">
+              <div class="card-icon" style="color: #ffb300;">04</div>
+              <div class="card-title" style="color: #fff;">Task 04: Realtime IoT Dashboard</div>
+              <div class="card-desc">
+                <strong>Firebase RTDB &bull; WebSockets &bull; Vanilla JS SPA</strong><br>
+                Complete distributed cloud state architecture syncing live telemetry cards and an interactive virtual switch with ESP32 silicon.
+                <div style="margin-top: 1rem; color: #ffb300; font-family: var(--font-mono); font-size: 0.8rem;">Explore Case Study &rarr;</div>
+              </div>
+            </div>
+          </a>
+
+          <!-- TASK 5 -->
+          <a href="iot-task5.html" style="text-decoration: none; display: block;">
+            <div class="glow-card" style="height: 100%; border-color: rgba(0, 230, 118, 0.3);">
+              <div class="card-icon" style="color: #00e676;">05</div>
+              <div class="card-title" style="color: #fff;">Task 05: Multi-Sensor Telemetry &amp; Actuation</div>
+              <div class="card-desc">
+                <strong>DHT11 &bull; Analog LDR &bull; Transistor Driver &bull; Bench Hardware</strong><br>
+                Multi-zone breadboard implementation streaming ambient temperature, humidity, and lux telemetry with bidirectional bulb actuation.
+                <div style="margin-top: 1rem; color: #00e676; font-family: var(--font-mono); font-size: 0.8rem;">Explore Case Study &rarr;</div>
+              </div>
+            </div>
+          </a>
+
+        </div>
+      </section>
+
+      <!-- PROGRESSION SUMMARY -->
+      <section class="content-block">
+        <h2 class="content-block-heading">Architectural Evolution</h2>
+        <div class="visual-pipeline" style="margin: 1.5rem 0;">
+          <div class="pipe-node" style="border-color: rgba(255, 107, 139, 0.4);">
+            <div class="node-badge" style="color: #ff6b8b;">TASK 1</div>
+            <div class="node-title">Local HTTP</div>
+            <div class="node-desc">Direct Subnet Control</div>
+          </div>
+          <div class="pipe-arrow">&rarr;</div>
+          <div class="pipe-node" style="border-color: rgba(0, 229, 255, 0.4);">
+            <div class="node-badge" style="color: #00e5ff;">TASK 2</div>
+            <div class="node-title">MQTT Broker</div>
+            <div class="node-desc">Bidirectional Feed Sync</div>
+          </div>
+          <div class="pipe-arrow">&rarr;</div>
+          <div class="pipe-node" style="border-color: rgba(186, 104, 200, 0.4);">
+            <div class="node-badge" style="color: #ba68c8;">TASK 3</div>
+            <div class="node-title">Voice Automation</div>
+            <div class="node-desc">Chained Cloud &amp; Relay</div>
+          </div>
+          <div class="pipe-arrow">&rarr;</div>
+          <div class="pipe-node" style="border-color: rgba(255, 179, 0, 0.4);">
+            <div class="node-badge" style="color: #ffb300;">TASK 4</div>
+            <div class="node-title">Firebase Cloud</div>
+            <div class="node-desc">Realtime Web App</div>
+          </div>
+          <div class="pipe-arrow">&rarr;</div>
+          <div class="pipe-node" style="border-color: rgba(0, 230, 118, 0.4);">
+            <div class="node-badge" style="color: #00e676;">TASK 5</div>
+            <div class="node-title">Multi-Sensor IoT</div>
+            <div class="node-desc">DHT11 + LDR + Actuation</div>
+          </div>
+        </div>
+      </section>
     </div>
   </main>
 

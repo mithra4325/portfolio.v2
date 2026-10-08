@@ -716,6 +716,413 @@ code:not(pre code) {
 }
 
 /* ==========================================================================
+   MODERN TECHNICAL PRESENTATION & GLOWING CARD SYSTEM (ALL IOT TASKS)
+   ========================================================================== */
+:root {
+  --glow-maroon: rgba(128, 0, 32, 0.35);
+  --glass-bg: rgba(18, 18, 18, 0.85);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-border-hover: rgba(128, 0, 32, 0.5);
+}
+
+/* Hero Presentation Banner */
+.task-hero {
+  padding: 3.5rem 0 2.5rem;
+  border-bottom: 1px solid var(--border);
+  position: relative;
+  margin-bottom: 2.5rem;
+}
+.task-badge-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-bottom: 1.25rem;
+}
+.task-badge {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text-secondary);
+  letter-spacing: 0.02em;
+}
+.task-badge.highlight {
+  border-color: var(--maroon);
+  color: #ff4d6d;
+  background: rgba(128, 0, 32, 0.15);
+  box-shadow: 0 0 12px var(--glow-maroon);
+}
+.task-hero-title {
+  font-size: clamp(2.25rem, 5vw, 3.25rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  color: var(--text-main);
+  margin-bottom: 1rem;
+}
+.task-hero-lead {
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+  max-width: 850px;
+  line-height: 1.6;
+  margin-bottom: 1.75rem;
+}
+.hero-cta-bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+}
+
+/* Key Metrics / Highlight Ribbon */
+.metrics-ribbon {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.25rem;
+  margin: 2rem 0;
+}
+.metric-card {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  padding: 1.4rem;
+  border-radius: 6px;
+  transition: var(--transition);
+  position: relative;
+  overflow: hidden;
+}
+.metric-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--maroon), transparent);
+  opacity: 0;
+  transition: var(--transition);
+}
+.metric-card:hover {
+  border-color: var(--glass-border-hover);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 15px var(--glow-maroon);
+}
+.metric-card:hover::before {
+  opacity: 1;
+}
+.metric-value {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--text-main);
+  font-family: var(--font-mono);
+  margin-bottom: 0.25rem;
+}
+.metric-label {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+/* Technical Visual Figures */
+.diagram-figure {
+  margin: 2rem 0;
+  border: 1px solid var(--glass-border);
+  background-color: #0d0d0d;
+  padding: 0.85rem;
+  border-radius: 6px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+  transition: var(--transition);
+}
+.diagram-figure:hover {
+  border-color: var(--glass-border-hover);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.7), 0 0 24px var(--glow-maroon);
+}
+.diagram-figure img {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+.diagram-caption {
+  font-size: 0.825rem;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  margin-top: 0.75rem;
+  text-align: center;
+  letter-spacing: 0.01em;
+}
+
+/* Glowing Information Cards */
+.glow-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.25rem;
+  margin: 1.75rem 0;
+}
+.glow-card {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  padding: 1.6rem;
+  border-radius: 6px;
+  transition: var(--transition);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+.glow-card:hover {
+  border-color: var(--glass-border-hover);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5), 0 0 18px var(--glow-maroon);
+}
+.glow-card-badge {
+  display: inline-block;
+  align-self: flex-start;
+  font-family: var(--font-mono);
+  font-size: 0.725rem;
+  color: #ff4d6d;
+  border: 1px solid rgba(128, 0, 32, 0.5);
+  background: rgba(128, 0, 32, 0.12);
+  padding: 0.2rem 0.5rem;
+  border-radius: 3px;
+  margin-bottom: 0.85rem;
+}
+.glow-card-title {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--text-main);
+  margin-bottom: 0.6rem;
+}
+.glow-card-desc {
+  font-size: 0.925rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  flex: 1;
+}
+
+/* Visual Pipeline / Workflow Graphics */
+.visual-pipeline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  padding: 1.5rem;
+  border-radius: 6px;
+  margin: 1.75rem 0;
+  overflow-x: auto;
+}
+.pipeline-node {
+  flex: 1;
+  min-width: 140px;
+  background: #151515;
+  border: 1px solid var(--border);
+  padding: 1rem;
+  border-radius: 4px;
+  text-align: center;
+  transition: var(--transition);
+}
+.pipeline-node:hover {
+  border-color: var(--maroon);
+  box-shadow: 0 0 14px var(--glow-maroon);
+}
+.pipeline-node-icon {
+  font-size: 1.25rem;
+  margin-bottom: 0.4rem;
+  color: var(--maroon-hover);
+}
+.pipeline-node-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-main);
+  margin-bottom: 0.25rem;
+}
+.pipeline-node-sub {
+  font-size: 0.75rem;
+  font-family: var(--font-mono);
+  color: var(--text-secondary);
+}
+.pipeline-arrow {
+  color: var(--maroon);
+  font-size: 1.25rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+/* Step Timeline Cards */
+.step-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin: 1.75rem 0;
+}
+.step-item {
+  display: flex;
+  gap: 1.25rem;
+  align-items: flex-start;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  padding: 1.25rem 1.5rem;
+  border-radius: 6px;
+  transition: var(--transition);
+}
+.step-item:hover {
+  border-color: var(--glass-border-hover);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), 0 0 12px var(--glow-maroon);
+}
+.step-badge {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: #ffffff;
+  background: var(--maroon);
+  padding: 0.25rem 0.65rem;
+  border-radius: 3px;
+  flex-shrink: 0;
+  box-shadow: 0 0 10px var(--glow-maroon);
+}
+.step-content-title {
+  font-weight: 600;
+  color: var(--text-main);
+  margin-bottom: 0.35rem;
+  font-size: 1rem;
+}
+.step-content-text {
+  font-size: 0.925rem;
+  color: var(--text-secondary);
+  line-height: 1.55;
+}
+
+/* Testing Verification Matrix Cards */
+.test-matrix-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.25rem;
+  margin: 1.75rem 0;
+}
+.test-card {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  padding: 1.4rem;
+  border-radius: 6px;
+  transition: var(--transition);
+}
+.test-card:hover {
+  border-color: var(--glass-border-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(0,0,0,0.4), 0 0 14px var(--glow-maroon);
+}
+.test-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.65rem;
+}
+.test-card-name {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-main);
+}
+.test-pill-pass {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.15rem 0.45rem;
+  border-radius: 3px;
+  background: rgba(0, 255, 136, 0.1);
+  color: #00ff88;
+  border: 1px solid rgba(0, 255, 136, 0.3);
+}
+.test-card-body {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+/* Hardware Media Showcase */
+.hardware-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin: 2rem 0;
+}
+.hardware-media-card,
+.hardware-card {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 6px;
+  overflow: hidden;
+  transition: var(--transition);
+}
+.hardware-media-card:hover,
+.hardware-card:hover {
+  border-color: var(--glass-border-hover);
+  transform: translateY(-3px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 18px var(--glow-maroon);
+}
+.hardware-media-card img,
+.hardware-media-card video,
+.hardware-card img,
+.hardware-card video {
+  width: 100%;
+  height: 240px;
+  object-fit: cover;
+  display: block;
+  border-bottom: 1px solid var(--glass-border);
+}
+.hardware-media-caption,
+.hardware-card-caption {
+  padding: 1.1rem 1.25rem;
+}
+.hardware-media-title,
+.hw-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-main);
+  margin-bottom: 0.35rem;
+}
+.hardware-media-desc,
+.hardware-card-caption p {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+.hw-badge {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  padding: 0.15rem 0.45rem;
+  border-radius: 4px;
+  background: rgba(128, 0, 32, 0.4);
+  color: #ff6b8b;
+  border: 1px solid rgba(128, 0, 32, 0.6);
+  display: inline-block;
+  margin-bottom: 0.4rem;
+}
+
+/* SVG Vector Diagram Box */
+.svg-diagram-card {
+  background: #0d0d0d;
+  border: 1px solid var(--glass-border);
+  border-radius: 6px;
+  padding: 1.25rem;
+  margin: 2rem 0;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+  transition: var(--transition);
+}
+.svg-diagram-card:hover {
+  border-color: var(--glass-border-hover);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.7), 0 0 20px var(--glow-maroon);
+}
+.svg-diagram-card svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* ==========================================================================
    FOOTER
    ========================================================================== */
 .site-footer {
