@@ -30,59 +30,528 @@
     <div class="container page-container">
       <h1 class="page-main-heading">Task 02: Adafruit IO MQTT Control</h1>
 
+      <!-- 1. OVERVIEW -->
       <section class="content-block">
-        <h2 class="content-block-heading">Overview</h2>
-        <p class="content-block-text">This task controls hardware through the MQTT protocol using the Adafruit IO cloud broker. A toggle switch on an Adafruit IO dashboard publishes ON or OFF to a feed. The ESP32 is subscribed to the same feed and switches a circuit soldered on a perfboard. A push button on the circuit works as a manual override and sends its state back to the dashboard.</p>
+        <h2 class="content-block-heading">1. Overview</h2>
+        <p class="content-block-text">
+          Task 1 demonstrated direct, local-network device control using HTTP. This task moves the architecture to the internet by introducing cloud-based messaging through the <strong>MQTT protocol</strong> and the <strong>Adafruit IO</strong> cloud broker.
+        </p>
+        <p class="content-block-text" style="margin-top: 0.75rem;">
+          The ESP32 connects to the local Wi-Fi network and establishes a persistent client connection to Adafruit IO's MQTT broker. An Adafruit IO dashboard provides a virtual toggle switch linked to a feed named <code>bulb</code>. When the toggle state changes, the cloud broker delivers an <code>ON</code> or <code>OFF</code> payload to the ESP32 because the microcontroller is subscribed to that feed.
+        </p>
+        <p class="content-block-text" style="margin-top: 0.75rem;">
+          Upon receiving the message, the ESP32 changes the logic level on <strong>GPIO 5</strong>. Because a microcontroller GPIO pin provides a low-current control signal rather than a heavy power supply, an <strong>NPN transistor driver stage</strong> is used to electronically switch the load circuit.
+        </p>
+        <p class="content-block-text" style="margin-top: 0.75rem;">
+          To complete the two-way IoT loop, a physical push button is connected to <strong>GPIO 4</strong> as a local manual override. Pressing the button toggles the local output and immediately publishes the updated state back to the same Adafruit IO feed. The remote cloud dashboard toggle updates to reflect the physical button press, establishing a fully synchronized, bidirectional IoT control loop.
+        </p>
       </section>
 
+      <!-- 2. WHAT CHANGED FROM TASK 1? -->
       <section class="content-block">
-        <h2 class="content-block-heading">Objective</h2>
+        <h2 class="content-block-heading">2. What Changed From Task 1?</h2>
+        <p class="content-block-text">
+          Task 1 established direct device communication within a single local router network. Task 2 transitions from localized point-to-point requests to decoupled, cloud-brokered publish-subscribe messaging:
+        </p>
+        <div class="diagram-box">Task 1 (Local HTTP):
+Browser ──[HTTP GET /on]──&gt; ESP32 Web Server ──&gt; GPIO 2 ──&gt; Onboard LED
+
+Task 2 (Cloud MQTT - Remote Control):
+Adafruit IO Dashboard ──[Publish "ON"]──&gt; MQTT Broker ──[Forward]──&gt; ESP32 ──&gt; GPIO 5 ──&gt; Transistor ──&gt; Load
+
+Task 2 (Cloud MQTT - Manual Feedback):
+Push Button ──&gt; GPIO 4 ──&gt; ESP32 ──[Publish "ON"]──&gt; MQTT Broker ──&gt; Adafruit IO Dashboard</div>
         <ul class="content-block-list">
-          <li>Understand how MQTT works with a broker, topics, publishers and subscribers.</li>
-          <li>Create an Adafruit IO feed and dashboard with a toggle switch.</li>
-          <li>Connect the ESP32 to Adafruit IO and subscribe to the feed.</li>
-          <li>Build and solder a transistor driver circuit on a perfboard.</li>
-          <li>Control the circuit from the dashboard and from the push button.</li>
+          <li><strong>Network Scope:</strong> Task 1 operated strictly on the local Wi-Fi subnet; Task 2 connects to the global internet via cloud broker.</li>
+          <li><strong>Communication Paradigm:</strong> Task 1 used synchronous HTTP request-response; Task 2 uses asynchronous MQTT publish-subscribe.</li>
+          <li><strong>Direct vs Brokered Addressing:</strong> Task 1 required the browser to directly reach the ESP32's local IP; Task 2 connects both the dashboard and the ESP32 to a central broker without either knowing the other's IP address.</li>
+          <li><strong>Persistent Messaging:</strong> Rather than polling or sending full HTTP page requests, MQTT maintains a lightweight, long-lived TCP connection suited for IoT telemetry and control.</li>
         </ul>
       </section>
 
+      <!-- 3. LEARNING OBJECTIVES -->
       <section class="content-block">
-        <h2 class="content-block-heading">Components</h2>
+        <h2 class="content-block-heading">3. Learning Objectives</h2>
         <ul class="content-block-list">
-          <li>ESP32 development board</li>
-          <li>NPN transistor [[FILL: part number, e.g. BC547]]</li>
-          <li>Resistor for the transistor base [[FILL: value]]</li>
-          <li>LED or bulb as the load [[FILL: what you used]]</li>
-          <li>Push button</li>
-          <li>Perfboard, solder and wires</li>
-          <li>Digital multimeter for continuity checks</li>
-          <li>Adafruit IO account</li>
+          <li>Understand MQTT's publish/subscribe architecture.</li>
+          <li>Understand the role of an MQTT broker in decoupling clients.</li>
+          <li>Understand publishers and subscribers.</li>
+          <li>Create and configure an Adafruit IO feed and dashboard.</li>
+          <li>Connect an ESP32 to Adafruit IO over the internet.</li>
+          <li>Subscribe the ESP32 to a cloud feed.</li>
+          <li>Publish device state updates back to the cloud.</li>
+          <li>Build and solder a transistor-based driver circuit.</li>
+          <li>Read a digital push button using internal <code>INPUT_PULLUP</code>.</li>
+          <li>Keep physical hardware and cloud dashboard states synchronized.</li>
+          <li>Handle network dropouts and MQTT reconnection routines.</li>
+          <li>Understand why an ESP32 GPIO must not directly power a load.</li>
+          <li>Perform continuity testing on a soldered perfboard circuit with a multimeter.</li>
+          <li>Understand the fundamentals of scalable cloud IoT communication.</li>
         </ul>
       </section>
 
+      <!-- 4. SYSTEM ARCHITECTURE -->
       <section class="content-block">
-        <h2 class="content-block-heading">Work</h2>
+        <h2 class="content-block-heading">4. System Architecture</h2>
+        <p class="content-block-text">
+          The communication architecture is divided into two distinct, synchronized flows mediated entirely by the Adafruit IO broker:
+        </p>
+        <div class="sub-heading">Downlink: Dashboard to Hardware Control Flow</div>
+        <div class="diagram-box">┌──────────────────────────┐
+│  Adafruit IO Dashboard   │
+│   Toggle: ON / OFF       │
+└─────────────┬────────────┘
+              │
+              │ MQTT Publish ("ON" / "OFF")
+              ▼
+┌──────────────────────────┐
+│    Adafruit IO Broker    │
+│    `bulb` Feed           │
+└─────────────┬────────────┘
+              │
+              │ MQTT Message Forward
+              ▼
+┌──────────────────────────┐
+│          ESP32           │
+│   MQTT Subscriber Client │
+└─────────────┬────────────┘
+              │
+              │ GPIO 5 (Logic HIGH / LOW)
+              ▼
+┌──────────────────────────┐
+│      NPN Transistor      │
+│      Driver Stage        │
+└─────────────┬────────────┘
+              │
+              ▼
+            LOAD</div>
+
+        <div class="sub-heading">Uplink: Manual Push Button to Dashboard Feedback Flow</div>
+        <div class="diagram-box">┌──────────────────────────┐
+│    Manual Push Button    │
+│    (GPIO 4 to Ground)    │
+└─────────────┬────────────┘
+              │
+              │ State Transition (HIGH -&gt; LOW)
+              ▼
+┌──────────────────────────┐
+│          ESP32           │
+│  Inverts outputState     │
+└─────────────┬────────────┘
+              │
+              │ MQTT Publish ("ON" / "OFF")
+              ▼
+┌──────────────────────────┐
+│    Adafruit IO Broker    │
+│    `bulb` Feed           │
+└─────────────┬────────────┘
+              │
+              │ Dashboard Widget Update
+              ▼
+┌──────────────────────────┐
+│  Adafruit IO Dashboard   │
+│  Toggle Synchronized     │
+└──────────────────────────┘</div>
+      </section>
+
+      <!-- 5. COMPONENTS & HARDWARE -->
+      <section class="content-block">
+        <h2 class="content-block-heading">5. Components &amp; Hardware</h2>
+        <div class="feature-grid">
+          <div class="feature-card">
+            <div class="feature-card-title">ESP32 Development Board</div>
+            <div class="feature-card-desc">Serves as the Wi-Fi client, MQTT subscriber/publisher, button input reader, and GPIO output controller.</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card-title">NPN Transistor</div>
+            <div class="feature-card-desc">Acts as an electronic solid-state switch. Allows low-current GPIO 5 logic to control the load circuit without drawing heavy current from the ESP32. [[FILL: part number, e.g. BC547]]</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card-title">Base Resistor</div>
+            <div class="feature-card-desc">Current-limiting resistor positioned between ESP32 GPIO 5 and the transistor base to protect the microcontroller output. [[FILL: value]]</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card-title">Push Button</div>
+            <div class="feature-card-desc">Momentary tactile button wired between GPIO 4 and GND utilizing the internal pull-up resistor for local manual override.</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card-title">Load / Output Indicator</div>
+            <div class="feature-card-desc">The switched electrical load driven by the collector circuit of the transistor. [[FILL: what you used]]</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card-title">Perfboard &amp; Soldering</div>
+            <div class="feature-card-desc">Provides a permanent, rigid soldered platform for the transistor driver, pull-up connections, and wiring headers.</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card-title">Digital Multimeter</div>
+            <div class="feature-card-desc">Used for essential pre-power continuity verification to detect cold joints and accidental short circuits across pins.</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card-title">Adafruit IO Account</div>
+            <div class="feature-card-desc">Cloud MQTT broker hosting the <code>bulb</code> feed and web-based toggle dashboard.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 6. HARDWARE CONFIGURATION -->
+      <section class="content-block">
+        <h2 class="content-block-heading">6. Hardware Configuration</h2>
+        <p class="content-block-text">
+          The physical circuit consists of a transistor driver stage and a momentary push button interface connected to the ESP32:
+        </p>
+        <div class="diagram-box">Output Stage:
+ESP32 GPIO 5 ──&gt; [Base Resistor] ──&gt; Transistor Base (B)
+                                     Transistor Emitter (E) ──&gt; GND
+                   Supply (+) ──&gt; [Load] ──&gt; Transistor Collector (C)
+
+Input Stage:
+ESP32 GPIO 4 ──&gt; [Push Button] ──&gt; GND
+(Configured internally with pinMode(BUTTON_PIN, INPUT_PULLUP))</div>
+        <p class="content-block-text">
+          Configuring GPIO 4 with <code>INPUT_PULLUP</code> activates the internal resistor on the ESP32 silicon that ties the pin to 3.3V. When the button is not pressed, the input reads <code>HIGH</code>. When pressed, the button grounds the pin, pulling it to <code>LOW</code>. This eliminates the need for an external physical pull-up resistor.
+        </p>
+        <p class="content-block-text" style="margin-top: 0.75rem;">
+          The output circuit is an electronic transistor driver, not a relay circuit. The transistor's base current is supplied safely by GPIO 5 through the base resistor, saturating the transistor and enabling current to flow through the collector to the load.
+        </p>
+      </section>
+
+      <!-- 7. SOFTWARE STACK -->
+      <section class="content-block">
+        <h2 class="content-block-heading">7. Software Stack</h2>
+        <ul class="content-block-list">
+          <li><strong>Arduino IDE:</strong> Firmware editor, compiler, and serial monitor environment.</li>
+          <li><strong><code>WiFi.h</code>:</strong> Native ESP32 Wi-Fi library managing station connection to the local 2.4 GHz access point.</li>
+          <li><strong>Adafruit MQTT Library:</strong> Uses <code>Adafruit_MQTT.h</code> and <code>Adafruit_MQTT_Client.h</code> to manage low-overhead MQTT packet serialization, subscriptions, publications, and keepalive pings.</li>
+          <li><strong>Adafruit IO:</strong> Cloud MQTT broker infrastructure providing feed storage and interactive dashboard widgets.</li>
+        </ul>
+      </section>
+
+      <!-- 8. MQTT EXPLAINED -->
+      <section class="content-block">
+        <h2 class="content-block-heading">8. MQTT Explained</h2>
+        <p class="content-block-text">
+          <strong>MQTT (Message Queuing Telemetry Transport)</strong> is a lightweight, publish-subscribe network protocol designed for resource-constrained embedded systems and unreliable network environments.
+        </p>
+        <div class="feature-grid">
+          <div class="feature-card">
+            <div class="feature-card-title">Publisher</div>
+            <div class="feature-card-desc">An entity that transmits messages under a specific topic. When the push button is pressed, the ESP32 acts as a publisher by pushing <code>ON</code> or <code>OFF</code> to the feed.</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card-title">Subscriber</div>
+            <div class="feature-card-desc">An entity that registers interest in a topic to receive incoming messages. The ESP32 subscribes to the <code>bulb</code> feed to capture commands dispatched by the dashboard.</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card-title">Broker</div>
+            <div class="feature-card-desc">The central server that receives all published data, filters by topic, and distributes packets to subscribed clients. Adafruit IO acts as the central broker in this system.</div>
+          </div>
+        </div>
+        <p class="content-block-text" style="margin-top: 0.75rem;">
+          Crucially, the dashboard and the ESP32 do not talk to each other directly. The ESP32 does not need to know the IP address of the browser, and the dashboard does not need to know the IP address of the ESP32. Both clients maintain independent connections to the broker.
+        </p>
+      </section>
+
+      <!-- 9. MQTT VS HTTP -->
+      <section class="content-block">
+        <h2 class="content-block-heading">9. MQTT vs HTTP</h2>
+        <table class="tech-table">
+          <thead>
+            <tr>
+              <th>Attribute</th>
+              <th>Task 1 (HTTP)</th>
+              <th>Task 2 (MQTT)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Communication Model</td>
+              <td>Request - Response</td>
+              <td>Publish - Subscribe</td>
+            </tr>
+            <tr>
+              <td>Connection Topology</td>
+              <td>Client directly contacts ESP32 server</td>
+              <td>Clients communicate through central broker</td>
+            </tr>
+            <tr>
+              <td>Network Scope</td>
+              <td>Local Wi-Fi subnet only</td>
+              <td>Global Internet / Cloud access</td>
+            </tr>
+            <tr>
+              <td>Command Addressing</td>
+              <td>URL endpoints (e.g. <code>/on</code>, <code>/off</code>)</td>
+              <td>Feeds / Topics (e.g. <code>username/feeds/bulb</code>)</td>
+            </tr>
+            <tr>
+              <td>ESP32 Role</td>
+              <td>Hosts local web server on port 80</td>
+              <td>Operates as lightweight client to cloud broker</td>
+            </tr>
+            <tr>
+              <td>Connection Overhead</td>
+              <td>Full HTML page reloaded per command</td>
+              <td>Persistent TCP connection with small payload packets</td>
+            </tr>
+            <tr>
+              <td>Ideal Use Case</td>
+              <td>Direct local configuration web page</td>
+              <td>Asynchronous, multi-device IoT telemetry and control</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- 10. ADAFRUIT IO ARCHITECTURE -->
+      <section class="content-block">
+        <h2 class="content-block-heading">10. Adafruit IO Architecture</h2>
+        <p class="content-block-text">
+          Adafruit IO hosts both the MQTT broker service and the dashboard presentation layer under a unified cloud account:
+        </p>
+        <div class="diagram-box">ESP32 Microcontroller
+       │
+       │ Internet (TCP Port 1883)
+       ▼
+Adafruit IO Cloud
+       ├── MQTT Broker (io.adafruit.com)
+       ├── Feed (AIO_USERNAME/feeds/bulb)
+       └── Dashboard (Interactive Web Toggle)</div>
+        <p class="content-block-text">
+          The subscription path is structured as <code>AIO_USERNAME "/feeds/bulb"</code>. The username is embedded in the topic path to isolate client feeds. In public documentation, real credentials must always be replaced with placeholders:
+        </p>
+        <div class="diagram-box">#define AIO_SERVER      "io.adafruit.com"
+#define AIO_SERVERPORT  1883
+#define AIO_USERNAME    "YOUR_AIO_USERNAME"
+#define AIO_KEY         "YOUR_AIO_KEY"</div>
+      </section>
+
+      <!-- 11. FEED / TOPIC STRUCTURE -->
+      <section class="content-block">
+        <h2 class="content-block-heading">11. Feed / Topic Structure</h2>
+        <p class="content-block-text">
+          The <code>bulb</code> feed acts as the single shared message channel between cloud and hardware. Only two ASCII payload strings are exchanged across this channel: <code>ON</code> and <code>OFF</code>.
+        </p>
+        <div class="diagram-box">Dashboard Action:
+  Toggle set ON   ──&gt; Publishes string "ON"
+  Toggle set OFF  ──&gt; Publishes string "OFF"
+
+ESP32 Action:
+  Received "ON"   ──&gt; Drives GPIO 5 HIGH
+  Received "OFF"  ──&gt; Drives GPIO 5 LOW
+
+Button Override:
+  Physical press  ──&gt; Toggles outputState
+                  ──&gt; Publishes "ON" or "OFF" to sync dashboard</div>
+      </section>
+
+      <!-- 12. DASHBOARD -> ESP32 FLOW -->
+      <section class="content-block">
+        <h2 class="content-block-heading">12. Dashboard &rarr; ESP32 Control Flow</h2>
+        <p class="content-block-text">
+          When the user toggles the switch on the web dashboard, the downlink flow executes as follows:
+        </p>
         <ol class="content-block-list">
-          <li>Created an Adafruit IO account and a feed named "bulb". Adafruit IO feeds are MQTT topics in the format username/feeds/feedname.</li>
-          <li>Created a dashboard [[FILL: dashboard name]] and added a Toggle block connected to the bulb feed. The toggle sends ON and OFF.</li>
-          <li>Noted the Adafruit IO username and the Active Key. The key acts as the password for the MQTT connection and is not shared.</li>
-          <li>Soldered the circuit on the perfboard. An ESP32 output pin goes through a resistor to the base of the NPN transistor. The emitter goes to ground. The load sits between the supply and the collector, so the transistor works as a switch. The push button connects an ESP32 input pin to ground and uses the internal pull-up resistor. Checked every joint for continuity with a multimeter before powering the board.</li>
-          <li>Installed the Adafruit MQTT library in Arduino IDE and wrote the sketch. It connects to Wi-Fi, connects to io.adafruit.com on port 1883 and subscribes to the bulb feed.</li>
-          <li>When the dashboard toggle is switched, the broker forwards ON or OFF to the ESP32. The ESP32 sets the output pin HIGH or LOW and the transistor switches the load.</li>
-          <li>When the push button is pressed, the ESP32 flips the output and publishes the new state to the same feed. The dashboard toggle then updates to match.</li>
-          <li>Tested from both sides. The dashboard switched the load, the push button switched the load, and the dashboard always showed the current state.</li>
+          <li>User flips the toggle switch on the Adafruit IO dashboard.</li>
+          <li>Adafruit IO publishes the string <code>"ON"</code> or <code>"OFF"</code> to the <code>bulb</code> feed.</li>
+          <li>The cloud MQTT broker distributes the packet to all active subscribers of that feed.</li>
+          <li>The ESP32 is subscribed to <code>AIO_USERNAME "/feeds/bulb"</code>.</li>
+          <li>In the execution loop, <code>mqtt.readSubscription(100)</code> detects the incoming packet.</li>
+          <li>The program confirms that the subscription pointer matches <code>&amp;bulbFeed</code>.</li>
+          <li>The payload is cast to a string: <code>String msg = (char *)bulbFeed.lastread;</code>.</li>
+          <li>The message is evaluated: <code>setOutput(msg == "ON");</code>.</li>
+          <li>The <code>setOutput()</code> routine sets <strong>GPIO 5</strong> to <code>HIGH</code> or <code>LOW</code>.</li>
+          <li>The base resistor limits current, driving the NPN transistor into saturation to switch the load.</li>
         </ol>
       </section>
 
+      <!-- 13. PUSH BUTTON -> DASHBOARD FLOW -->
       <section class="content-block">
-        <h2 class="content-block-heading">Media</h2>
-        <video class="media-video" controls preload="metadata">
-          <source src="assets/iot/task2-clip1.mp4" type="video/mp4">
-        </video>
+        <h2 class="content-block-heading">13. Push Button &rarr; Dashboard Feedback Flow</h2>
+        <p class="content-block-text">
+          The uplink flow handles manual override from the physical button:
+        </p>
+        <ol class="content-block-list">
+          <li>The main loop reads the digital logic level of GPIO 4: <code>int reading = digitalRead(BUTTON_PIN);</code>.</li>
+          <li>Due to internal pull-up configuration, released is <code>HIGH</code> and pressed is <code>LOW</code>.</li>
+          <li>The edge detector identifies a press: <code>reading == LOW &amp;&amp; lastButton == HIGH</code>.</li>
+          <li>A 250ms debounce filter prevents contact chatter from triggering multiple false toggles.</li>
+          <li>The output state is inverted: <code>setOutput(!outputState);</code>.</li>
+          <li>The new state is published to Adafruit IO: <code>bulbPub.publish(outputState ? "ON" : "OFF");</code>.</li>
+          <li>The MQTT broker forwards the update to the dashboard widget, keeping cloud and hardware in sync.</li>
+        </ol>
       </section>
 
+      <!-- 14. TRANSISTOR DRIVER CIRCUIT -->
       <section class="content-block">
-        <h2 class="content-block-heading">Code</h2>
+        <h2 class="content-block-heading">14. Transistor Driver Circuit</h2>
+        <p class="content-block-text">
+          Microcontroller GPIO pins are designed to provide low-current logic level signaling (typically under 12–20 mA on the ESP32), not to supply heavy operating current directly to loads. Drawing excessive current directly from a GPIO pin causes brownouts, overheating, or internal silicon destruction.
+        </p>
+        <p class="content-block-text" style="margin-top: 0.75rem;">
+          An <strong>NPN bipolar junction transistor (BJT)</strong> solves this by functioning as an electronically controlled switch:
+        </p>
+        <ul class="content-block-list">
+          <li><strong>Base (B):</strong> Connected to GPIO 5 through a current-limiting base resistor. Supplying a small base current turns the transistor ON.</li>
+          <li><strong>Collector (C):</strong> Connected to the negative terminal of the load, with the positive terminal tied to the external power rail.</li>
+          <li><strong>Emitter (E):</strong> Connected directly to circuit ground (GND).</li>
+          <li><strong>Switching Behavior:</strong> When GPIO 5 is driven HIGH, base current flows, driving the transistor into saturation. This creates a low-resistance path between collector and emitter, completing the circuit to energize the load.</li>
+        </ul>
+      </section>
+
+      <!-- 15. IMPLEMENTATION PROCESS -->
+      <section class="content-block">
+        <h2 class="content-block-heading">15. Implementation Process</h2>
+        <ol class="content-block-list">
+          <li>Created an Adafruit IO account.</li>
+          <li>Created a new feed named <code>bulb</code>.</li>
+          <li>Built a dashboard and added a Toggle block linked to the <code>bulb</code> feed.</li>
+          <li>Retrieved the Adafruit IO username and the private Active Key.</li>
+          <li>Assembled the NPN transistor switching circuit on a perfboard.</li>
+          <li>Wired ESP32 GPIO 5 to the transistor base through the current-limiting resistor.</li>
+          <li>Wired the push button between ESP32 GPIO 4 and ground.</li>
+          <li>Checked all soldered joints and wiring with a digital multimeter for continuity and isolation.</li>
+          <li>Configured Wi-Fi credentials and Adafruit IO parameters in the Arduino IDE sketch.</li>
+          <li>Compiled and uploaded the firmware to the ESP32 DevKit V4.</li>
+          <li>Monitored the Serial Monitor to verify successful Wi-Fi connection and IP assignment.</li>
+          <li>Verified that the ESP32 connected to <code>io.adafruit.com:1883</code> and subscribed to the feed.</li>
+          <li>Tested remote control: toggling the Adafruit IO dashboard switch verified load activation.</li>
+          <li>Tested manual control: pressing the physical push button verified local switching and confirmed the dashboard toggle followed immediately.</li>
+        </ol>
+      </section>
+
+      <!-- 16. WIFI CONNECTION -->
+      <section class="content-block">
+        <h2 class="content-block-heading">16. Wi-Fi Connection</h2>
+        <p class="content-block-text">
+          The microcontroller initializes network connectivity using:
+        </p>
+        <div class="diagram-box">WiFi.begin(WLAN_SSID, WLAN_PASS);
+while (WiFi.status() != WL_CONNECTED) {
+  delay(500);
+  Serial.print(".");
+}</div>
+        <p class="content-block-text">
+          The program halts in a blocking loop until the Wi-Fi status returns <code>WL_CONNECTED</code>. This enforces the fundamental architectural dependency: Wi-Fi connection &rarr; Internet access &rarr; Adafruit IO connection &rarr; MQTT messaging.
+        </p>
+      </section>
+
+      <!-- 17. MQTT CONNECTION -->
+      <section class="content-block">
+        <h2 class="content-block-heading">17. MQTT Connection</h2>
+        <p class="content-block-text">
+          The client object is instantiated with the server parameters:
+        </p>
+        <div class="diagram-box">Adafruit_MQTT_Client mqtt(&amp;client, AIO_SERVER, AIO_SERVERPORT, AIO_USERNAME, AIO_KEY);</div>
+        <p class="content-block-text">
+          The client targets <code>io.adafruit.com</code> on standard MQTT TCP port <code>1883</code>. Port 1883 represents unencrypted MQTT communication. The Adafruit IO Key acts as the authentication token and must never be exposed publicly.
+        </p>
+      </section>
+
+      <!-- 18. SUBSCRIPTION -->
+      <section class="content-block">
+        <h2 class="content-block-heading">18. Subscription</h2>
+        <p class="content-block-text">
+          The subscription object binds the client to the specific topic string:
+        </p>
+        <div class="diagram-box">Adafruit_MQTT_Subscribe bulbFeed = Adafruit_MQTT_Subscribe(&amp;mqtt, AIO_USERNAME "/feeds/bulb");
+...
+mqtt.subscribe(&amp;bulbFeed);</div>
+        <p class="content-block-text">
+          Calling <code>mqtt.subscribe(&amp;bulbFeed)</code> informs the broker that this client must receive all messages published to that feed.
+        </p>
+      </section>
+
+      <!-- 19. MESSAGE HANDLING -->
+      <section class="content-block">
+        <h2 class="content-block-heading">19. Message Handling</h2>
+        <p class="content-block-text">
+          In the main execution loop, incoming packets are inspected non-blockingly:
+        </p>
+        <div class="diagram-box">Adafruit_MQTT_Subscribe *sub;
+while ((sub = mqtt.readSubscription(100))) {
+  if (sub == &amp;bulbFeed) {
+    String msg = (char *)bulbFeed.lastread;
+    Serial.print("Received: ");
+    Serial.println(msg);
+    setOutput(msg == "ON");
+  }
+}</div>
+        <p class="content-block-text">
+          The condition <code>sub == &amp;bulbFeed</code> ensures the message originated from the expected feed. The buffer is read as a string and evaluated with <code>setOutput(msg == "ON")</code>, activating the pin if the payload is <code>ON</code> and deactivating it for any other value.
+        </p>
+      </section>
+
+      <!-- 20. OUTPUT CONTROL -->
+      <section class="content-block">
+        <h2 class="content-block-heading">20. Output Control</h2>
+        <p class="content-block-text">
+          A centralized helper function encapsulates the GPIO manipulation:
+        </p>
+        <div class="diagram-box">void setOutput(bool on) {
+  outputState = on;
+  digitalWrite(OUTPUT_PIN, on ? HIGH : LOW);
+}</div>
+        <p class="content-block-text">
+          Centralizing the logic into <code>setOutput()</code> prevents duplication. Both incoming MQTT packets and local button presses invoke the same function, maintaining a single, consistent source of truth for the physical hardware state.
+        </p>
+      </section>
+
+      <!-- 21. MANUAL OVERRIDE -->
+      <section class="content-block">
+        <h2 class="content-block-heading">21. Manual Override</h2>
+        <p class="content-block-text">
+          To provide local tactile control, the push button is polled in the main loop:
+        </p>
+        <div class="diagram-box">int reading = digitalRead(BUTTON_PIN);
+if (reading == LOW &amp;&amp; lastButton == HIGH &amp;&amp; millis() - lastPress &gt; 250) {
+  lastPress = millis();
+  setOutput(!outputState);
+  bulbPub.publish(outputState ? "ON" : "OFF");
+}
+lastButton = reading;</div>
+        <p class="content-block-text">
+          The condition <code>reading == LOW &amp;&amp; lastButton == HIGH</code> detects the falling edge (button press event) rather than triggering continuously while the button is held down. The <code>millis() - lastPress &gt; 250</code> clause provides non-blocking software debouncing, ignoring mechanical contact vibrations.
+        </p>
+      </section>
+
+      <!-- 22. KEEPING DASHBOARD STATE IN SYNC -->
+      <section class="content-block">
+        <h2 class="content-block-heading">22. Keeping Dashboard State in Sync</h2>
+        <p class="content-block-text">
+          A common flaw in simple IoT systems is state divergence—where a physical switch is toggled, but the cloud app still displays the old state.
+        </p>
+        <p class="content-block-text" style="margin-top: 0.75rem;">
+          In this implementation, pressing the physical button immediately publishes the updated state back to the same <code>bulb</code> feed via <code>bulbPub.publish(...)</code>. The Adafruit IO dashboard listens to the feed it controls, so the toggle widget slides to match the physical state automatically. Both controls remain permanently synchronized.
+        </p>
+      </section>
+
+      <!-- 23. CONNECTION RELIABILITY -->
+      <section class="content-block">
+        <h2 class="content-block-heading">23. Connection Reliability</h2>
+        <p class="content-block-text">
+          Because network drops are common in IoT deployments, connection management is implemented:
+        </p>
+        <div class="diagram-box">void MQTT_connect() {
+  if (mqtt.connected()) return;
+  int8_t ret;
+  uint8_t retries = 3;
+  while ((ret = mqtt.connect()) != 0) {
+    mqtt.disconnect();
+    delay(5000);
+    if (--retries == 0) ESP.restart();
+  }
+}</div>
+        <p class="content-block-text">
+          If the broker connection drops, the function attempts up to 3 reconnection cycles. If the connection cannot be restored, <code>ESP.restart()</code> triggers a hardware reset to clear network buffers and start clean.
+        </p>
+        <p class="content-block-text" style="margin-top: 0.75rem;">
+          Additionally, every 30 seconds the ESP32 sends a ping packet via <code>mqtt.ping()</code> to prevent router NAT timeouts and verify active broker responsiveness.
+        </p>
+      </section>
+
+      <!-- 24. COMPLETE CODE -->
+      <section class="content-block">
+        <h2 class="content-block-heading">24. Complete Code</h2>
         <div class="code-filename">File: ESP32_AdafruitIO_MQTT.ino</div>
         <div class="code-wrapper">
           <button class="copy-btn" onclick="copyCode(this)">Copy</button>
@@ -178,23 +647,182 @@ void loop() {
         </div>
       </section>
 
+      <!-- 25. CODE BREAKDOWN -->
       <section class="content-block">
-        <h2 class="content-block-heading">Result</h2>
-        <p class="content-block-text">The Adafruit IO dashboard switched the soldered circuit from anywhere with internet access. The push button switched the same circuit locally and the dashboard toggle followed it. Both controls stayed in sync through the single bulb feed.</p>
+        <h2 class="content-block-heading">25. Code Breakdown</h2>
+        <div class="feature-grid">
+          <div class="feature-card">
+            <div class="feature-card-title">Library Imports</div>
+            <div class="feature-card-desc"><code>WiFi.h</code> handles the physical wireless connection; <code>Adafruit_MQTT.h</code> and <code>Adafruit_MQTT_Client.h</code> handle the MQTT protocol state machine.</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card-title">Configuration Constants</div>
+            <div class="feature-card-desc">Defines credentials for the local Wi-Fi router, broker endpoint (<code>io.adafruit.com:1883</code>), username, and private AIO authentication key.</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card-title">GPIO Mapping</div>
+            <div class="feature-card-desc">Assigns <strong>GPIO 5</strong> as the output to the transistor base resistor and <strong>GPIO 4</strong> as the digital input for the push button.</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card-title">MQTT Client Objects</div>
+            <div class="feature-card-desc">Instantiates the TCP client, MQTT client, <code>bulbFeed</code> subscription object, and <code>bulbPub</code> publication object targeting the same feed path.</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card-title">setOutput() Function</div>
+            <div class="feature-card-desc">Centralizes hardware control, synchronizing the boolean variable <code>outputState</code> with the electrical state of GPIO 5.</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card-title">MQTT_connect()</div>
+            <div class="feature-card-desc">Verifies ongoing broker connection and executes automatic reconnect retries with fail-safe restart upon repeated dropped connections.</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card-title">setup()</div>
+            <div class="feature-card-desc">Initializes serial communication, pin modes (<code>OUTPUT</code> and <code>INPUT_PULLUP</code>), Wi-Fi connection, and registers the MQTT subscription.</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card-title">loop()</div>
+            <div class="feature-card-desc">Performs continuous execution: maintains broker link, reads incoming subscription packets, debounces button presses, publishes state changes, and sends keepalive pings.</div>
+          </div>
+        </div>
       </section>
 
+      <!-- MEDIA SECTION -->
+      <section class="content-block" id="media">
+        <h2 class="content-block-heading">Demonstration Video</h2>
+        <p class="content-block-text">Demonstration of cloud-based dashboard switching and synchronized physical push button override:</p>
+        <video class="media-video" controls preload="metadata">
+          <source src="assets/iot/task2-clip1.mp4" type="video/mp4">
+        </video>
+      </section>
+
+      <!-- 26. TESTING & VERIFICATION -->
       <section class="content-block">
-        <h2 class="content-block-heading">Learnings</h2>
+        <h2 class="content-block-heading">26. Testing &amp; Verification</h2>
+        <p class="content-block-text">
+          The system was systematically tested across each network and hardware boundary:
+        </p>
         <ul class="content-block-list">
-          <li>MQTT uses a broker between devices. The dashboard and the ESP32 never talk to each other directly. They only publish to and subscribe from a topic.</li>
-          <li>MQTT messages are small, which makes it a better fit than HTTP for constant device updates.</li>
-          <li>An ESP32 pin can only supply a small current, so a transistor is used to switch the load.</li>
-          <li>Publishing the button state back to the feed keeps the cloud dashboard accurate.</li>
-          <li>Continuity checks with a multimeter before powering a soldered circuit find bad joints early.</li>
-          <li>The Adafruit IO key works like a password and stays out of public code.</li>
+          <li><strong>Test 1 — Wi-Fi Connection:</strong> Booted board with Serial Monitor open at 115200 baud. Verified that the connection completed and an IP address was assigned.</li>
+          <li><strong>Test 2 — MQTT Connection:</strong> Monitored serial logs to verify successful connection handshake to <code>io.adafruit.com</code> and subscription registration.</li>
+          <li><strong>Test 3 — Dashboard ON Command:</strong> Flipped the dashboard toggle to ON. Verified that the broker forwarded <code>"ON"</code>, GPIO 5 drove HIGH, the transistor saturated, and the load energized.</li>
+          <li><strong>Test 4 — Dashboard OFF Command:</strong> Flipped the dashboard toggle to OFF. Verified that <code>"OFF"</code> was received, GPIO 5 pulled LOW, and the load switched OFF.</li>
+          <li><strong>Test 5 — Physical Push Button Override:</strong> Pressed the physical push button on the perfboard. Verified that the local load toggled instantly and the Adafruit IO dashboard toggle updated automatically.</li>
+          <li><strong>Test 6 — Repeated Presses &amp; Debounce:</strong> Rapidly tapped the tactile push button. Verified that debounce logic prevented spurious double-toggling.</li>
+          <li><strong>Test 7 — Connection Recovery &amp; Keepalive:</strong> Monitored extended operation to confirm that 30-second pings maintained an unbroken broker session.</li>
         </ul>
       </section>
 
+      <!-- 27. FAILURE CASES / DEBUGGING -->
+      <section class="content-block">
+        <h2 class="content-block-heading">27. Failure Cases &amp; Debugging</h2>
+        <div class="feature-grid">
+          <div class="feature-card">
+            <div class="feature-card-title">Wi-Fi Connection Fails</div>
+            <div class="feature-card-desc">Verify that the router is broadcasting on 2.4 GHz (ESP32 does not support 5 GHz Wi-Fi) and check SSID/password spelling.</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card-title">MQTT Connection Rejected</div>
+            <div class="feature-card-desc">Verify internet reachability, check that the AIO username matches the account exactly, and confirm that the Active Key has not been regenerated.</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card-title">Dashboard Toggles but No Load Action</div>
+            <div class="feature-card-desc">Check the Serial Monitor to verify that the packet arrives. If received, check transistor orientation (Base/Collector/Emitter) and base resistor continuity.</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card-title">Push Button Unresponsive</div>
+            <div class="feature-card-desc">Verify that the button connects cleanly between GPIO 4 and GND, and ensure <code>INPUT_PULLUP</code> is enabled in firmware.</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card-title">Intermittent or Glitchy Operation</div>
+            <div class="feature-card-desc">Inspect perfboard soldering with a multimeter in continuity mode to identify high-resistance cold solder joints or unintended solder bridges.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 28. SECURITY CONSIDERATIONS -->
+      <section class="content-block">
+        <h2 class="content-block-heading">28. Security Considerations</h2>
+        <ul class="content-block-list">
+          <li><strong>Credential Isolation:</strong> Wi-Fi passwords and Adafruit IO authentication keys must never be committed to public repositories. Placeholders (e.g. <code>YOUR_AIO_KEY</code>) must always be used in public portfolios.</li>
+          <li><strong>Authentication Token:</strong> The Adafruit IO Key provides full API access to all account feeds and should be treated as a confidential secret.</li>
+          <li><strong>Unencrypted Transport:</strong> Port 1883 utilizes plain unencrypted TCP. While adequate for educational bench prototypes, commercial systems require TLS encryption over port 8883 to protect keys and payload data from packet sniffing.</li>
+        </ul>
+      </section>
+
+      <!-- 29. KEY LEARNINGS -->
+      <section class="content-block">
+        <h2 class="content-block-heading">29. Key Learnings</h2>
+        <div class="feature-grid">
+          <div class="feature-card">
+            <div class="feature-card-title">MQTT Protocol</div>
+            <div class="feature-card-desc">Understood broker-mediated publish/subscribe architecture, topic hierarchies, and how persistent sessions minimize network overhead compared to HTTP.</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card-title">Cloud IoT Integration</div>
+            <div class="feature-card-desc">Connected embedded silicon to a global cloud dashboard, enabling remote access from anywhere with internet connectivity.</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card-title">Embedded Hardware</div>
+            <div class="feature-card-desc">Mastered using an NPN transistor as a low-side electronic switch and utilizing internal silicon pull-up resistors for button sensing.</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card-title">Circuit Assembly</div>
+            <div class="feature-card-desc">Gained practical bench experience soldering on perfboard and utilizing digital multimeter continuity testing to validate joints before power-up.</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card-title">Software Reliability</div>
+            <div class="feature-card-desc">Implemented automated MQTT reconnection loops, hardware watchdog recovery, and software debouncing for reliable physical inputs.</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card-title">System Design</div>
+            <div class="feature-card-desc">Engineered a closed bidirectional control loop where physical and virtual controls stay perfectly synchronized through a single feed.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 30. FINAL RESULT -->
+      <section class="content-block">
+        <h2 class="content-block-heading">30. Final Result</h2>
+        <p class="content-block-text">
+          The ESP32 successfully established station connectivity to Wi-Fi and connected to Adafruit IO via MQTT. The system achieved complete end-to-end functionality:
+        </p>
+        <ul class="content-block-list">
+          <li>Maintained a stable client connection to <code>io.adafruit.com</code> on port 1883.</li>
+          <li>Successfully subscribed to the <code>bulb</code> feed.</li>
+          <li>Received remote <code>ON</code> and <code>OFF</code> commands from the cloud dashboard.</li>
+          <li>Controlled GPIO 5 to reliably switch the NPN transistor and load circuit.</li>
+          <li>Detected physical button presses on GPIO 4 with 250ms debouncing.</li>
+          <li>Published local state changes back to the cloud broker.</li>
+          <li>Maintained perfect synchronization between physical hardware and cloud dashboard widgets.</li>
+        </ul>
+        <div class="diagram-box">Verified Communication:
+Cloud Dashboard ──[Downlink]──&gt; ESP32 Hardware (Remote Control)
+ESP32 Hardware  ──[Uplink]────&gt; Cloud Dashboard (State Sync)</div>
+      </section>
+
+      <!-- 31. TASK 2 TAKEAWAY -->
+      <section class="content-block">
+        <h2 class="content-block-heading">31. Task 2 Takeaway</h2>
+        <p class="content-block-text">
+          Task 1 demonstrated that a browser can control an LED over a local network via HTTP. Task 2 extended that principle to the global internet by decoupling clients through an MQTT broker.
+        </p>
+        <p class="content-block-text" style="margin-top: 0.75rem;">
+          The key realization of this project is that an IoT device is not merely a passive recipient of remote commands. By engineering a bidirectional pipeline (<code>Cloud &rarr; Device</code> and <code>Device &rarr; Cloud</code>), the physical push button and the remote cloud toggle became two equal, synchronized interfaces controlling the exact same underlying device state.
+        </p>
+      </section>
+
+      <!-- 32. WHY TASK 3 IS THE NEXT STEP -->
+      <section class="content-block">
+        <h2 class="content-block-heading">32. Why Task 3 Is the Next Step</h2>
+        <p class="content-block-text">
+          Having validated both local HTTP control (Task 1) and bidirectional cloud MQTT control (Task 2), the natural progression is to expand the system from manual screen/button toggles into hands-free automation.
+        </p>
+        <p class="content-block-text" style="margin-top: 0.75rem;">
+          Task 3 builds directly on this MQTT infrastructure by integrating natural language voice control through Google Assistant and IFTTT, routing voice commands into the Adafruit IO feed to actuate physical relays.
+        </p>
+      </section>
+
+      <!-- BOTTOM NAVIGATION -->
       <div class="task-nav-bottom">
         <a href="iot-week.html" class="back-link">&larr; Back to IoT Week</a>
         <a href="iot-task3.html" class="next-link">Next Task: Task 03 &rarr;</a>

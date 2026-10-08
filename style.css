@@ -625,6 +625,97 @@ ol.content-block-list {
 }
 
 /* ==========================================================================
+   TECHNICAL CASE STUDY UTILITIES
+   ========================================================================== */
+.diagram-box {
+  background-color: #0d0d0d;
+  border: 1px solid var(--border);
+  padding: 1.5rem;
+  border-radius: 2px;
+  margin: 1.25rem 0;
+  overflow-x: auto;
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  line-height: 1.45;
+  color: var(--text-main);
+  white-space: pre;
+}
+
+.tech-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+  font-size: 0.9375rem;
+}
+
+.tech-table th, .tech-table td {
+  border: 1px solid var(--border);
+  padding: 0.75rem 1rem;
+  text-align: left;
+}
+
+.tech-table th {
+  background-color: var(--bg-card);
+  color: var(--text-main);
+  font-weight: 600;
+}
+
+.tech-table td {
+  color: var(--text-secondary);
+}
+
+.sub-heading {
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--text-main);
+  margin: 1.5rem 0 0.5rem;
+}
+
+.sub-sub-heading {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-main);
+  margin: 1.25rem 0 0.4rem;
+}
+
+code:not(pre code) {
+  font-family: var(--font-mono);
+  font-size: 0.875em;
+  background-color: #161616;
+  color: var(--text-main);
+  padding: 0.15rem 0.4rem;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+}
+
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.25rem;
+  margin: 1.25rem 0;
+}
+
+.feature-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border);
+  padding: 1.5rem;
+  border-radius: 2px;
+}
+
+.feature-card-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-main);
+  margin-bottom: 0.5rem;
+}
+
+.feature-card-desc {
+  font-size: 0.925rem;
+  color: var(--text-secondary);
+  line-height: 1.55;
+}
+
+/* ==========================================================================
    FOOTER
    ========================================================================== */
 .site-footer {
