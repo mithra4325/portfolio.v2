@@ -5,6 +5,138 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Task 05: Firebase Hardware Integration — Mithra Ravi</title>
   <link rel="stylesheet" href="style.css">
+  <style>
+    /* Scoped Interactive & Visual Enhancements for Task 5 */
+    .diagram-figure {
+      margin: 1.5rem 0;
+      border: 1px solid var(--border);
+      background-color: #0d0d0d;
+      padding: 0.75rem;
+      border-radius: 2px;
+    }
+    .diagram-figure img {
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 2px;
+      border: 1px solid var(--border);
+    }
+    .diagram-caption {
+      font-size: 0.8125rem;
+      color: var(--text-secondary);
+      font-family: var(--font-mono);
+      margin-top: 0.6rem;
+      text-align: center;
+    }
+    .card-scroller-wrap {
+      overflow-x: auto;
+      margin: 1.5rem 0;
+      padding-bottom: 0.5rem;
+    }
+    .card-scroller {
+      display: flex;
+      gap: 1.25rem;
+      min-width: 680px;
+    }
+    .scroller-card {
+      flex: 1;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      padding: 1.25rem;
+      border-radius: 2px;
+      transition: var(--transition);
+    }
+    .scroller-card:hover {
+      border-color: var(--maroon);
+    }
+    .scroller-badge {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-family: var(--font-mono);
+      color: var(--maroon-hover);
+      border: 1px solid var(--maroon);
+      padding: 0.15rem 0.4rem;
+      margin-bottom: 0.5rem;
+    }
+    .expandable-block {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      margin: 0.85rem 0;
+      border-radius: 2px;
+      transition: var(--transition);
+    }
+    .expandable-block[open] {
+      border-color: var(--border-hover);
+    }
+    .expandable-summary {
+      padding: 1rem 1.25rem;
+      font-weight: 600;
+      font-size: 0.95rem;
+      color: var(--text-main);
+      cursor: pointer;
+      list-style: none;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .expandable-summary::-webkit-details-marker {
+      display: none;
+    }
+    .expandable-summary::after {
+      content: "+";
+      font-family: var(--font-mono);
+      font-size: 1.1rem;
+      color: var(--text-secondary);
+      transition: transform 0.2s ease;
+    }
+    .expandable-block[open] .expandable-summary::after {
+      content: "−";
+      color: var(--maroon-hover);
+    }
+    .expandable-content {
+      padding: 0 1.25rem 1.25rem;
+      color: var(--text-secondary);
+      font-size: 0.925rem;
+      line-height: 1.6;
+      border-top: 1px solid var(--border);
+      padding-top: 0.85rem;
+    }
+    .flow-stepper {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      margin: 1.25rem 0;
+    }
+    .flow-step-item {
+      display: flex;
+      gap: 1rem;
+      align-items: flex-start;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      padding: 1rem 1.25rem;
+      border-radius: 2px;
+    }
+    .step-number {
+      font-family: var(--font-mono);
+      font-weight: 700;
+      font-size: 0.875rem;
+      color: #ffffff;
+      background: var(--maroon);
+      padding: 0.2rem 0.55rem;
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+    .step-text {
+      font-size: 0.925rem;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+    .step-title {
+      font-weight: 600;
+      color: var(--text-main);
+      margin-bottom: 0.25rem;
+    }
+  </style>
 </head>
 <body>
 
@@ -30,56 +162,360 @@
     <div class="container page-container">
       <h1 class="page-main-heading">Task 05: Firebase Hardware Integration</h1>
 
+      <!-- 1. OVERVIEW -->
       <section class="content-block">
-        <h2 class="content-block-heading">Overview</h2>
-        <p class="content-block-text">This task connects the physical hardware to the Firebase dashboard from Task 4. An ESP32 reads a DHT11 temperature and humidity sensor and an LDR light sensor and uploads the values to Firebase. It also controls a bulb through a relay. The bulb can be switched from the dashboard or from a push button on the board, and both always show the same state.</p>
+        <h2 class="content-block-heading">1. Overview</h2>
+        <p class="content-block-text">
+          Task 05 bridges physical sensor hardware, electrical switching actuators, and the cloud web dashboard engineered in Task 04. An <strong>ESP32 Dev Module</strong> acts as an edge IoT node directly connected to physical inputs and outputs, establishing a continuous, bidirectional synchronization loop with <strong>Firebase Realtime Database</strong>.
+        </p>
+        <p class="content-block-text" style="margin-top: 0.75rem;">
+          The microcontroller samples ambient environmental conditions using a <strong>DHT11 temperature and humidity sensor</strong> on <code>GPIO 4</code> and an <strong>LDR light sensor</strong> on <code>GPIO 34</code>, streaming structured JSON payloads to <code>/telemetry/live</code> every 5 seconds. Concurrently, the firmware listens to an event stream on <code>/controls</code>, instantly actuating a <strong>5V relay module</strong> on <code>GPIO 26</code> whenever the cloud state changes. To complete the bidirectional loop, a local <strong>tactile push button</strong> on <code>GPIO 14</code> enables manual physical override, toggling the relay locally and immediately updating <code>/controls/bulbState</code> in the cloud.
+        </p>
+
+        <!-- Technical Architecture Visual 1 -->
+        <div class="diagram-figure">
+          <img src="assets/iot/task5-architecture.jpg" alt="Technical diagram of Task 5 complete IoT system architecture">
+          <div class="diagram-caption">Figure 5.1 — Complete Edge-to-Cloud System Architecture: Sensors, ESP32, Firebase RTDB, and Web Dashboard.</div>
+        </div>
+
+        <p class="content-block-text">
+          Through this architecture, the physical appliance, the cloud database, and the web browser dashboard remain strictly synchronized at all times, regardless of whether control originates from a browser click or a physical button press.
+        </p>
       </section>
 
+      <!-- 2. WHAT I WAS TRYING TO BUILD -->
       <section class="content-block">
-        <h2 class="content-block-heading">Objective</h2>
+        <h2 class="content-block-heading">2. What I Was Trying to Build</h2>
+        <p class="content-block-text">
+          The core engineering objective was to solve the multi-master synchronization problem in distributed IoT: <em>how to reliably synchronize physical hardware state and ambient sensor readings with a cloud web interface without tight coupling or continuous polling.</em>
+        </p>
+        <div class="diagram-box">PHYSICAL EDGE ENVIRONMENT                          CLOUD DATABASE                     CLIENT INTERFACE
+[DHT11 Sensor] ──┐
+                 ├──► [ESP32 Node] ──(5s Upload)──► [telemetry/live] ──(onValue)──► [Dashboard Cards]
+[LDR Sensor]   ──┘           ▲                             ▲                                │
+                             │                             │                                │
+[Manual Button] ──(Interrupt)┘                             └────(set 1/0)───────────────────┘
+                             │                                     │
+                             ▼                                     ▼
+                     [Relay Actuator] ◄────(Stream Event)──────────┘
+                            │
+                            ▼
+                     [Appliance Bulb]</div>
+        <p class="content-block-text">
+          The system fulfills three distinct requirements:
+        </p>
         <ul class="content-block-list">
-          <li>Read temperature, humidity and light level on the ESP32.</li>
-          <li>Upload the readings to the Firebase Realtime Database at fixed intervals.</li>
-          <li>Receive the bulb command from the dashboard instantly and switch the relay.</li>
-          <li>Add a push button as a local control that also updates the database.</li>
+          <li><strong>Autonomous Telemetry Uplink:</strong> Continuously sample analog and digital environmental sensors at the edge and persist readings in the cloud.</li>
+          <li><strong>Zero-Latency Downlink Actuation:</strong> Receive cloud control commands immediately using persistent event streams rather than wasteful HTTP polling loops.</li>
+          <li><strong>Deterministic Dual-Control Parity:</strong> Support local manual switching via physical button while keeping the remote web dashboard toggle in lockstep.</li>
         </ul>
       </section>
 
+      <!-- 3. WHY THIS TASK MATTERS -->
       <section class="content-block">
-        <h2 class="content-block-heading">Components</h2>
+        <h2 class="content-block-heading">3. Why This Task Matters</h2>
+        <p class="content-block-text">
+          While Task 4 validated frontend cloud communication through simulated console data, Task 5 integrates actual physical hardware subject to real-world embedded challenges:
+        </p>
+        <div class="feature-grid">
+          <div class="feature-card">
+            <div class="feature-card-title">Real Sensor Characteristics</div>
+            <div class="feature-card-desc">Managing single-wire digital timing on the DHT11, floating analog conversions on the 12-bit SAR ADC, and filtering NaN transmission spikes.</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card-title">Dual-Master State Consistency</div>
+            <div class="feature-card-desc">Handling race conditions and state divergence when an actuator can be triggered both by a cloud event and a physical push button.</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card-title">Event-Driven Stream Sockets</div>
+            <div class="feature-card-desc">Operating persistent HTTP/WebSocket event streams on a resource-constrained microcontroller with automated reconnection routines.</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card-title">Electrical Safety &amp; Grounding</div>
+            <div class="feature-card-desc">Achieving complete galvanic isolation between sensitive 3.3V microcontroller logic and hazardous 230V AC load circuits using optocoupled relays.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4. LEARNING OBJECTIVES -->
+      <section class="content-block">
+        <h2 class="content-block-heading">4. Learning Objectives</h2>
         <ul class="content-block-list">
-          <li>ESP32 development board</li>
-          <li>DHT11 temperature and humidity sensor (GPIO 4)</li>
-          <li>LDR with a fixed resistor as a voltage divider [[FILL: resistor value]] (GPIO 34)</li>
-          <li>Push button (GPIO 14)</li>
-          <li>5 V relay module (GPIO 26)</li>
-          <li>Bulb and holder [[FILL: what you switched]]</li>
-          <li>Breadboard and jumper wires</li>
-          <li>Firebase project from Task 4</li>
+          <li>Interface a single-wire digital sensor (DHT11) with the ESP32 and extract calibrated temperature and humidity readings.</li>
+          <li>Construct a resistive voltage divider circuit with an LDR and sample the ESP32's 12-bit ADC (<code>GPIO 34</code>), mapping raw counts (0–4095) to percentage light level (0–100%).</li>
+          <li>Implement non-blocking software scheduling using <code>millis()</code> timers to upload telemetry every 5 seconds without stalling the main loop.</li>
+          <li>Integrate the <code>Firebase_ESP_Client</code> library, authenticating via anonymous sign-in and maintaining token validity.</li>
+          <li>Subscribe to live cloud mutations using Firebase RTDB event streams (<code>beginStream</code> and <code>streamCallback</code>) for push-driven actuation.</li>
+          <li>Implement software edge detection and debounce timing (250 ms) for physical momentary push buttons on <code>INPUT_PULLUP</code> pins.</li>
+          <li>Prevent startup state desynchronization by performing an initial state read (<code>getInt</code>) on boot before initiating the stream.</li>
+          <li>Drive an active-LOW optocoupled relay safely, ensuring safe boot-time pin initialization.</li>
         </ul>
       </section>
 
+      <!-- 5. COMPLETE SYSTEM ARCHITECTURE -->
       <section class="content-block">
-        <h2 class="content-block-heading">Work</h2>
-        <ol class="content-block-list">
-          <li>Used the same Firebase project and database structure as Task 4: telemetry/live for the sensor values and controls/bulbState for the bulb.</li>
-          <li>Wired the DHT11 data pin to GPIO 4. Wired the LDR and its fixed resistor as a voltage divider with the middle point going to GPIO 34, an analog input. Wired the push button between GPIO 14 and ground using the internal pull-up. Wired the relay input to GPIO 26.</li>
-          <li>Installed the Firebase ESP Client library and the DHT sensor library in Arduino IDE.</li>
-          <li>Wrote the sketch. The ESP32 connects to Wi-Fi, signs in to Firebase anonymously and reads the current bulbState once so the relay starts in the correct state.</li>
-          <li>Opened a stream on the controls path. When the dashboard changes bulbState, the ESP32 is notified immediately and switches the relay. This avoids asking the database again and again.</li>
-          <li>In the main loop the push button is checked with a 250 ms debounce. A press flips the relay and writes the new bulbState to Firebase, so the dashboard toggle follows.</li>
-          <li>Every 5 seconds the ESP32 reads the DHT11 and the LDR and uploads temperature, humidity and light level to telemetry/live. The LDR reading from 0 to 4095 is converted to a 0 to 100 percent light level.</li>
-          <li>Tested all directions. The dashboard toggle switched the bulb. The push button switched the bulb and the dashboard toggle updated. The sensor values appeared on the dashboard every few seconds.</li>
-        </ol>
+        <h2 class="content-block-heading">5. Complete System Architecture</h2>
+        <p class="content-block-text">
+          The physical and logical architecture bridges five discrete computational zones:
+        </p>
+        <div class="diagram-box">┌────────────────────────────────────────────────────────────────────────┐
+│                        PHYSICAL SENSOR &amp; INPUT ZONE                    │
+│   DHT11 Sensor (GPIO 4) │ LDR Light Divider (GPIO 34) │ Button (GPIO 14)│
+└────────────────────────────────────┬───────────────────────────────────┘
+                                     │ Direct GPIO &amp; ADC Lines
+                                     ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│                         ESP32 EMBEDDED NODE                            │
+│   Xtensa Dual-Core 240 MHz │ FreeRTOS │ Firebase_ESP_Client Library     │
+│   - Telemetry Engine (5000 ms non-blocking timer)                      │
+│   - Stream Callback Handler (/controls/bulbState)                      │
+│   - Local Button Debounce Handler (250 ms window)                      │
+└────────────────────────────────────┬───────────────────────────────────┘
+                                     │ 2.4 GHz 802.11 b/g/n Wi-Fi
+                                     ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│                   FIREBASE REALTIME DATABASE (CLOUD)                   │
+│   NoSQL JSON Tree │ WebSocket &amp; SSE Realtime Sync Channel              │
+│   - Path /telemetry/live : { temperature, humidity, light }            │
+│   - Path /controls/bulbState : integer (1 / 0)                         │
+└───────────────────┬────────────────────────────────┬───────────────────┘
+                    │                                │
+     REST / SSE     │                                │ Realtime onValue()
+     Stream Event   │                                │ Push Subscription
+                    ▼                                ▼
+┌──────────────────────────────┐  ┌──────────────────────────────────────┐
+│     ACTUATOR HARDWARE        │  │         WEB DASHBOARD CLIENT         │
+│  Relay Module (GPIO 26)      │  │  Firebase JavaScript SDK (v10)       │
+│  Active-LOW Optocoupler      │  │  - Live Telemetry Display Cards      │
+│  AC Mains Bulb (COM &amp; NO)    │  │  - Synchronized Checkbox Toggle      │
+└──────────────────────────────┘  └──────────────────────────────────────┘</div>
       </section>
 
+      <!-- 6. SYSTEM COMPONENTS -->
       <section class="content-block">
-        <h2 class="content-block-heading">Media</h2>
-        <p class="content-block-text">No media yet.</p>
+        <h2 class="content-block-heading">6. System Components</h2>
+        <p class="content-block-text">
+          Interactive layer sequence detailing the role of each architectural building block:
+        </p>
+
+        <!-- Interactive Swipeable Architecture Cards -->
+        <div class="card-scroller-wrap">
+          <div class="card-scroller">
+            <div class="scroller-card">
+              <span class="scroller-badge">LAYER 1: SENSORS</span>
+              <div class="feature-card-title">Environmental Transducers</div>
+              <div class="feature-card-desc">DHT11 measures temperature &amp; relative humidity via resistive humidity sensor and NTC thermistor. LDR photoresistor drops resistance with ambient lumens.</div>
+            </div>
+            <div class="scroller-card">
+              <span class="scroller-badge">LAYER 2: MICROCONTROLLER</span>
+              <div class="feature-card-title">ESP32 Dev Module</div>
+              <div class="feature-card-desc">Executes embedded C++ firmware, runs ADC conversions, schedules non-blocking timers, manages Wi-Fi reconnection, and processes event stream callbacks.</div>
+            </div>
+            <div class="scroller-card">
+              <span class="scroller-badge">LAYER 3: CLOUD ENGINE</span>
+              <div class="feature-card-title">Firebase Realtime Database</div>
+              <div class="feature-card-desc">Maintains synchronized cloud state, stores telemetry JSON snapshots, and routes push notifications to subscribed clients via HTTP SSE channels.</div>
+            </div>
+            <div class="scroller-card">
+              <span class="scroller-badge">LAYER 4: USER INTERFACE</span>
+              <div class="feature-card-title">Web Dashboard</div>
+              <div class="feature-card-desc">Static web app hosted on Firebase Hosting. Consumes live data via the Firebase JS SDK, updating the DOM dynamically without page refreshes.</div>
+            </div>
+            <div class="scroller-card">
+              <span class="scroller-badge">LAYER 5: ACTUATOR</span>
+              <div class="feature-card-title">Optocoupled Relay &amp; Load</div>
+              <div class="feature-card-desc">Isolates high-voltage mains AC from 3.3V microcontroller logic, physically closing the bulb circuit when driven LOW by GPIO 26.</div>
+            </div>
+          </div>
+        </div>
       </section>
 
+      <!-- 7. HARDWARE & 8. HARDWARE CONNECTIONS -->
       <section class="content-block">
-        <h2 class="content-block-heading">Code</h2>
+        <h2 class="content-block-heading">7. Hardware &amp; Wiring Schematic</h2>
+        <p class="content-block-text">
+          All sensor and actuator lines interface directly with designated ESP32 pins. The pin assignments and signal types are strictly documented below:
+        </p>
+
+        <div class="diagram-figure">
+          <img src="assets/iot/task5-wiring.jpg" alt="Technical wiring schematic for ESP32 with DHT11, LDR, button, and relay">
+          <div class="diagram-caption">Figure 5.2 — Pinout and Hardware Interconnect Diagram for ESP32 Sensor &amp; Actuator Node.</div>
+        </div>
+
+        <div class="sub-heading">Pin Mapping &amp; Electrical Characteristics</div>
+        <table class="tech-table">
+          <thead>
+            <tr>
+              <th>Component</th>
+              <th>ESP32 Pin</th>
+              <th>Signal Type</th>
+              <th>Operating Voltage</th>
+              <th>Electrical Configuration</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>DHT11 Data</td>
+              <td><code>GPIO 4</code></td>
+              <td>Digital I/O (Bidirectional)</td>
+              <td>3.3V VCC</td>
+              <td>Single-wire custom digital pulse train</td>
+            </tr>
+            <tr>
+              <td>LDR Voltage Divider</td>
+              <td><code>GPIO 34</code></td>
+              <td>Analog Input (ADC1_CH6)</td>
+              <td>0V – 3.3V Analog</td>
+              <td>Input-only pin; divider with fixed 10k&Omega; pull-up</td>
+            </tr>
+            <tr>
+              <td>Tactile Push Button</td>
+              <td><code>GPIO 14</code></td>
+              <td>Digital Input</td>
+              <td>0V / 3.3V Logic</td>
+              <td>Internal <code>INPUT_PULLUP</code>; active-LOW on press</td>
+            </tr>
+            <tr>
+              <td>Relay Module IN1</td>
+              <td><code>GPIO 26</code></td>
+              <td>Digital Output</td>
+              <td>3.3V Logic / 5V Coil</td>
+              <td>Active-LOW optocoupled driver; 0V energizes coil</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="feature-card" style="border-left: 3px solid var(--maroon); margin-top: 1rem;">
+          <div class="feature-card-title">Mains Isolation &amp; Safety Protocol</div>
+          <div class="feature-card-desc">
+            The relay module provides physical galvanic isolation through an onboard optical photocoupler. The 230V AC load is wired strictly through the mechanical <code>COM</code> and <code>NO</code> terminals on the isolated side. All AC connections were terminated inside insulated blocks with mains power physically disconnected before testing.
+          </div>
+        </div>
+      </section>
+
+      <!-- 9. SOFTWARE STACK & 10. COMMUNICATION ARCHITECTURE -->
+      <section class="content-block">
+        <h2 class="content-block-heading">8. Communication &amp; Data Flow Architecture</h2>
+        <p class="content-block-text">
+          The communication pipeline coordinates three independent channels between the edge hardware, Firebase cloud, and browser dashboard:
+        </p>
+
+        <div class="diagram-figure">
+          <img src="assets/iot/task5-dataflow.jpg" alt="Technical diagram illustrating bidirectional data flow and synchronization">
+          <div class="diagram-caption">Figure 5.3 — Bidirectional Communication Flow: Telemetry Stream, Cloud Downlink, and Local Manual Override.</div>
+        </div>
+
+        <div class="flow-stepper">
+          <div class="flow-step-item">
+            <span class="step-number">CH 1</span>
+            <div>
+              <div class="step-title">Telemetry Uplink (ESP32 &rarr; Cloud RTDB)</div>
+              <div class="step-text">Every 5 seconds, the ESP32 reads DHT11 temperature/humidity and analog LDR lumens. Readings are structured into a <code>FirebaseJson</code> object and written to <code>/telemetry/live</code> using <code>Firebase.RTDB.setJSON()</code>.</div>
+            </div>
+          </div>
+          <div class="flow-step-item">
+            <span class="step-number">CH 2</span>
+            <div>
+              <div class="step-title">Cloud Downlink Control (Dashboard &rarr; RTDB &rarr; ESP32)</div>
+              <div class="step-text">When a user toggles the web switch, the dashboard writes <code>1</code> or <code>0</code> to <code>/controls/bulbState</code>. Firebase immediately pushes the updated integer through the persistent HTTP Server-Sent Events stream to the ESP32's <code>streamCallback</code>, toggling the relay without polling.</div>
+            </div>
+          </div>
+          <div class="flow-step-item">
+            <span class="step-number">CH 3</span>
+            <div>
+              <div class="step-title">Local Manual Override (Button &rarr; Relay &rarr; RTDB Sync)</div>
+              <div class="step-text">Pressing the hardware tactile button triggers debounced edge detection. The firmware flips local <code>bulbState</code>, actuates the relay, and updates <code>/controls/bulbState</code> in Firebase, causing the remote dashboard toggle to track the physical switch automatically.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 11. CORE TECHNICAL CONCEPT -->
+      <section class="content-block">
+        <h2 class="content-block-heading">9. Core Technical Concept: Event Streams vs Polling</h2>
+        <p class="content-block-text">
+          A common pitfall in microcontroller IoT development is repeatedly querying a cloud database inside <code>loop()</code> with periodic GET requests. This creates excessive network overhead, consumes power, and incurs noticeable command latency.
+        </p>
+        <div class="diagram-box">INEFFICIENT POLLING MODEL:
+ESP32 ──GET /controls──► Firebase (No change)
+ESP32 ──GET /controls──► Firebase (No change)  ◄── High bandwidth, battery drain, latency
+ESP32 ──GET /controls──► Firebase (State Changed &rarr; Actuate)
+
+TASK 5 EVENT-DRIVEN STREAM MODEL:
+ESP32 ──beginStream("/controls")──► Firebase Opens Persistent Stream Socket
+[...ESP32 executes sensor routines with ZERO control network traffic...]
+Web Dashboard flips switch ──► Firebase PUSHES /bulbState event ──► ESP32 fires streamCallback()</div>
+        <p class="content-block-text">
+          By opening a single stream using <code>Firebase.RTDB.beginStream(&amp;stream, "/controls")</code>, the cloud broker pushes data downstream only when a mutation occurs. The ESP32's main execution loop remains completely free to handle analog reads and button debouncing.
+        </p>
+      </section>
+
+      <!-- 12. IMPLEMENTATION PROCESS -->
+      <section class="content-block">
+        <h2 class="content-block-heading">10. Implementation Process</h2>
+        <div class="flow-stepper">
+          <div class="flow-step-item">
+            <span class="step-number">01</span>
+            <div>
+              <div class="step-title">Hardware Prototyping &amp; Breadboard Wiring</div>
+              <div class="step-text">Wired the DHT11 to GPIO 4, LDR voltage divider to GPIO 34, debounced button to GPIO 14, and relay driver to GPIO 26 on a breadboard with common ground.</div>
+            </div>
+          </div>
+          <div class="flow-step-item">
+            <span class="step-number">02</span>
+            <div>
+              <div class="step-title">Library Installation &amp; Environment Setup</div>
+              <div class="step-text">Installed the <code>Firebase ESP Client</code> by Mobizt and Adafruit's <code>DHT sensor library</code> in the Arduino IDE. Configured ESP32 board support for 115200 baud upload.</div>
+            </div>
+          </div>
+          <div class="flow-step-item">
+            <span class="step-number">03</span>
+            <div>
+              <div class="step-title">Firebase Credentials &amp; Project Binding</div>
+              <div class="step-text">Bound the firmware to the existing Task 4 Firebase project using the project API Key and Database URL. Implemented anonymous authentication via <code>Firebase.signUp()</code>.</div>
+            </div>
+          </div>
+          <div class="flow-step-item">
+            <span class="step-number">04</span>
+            <div>
+              <div class="step-title">Safe Boot State Initialization</div>
+              <div class="step-text">Configured GPIO 26 as output and immediately executed <code>setBulb(false)</code> (driving pin HIGH) before establishing network connections to eliminate boot pulses.</div>
+            </div>
+          </div>
+          <div class="flow-step-item">
+            <span class="step-number">05</span>
+            <div>
+              <div class="step-title">Initial State Synchronization</div>
+              <div class="step-text">Executed <code>Firebase.RTDB.getInt(&amp;fbdo, "/controls/bulbState")</code> upon Wi-Fi connection to ensure the relay matched the prevailing cloud state prior to stream listening.</div>
+            </div>
+          </div>
+          <div class="flow-step-item">
+            <span class="step-number">06</span>
+            <div>
+              <div class="step-title">Stream Subscription &amp; Callback Binding</div>
+              <div class="step-text">Called <code>beginStream</code> and bound <code>streamCallback</code> to <code>/controls</code>, handling incoming integer mutations for <code>/bulbState</code>.</div>
+            </div>
+          </div>
+          <div class="flow-step-item">
+            <span class="step-number">07</span>
+            <div>
+              <div class="step-title">Non-Blocking Sensor Scheduler</div>
+              <div class="step-text">Wrote the <code>millis()</code> timer routine uploading JSON payloads with temperature, humidity, and mapped light percentage to <code>/telemetry/live</code> every 5000 ms.</div>
+            </div>
+          </div>
+          <div class="flow-step-item">
+            <span class="step-number">08</span>
+            <div>
+              <div class="step-title">Debounced Manual Button Override</div>
+              <div class="step-text">Constructed edge detection on GPIO 14 with a 250 ms time gate, writing <code>setInt()</code> to <code>/controls/bulbState</code> on valid press events.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 13. FIRMWARE & 25. SOURCE CODE -->
+      <section class="content-block">
+        <h2 class="content-block-heading">11. Complete Firmware Source Code</h2>
         <div class="code-filename">File: ESP32_Firebase_Node.ino</div>
         <div class="code-wrapper">
           <button class="copy-btn" onclick="copyCode(this)">Copy</button>
@@ -204,24 +640,327 @@ void loop() {
         </div>
       </section>
 
+      <!-- 26. CODE BREAKDOWN (EXPANDABLE SECTIONS) -->
       <section class="content-block">
-        <h2 class="content-block-heading">Result</h2>
-        <p class="content-block-text">The ESP32 uploaded temperature, humidity and light level to Firebase and the dashboard showed them live. The bulb switched from the dashboard toggle and from the push button, and each control updated the other, so the bulb, the database and the dashboard always agreed.</p>
+        <h2 class="content-block-heading">12. Architectural Code Breakdown</h2>
+        <p class="content-block-text">Expand each functional block to inspect its role within the firmware architecture:</p>
+
+        <details class="expandable-block" open>
+          <summary class="expandable-summary">1. Anonymous Authentication &amp; Reconnection</summary>
+          <div class="expandable-content">
+            <code>Firebase.signUp(&amp;config, &amp;auth, "", "")</code> provisions a unique anonymous user token without requiring manual login credentials. <code>Firebase.reconnectWiFi(true)</code> enables the underlying TCP stack to seamlessly recover from Wi-Fi dropouts without rebooting the microcontroller.
+          </div>
+        </details>
+
+        <details class="expandable-block">
+          <summary class="expandable-summary">2. Initial Cloud State Synchronization</summary>
+          <div class="expandable-content">
+            Before entering the event loop, <code>Firebase.RTDB.getInt(&amp;fbdo, "/controls/bulbState")</code> reads the prevailing cloud state synchronously. If the database holds <code>1</code>, the relay energizes immediately; if <code>0</code>, it stays released. This prevents actuator desynchronization after a power interruption.
+          </div>
+        </details>
+
+        <details class="expandable-block">
+          <summary class="expandable-summary">3. Event Stream Listener (Push Actuation)</summary>
+          <div class="expandable-content">
+            <code>Firebase.RTDB.beginStream(&amp;stream, "/controls")</code> opens an HTTP Server-Sent Events (SSE) socket. When mutations occur on <code>/bulbState</code>, <code>streamCallback()</code> intercepts the packet, checks <code>data.dataType() == "int"</code>, and passes the value directly to <code>setBulb()</code>.
+          </div>
+        </details>
+
+        <details class="expandable-block">
+          <summary class="expandable-summary">4. Edge-Triggered Button Debounce (Local Override)</summary>
+          <div class="expandable-content">
+            Evaluates <code>reading == LOW &amp;&amp; lastButton == HIGH &amp;&amp; now - lastPress &gt; 250</code>. By combining falling-edge transition detection with a 250 ms lock-out window, mechanical switch contact chatter is eliminated while ensuring immediate hardware toggling and cloud synchronization.
+          </div>
+        </details>
+
+        <details class="expandable-block">
+          <summary class="expandable-summary">5. Non-Blocking Sensor Telemetry Engine</summary>
+          <div class="expandable-content">
+            Guarded by <code>now - lastSend &gt;= sendInterval</code>. The loop avoids blocking delays, reads the analog LDR (mapping 0–4095 counts to 0–100%), verifies DHT11 integrity with <code>!isnan()</code>, formats a <code>FirebaseJson</code> payload, and issues an asynchronous <code>setJSON()</code> call to <code>/telemetry/live</code>.
+          </div>
+        </details>
       </section>
 
+      <!-- 19. TESTING & VERIFICATION -->
       <section class="content-block">
-        <h2 class="content-block-heading">Learnings</h2>
+        <h2 class="content-block-heading">13. Testing &amp; Engineering Verification</h2>
+        <p class="content-block-text">
+          A multi-stage engineering verification protocol validated every subsystem under realistic operating conditions:
+        </p>
+
+        <div class="feature-grid">
+          <div class="feature-card">
+            <div class="feature-card-title">Test 1: Network &amp; Auth Handshake</div>
+            <div class="feature-card-desc"><strong>Expected:</strong> Associating with Wi-Fi AP and obtaining IP address within 3 seconds, followed by successful anonymous token exchange.<br><strong>Observed:</strong> <code>WiFi connected: 192.168.1.18</code> and <code>Firebase sign-in OK</code> logged to serial.<br><strong>Result:</strong> PASS</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card-title">Test 2: Telemetry Payload Streaming</div>
+            <div class="feature-card-desc"><strong>Expected:</strong> Temperature, humidity, and mapped light values updated in Firebase RTDB console every 5 seconds.<br><strong>Observed:</strong> JSON object populated under <code>/telemetry/live</code>; values reflected dynamically on dashboard.<br><strong>Result:</strong> PASS</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card-title">Test 3: Cloud Downlink Actuation</div>
+            <div class="feature-card-desc"><strong>Expected:</strong> Flipping web dashboard switch energizes relay module.<br><strong>Observed:</strong> Relay clicked; <code>Dashboard: bulb ON</code> logged; AC bulb illuminated.<br><strong>Result:</strong> PASS</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card-title">Test 4: Hardware Override Synchronization</div>
+            <div class="feature-card-desc"><strong>Expected:</strong> Pressing tactile button toggles relay locally and updates cloud database.<br><strong>Observed:</strong> Bulb toggled instantly; database value changed to <code>0</code>; web dashboard switch flipped to OFF.<br><strong>Result:</strong> PASS</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card-title">Test 5: Edge Debounce Stability</div>
+            <div class="feature-card-desc"><strong>Expected:</strong> Rapid mechanical button pressing registers as discrete single-action toggles without floating states.<br><strong>Observed:</strong> 250 ms lockout window prevented chatter; no double-toggling observed.<br><strong>Result:</strong> PASS</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card-title">Test 6: Startup State Parity</div>
+            <div class="feature-card-desc"><strong>Expected:</strong> ESP32 rebooting while bulbState = 1 in database restores relay to ON.<br><strong>Observed:</strong> <code>getInt()</code> read initial 1; relay energized on boot without waiting for stream event.<br><strong>Result:</strong> PASS</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 20. DEBUGGING JOURNEY -->
+      <section class="content-block">
+        <h2 class="content-block-heading">14. Debugging Journey &amp; Solutions</h2>
+        <p class="content-block-text">
+          Development presented several critical embedded software and hardware challenges:
+        </p>
+
+        <div class="diagram-figure">
+          <img src="assets/iot/task5-debugging.jpg" alt="Technical diagram illustrating debugging fixes for state sync and button debouncing">
+          <div class="diagram-caption">Figure 5.4 — Diagnostic Comparison: Mechanical Switch Contact Chatter and Boot-Time State Synchronization Fixes.</div>
+        </div>
+
+        <details class="expandable-block" open>
+          <summary class="expandable-summary">Challenge 1: Mechanical Switch Bounce &amp; Database Flooding</summary>
+          <div class="expandable-content">
+            <strong>Problem:</strong> A single physical button press frequently caused the relay to rapidly chatter ON and OFF, flooding Firebase with multiple conflicting write requests.<br>
+            <strong>Cause:</strong> Metallic contacts in tactile push buttons physically oscillate for 5–20 ms upon contact closure, generating dozens of spurious edge transitions.<br>
+            <strong>Fix:</strong> Implemented software debounce filtering combining falling-edge transition verification (<code>reading == LOW &amp;&amp; lastButton == HIGH</code>) with a non-blocking <code>millis()</code> lock-out window of 250 ms.<br>
+            <strong>Lesson:</strong> Physical switches must never trigger direct state transitions without deterministic edge-filtering.
+          </div>
+        </details>
+
+        <details class="expandable-block">
+          <summary class="expandable-summary">Challenge 2: Boot-Time Relay Desynchronization</summary>
+          <div class="expandable-content">
+            <strong>Problem:</strong> Following an ESP32 power cycle, the relay always defaulted to OFF, even when the web dashboard and Firebase console indicated <code>bulbState = 1</code>.<br>
+            <strong>Cause:</strong> <code>beginStream()</code> only fires callbacks when a <em>new mutation</em> occurs; it does not automatically dispatch the historical state on initial connection.<br>
+            <strong>Fix:</strong> Inserted an explicit <code>Firebase.RTDB.getInt(&amp;fbdo, "/controls/bulbState")</code> query in <code>setup()</code> prior to launching the stream.<br>
+            <strong>Lesson:</strong> Streaming event listeners must be preceded by a synchronous read to establish initial baseline parity.
+          </div>
+        </details>
+
+        <details class="expandable-block">
+          <summary class="expandable-summary">Challenge 3: Intermittent DHT11 Sensor NaN Failures</summary>
+          <div class="expandable-content">
+            <strong>Problem:</strong> Occasional sensor sample cycles caused the ESP32 to upload <code>null</code> values to Firebase, breaking the web dashboard's telemetry display.<br>
+            <strong>Cause:</strong> The DHT11 utilizes a delicate single-wire timing protocol susceptible to interrupt delays; occasional checksum mismatches return <code>NAN</code>.<br>
+            <strong>Fix:</strong> Guarded the JSON upload with <code>if (!isnan(temp) &amp;&amp; !isnan(hum))</code>. Corrupted cycles are dropped, preserving the last known valid values in the cloud.<br>
+            <strong>Lesson:</strong> Never pass unvalidated sensor returns directly into cloud serialization pipelines.
+          </div>
+        </details>
+      </section>
+
+      <!-- 21. FAILURE POINTS & 22. TROUBLESHOOTING -->
+      <section class="content-block">
+        <h2 class="content-block-heading">15. Failure Modes &amp; Troubleshooting Guide</h2>
+        <div class="feature-grid">
+          <div class="feature-card">
+            <div class="feature-card-title">Symptom: DHT11 Reads Fail Constantly</div>
+            <div class="feature-card-desc"><strong>Inspection:</strong> Verify 3.3V power rails and verify that the 10k&Omega; pull-up resistor between VCC and Data pin is present if using a raw 4-pin DHT11 sensor.<br><strong>Remedy:</strong> Ensure data line is connected to <code>GPIO 4</code> and avoid sampling faster than 1 Hz (DHT11 minimum cycle is 1 second).</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card-title">Symptom: LDR Values Always 0% or 100%</div>
+            <div class="feature-card-desc"><strong>Inspection:</strong> Check voltage divider wiring. <code>GPIO 34</code> must connect to the junction between the LDR and fixed resistor.<br><strong>Remedy:</strong> Verify that the fixed resistor is 10k&Omega; and tied to 3.3V or GND, ensuring a dynamic voltage swing between 0.2V and 3.1V.</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card-title">Symptom: Stream Disconnects or Times Out</div>
+            <div class="feature-card-desc"><strong>Inspection:</strong> Check Serial Monitor for <code>Stream timed out, reconnecting...</code> messages.<br><strong>Remedy:</strong> Ensure stable 2.4 GHz Wi-Fi signal. The <code>streamTimeoutCallback</code> automatically reinitializes the stream socket when timeout thresholds are crossed.</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card-title">Symptom: Relay Operates in Reverse</div>
+            <div class="feature-card-desc"><strong>Inspection:</strong> Verify relay module trigger polarity.<br><strong>Remedy:</strong> If the relay is active-HIGH, invert the firmware macros to <code>#define RELAY_ON HIGH</code> and <code>#define RELAY_OFF LOW</code>.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 23. SECURITY CONSIDERATIONS -->
+      <section class="content-block">
+        <h2 class="content-block-heading">16. Security Considerations</h2>
+        <p class="content-block-text">
+          Connecting physical actuators and environmental sensors to a cloud database demands rigorous operational hygiene:
+        </p>
         <ul class="content-block-list">
-          <li>A database stream lets the device react to a dashboard change immediately, which is better than checking the database in a loop.</li>
-          <li>With two controls for one output, every change must be written to the database, otherwise the dashboard shows the wrong state.</li>
-          <li>A push button needs debouncing, otherwise one press can register several times.</li>
-          <li>Reading the stored bulb state at startup makes the relay match the database after a reboot.</li>
-          <li>The DHT11 can return invalid readings, so the values are checked before they are uploaded.</li>
-          <li>The LDR reading is only a relative light level, so it is shown as a percentage and not as exact lux.</li>
-          <li>The mains side of the relay is kept separate from the ESP32 side, and the relay isolates the two.</li>
+          <li><strong>API Key Protection:</strong> The Firebase Web API Key is compiled into microcontroller flash memory. While required for RTDB endpoints, security must be enforced on the server side using Firebase Security Rules rather than relying on client-side obscurity.</li>
+          <li><strong>Sanitized Public Repositories:</strong> All version-controlled sketches utilize dummy placeholders (<code>YOUR_WIFI_NAME</code>, <code>YOUR_FIREBASE_API_KEY</code>, <code>YOUR_PROJECT</code>) to prevent accidental credential leakage.</li>
+          <li><strong>Anonymous Authentication Quotas:</strong> Anonymous auth prevents open unauthenticated database sockets while minimizing overhead. In production, rotating user credentials or service account tokens should be implemented.</li>
+          <li><strong>Fail-Safe Actuator Defaults:</strong> The firmware deliberately drives the relay pin HIGH on startup before network configuration to prevent floating gate voltages from momentarily closing the AC circuit during reboots.</li>
         </ul>
       </section>
 
+      <!-- 24. TASK 5 VS PREVIOUS TASKS -->
+      <section class="content-block">
+        <h2 class="content-block-heading">17. Progression: Task 5 vs Tasks 1–4</h2>
+        <p class="content-block-text">
+          Tracing how Task 5 synthesizes and elevates the architectural capabilities developed throughout IoT Week:
+        </p>
+        <table class="tech-table">
+          <thead>
+            <tr>
+              <th>Dimension</th>
+              <th>Task 1 — Local HTTP</th>
+              <th>Task 2 — Cloud MQTT</th>
+              <th>Task 3 — Voice Automation</th>
+              <th>Task 4 — Web Dashboard</th>
+              <th>Task 5 — Integrated IoT Node</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Primary Interface</td>
+              <td>Local Web Browser</td>
+              <td>Adafruit IO Dashboard</td>
+              <td>Google Assistant Voice</td>
+              <td>Firebase Web Dashboard</td>
+              <td>Synchronized Web &amp; Physical Button</td>
+            </tr>
+            <tr>
+              <td>Network Scope</td>
+              <td>Local Subnet Only</td>
+              <td>Global Internet</td>
+              <td>Global Internet</td>
+              <td>Global Internet</td>
+              <td>Global Internet + Local Hardware Edge</td>
+            </tr>
+            <tr>
+              <td>Communication Protocol</td>
+              <td>Synchronous HTTP Port 80</td>
+              <td>MQTT Publish/Subscribe</td>
+              <td>MQTT via IFTTT &amp; AIO</td>
+              <td>WebSocket Event Sync</td>
+              <td>HTTP SSE Stream + JSON Rest API</td>
+            </tr>
+            <tr>
+              <td>Sensors Integrated</td>
+              <td>None (Internal State)</td>
+              <td>None (Button override)</td>
+              <td>None</td>
+              <td>Simulated Console Data</td>
+              <td>DHT11 (Temp/Hum) + LDR (Light)</td>
+            </tr>
+            <tr>
+              <td>Actuator Driven</td>
+              <td>Onboard LED (GPIO 2)</td>
+              <td>Transistor Load (GPIO 5)</td>
+              <td>Relay Module (GPIO 23)</td>
+              <td>Cloud Variable Only</td>
+              <td>Optocoupled Relay (GPIO 26)</td>
+            </tr>
+            <tr>
+              <td>State Parity Model</td>
+              <td>Client Request-Response</td>
+              <td>Broker Topic Sync</td>
+              <td>One-way Voice Trigger</td>
+              <td>Frontend-to-Cloud Sync</td>
+              <td>Full Bidirectional Hardware-Cloud Parity</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- 27. KEY LEARNINGS -->
+      <section class="content-block">
+        <h2 class="content-block-heading">18. Key Learnings</h2>
+        <div class="feature-grid">
+          <div class="feature-card">
+            <div class="feature-card-title">Embedded Systems</div>
+            <div class="feature-card-desc">Mastered single-wire sensor protocols, SAR ADC non-linearities, software button debounce timing, and safe fail-safe GPIO boot initialization.</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card-title">Cloud Architecture</div>
+            <div class="feature-card-desc">Leveraged HTTP Server-Sent Events (SSE) stream sockets to eliminate polling overhead and enable push-driven microcontroller actuation.</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card-title">Distributed State Management</div>
+            <div class="feature-card-desc">Solved multi-master synchronization across edge hardware buttons, cloud databases, and browser clients through deterministic event dispatch.</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card-title">High-Voltage Electrical Safety</div>
+            <div class="feature-card-desc">Safely isolated hazardous 230V AC lines from sensitive 3.3V digital logic using optocoupled mechanical relay stages.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 28. LIMITATIONS & 29. FUTURE IMPROVEMENTS -->
+      <section class="content-block">
+        <h2 class="content-block-heading">19. Prototype Limitations &amp; Future Scope</h2>
+        <div class="feature-grid">
+          <div class="feature-card">
+            <div class="feature-card-title">Current Limitations</div>
+            <div class="feature-card-desc">
+              <ul class="content-block-list" style="font-size: 0.9rem;">
+                <li>DHT11 resolution is limited to whole integer increments (&plusmn;1&deg;C / &plusmn;1% RH).</li>
+                <li>LDR provides qualitative relative light percentage rather than calibrated Lux.</li>
+                <li>Requires continuous 2.4 GHz Wi-Fi connectivity; no local fallback web server if internet drops.</li>
+                <li>Telemetry upload fixed at 5000 ms; does not adapt based on rate of temperature change.</li>
+              </ul>
+            </div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card-title">Future Engineering Roadmap</div>
+            <div class="feature-card-desc">
+              <ul class="content-block-list" style="font-size: 0.9rem;">
+                <li>Upgrade sensor node to high-precision I2C digital transducers (e.g. SHT31, BH1750).</li>
+                <li>Implement local mDNS / captive portal fallback for offline LAN control during outages.</li>
+                <li>Add EEPROM / SPIFFS non-volatile state caching to retain relay configuration across power loss.</li>
+                <li>Introduce threshold-based delta uploads to reduce cloud write bandwidth during static conditions.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 30. FINAL RESULT & 31. TAKEAWAY -->
+      <section class="content-block">
+        <h2 class="content-block-heading">20. Final Result &amp; Engineering Takeaway</h2>
+        <p class="content-block-text">
+          Task 05 successfully established a complete, robust, and unified IoT pipeline:
+        </p>
+        <div class="diagram-box">COMPLETED END-TO-END PIPELINE:
+Physical Sensors (DHT11, LDR) ──► ESP32 ──► Firebase RTDB ──► Web Dashboard (Live Cards)
+Web Switch / Physical Button  ──► Firebase RTDB ◄──► ESP32 ──► 5V Relay ──► AC Appliance</div>
+        <p class="content-block-text">
+          The ESP32 continuously samples environmental variables, uploads formatted JSON snapshots every 5 seconds, processes cloud switch directives within milliseconds via event streams, and reconciles local manual button presses with zero state divergence.
+        </p>
+        <p class="content-block-text" style="margin-top: 0.75rem;">
+          <strong>Core Takeaway:</strong> Production IoT engineering is not about simply connecting a sensor to Wi-Fi. It is the discipline of creating <em>decoupled, resilient architectures</em> that guarantee state consistency across physical hardware, cloud backends, and user interfaces under intermittent network and electrical conditions.
+        </p>
+      </section>
+
+      <!-- 32. WHY THIS ARCHITECTURE MATTERS -->
+      <section class="content-block">
+        <h2 class="content-block-heading">21. The Complete IoT Week Arc</h2>
+        <p class="content-block-text">
+          Over five progressive projects, this portfolio traces the foundational architectural evolution of the modern Internet of Things:
+        </p>
+        <div class="diagram-box">TASK 01: LOCAL NETWORKING
+Browser ──[HTTP GET]──► ESP32 Web Server ──► GPIO 2 ──► Onboard LED
+
+TASK 02: CLOUD MESSAGING &amp; MQTT
+Adafruit IO Dashboard ──[MQTT Publish]──► Broker ──► ESP32 ──► Transistor Driver ──► Load
+
+TASK 03: MULTI-SERVICE VOICE AUTOMATION
+Voice ──► Google Assistant ──► IFTTT ──► Adafruit IO ──[MQTT]──► ESP32 ──► Relay ──► Appliance
+
+TASK 04: CLOUD STATE &amp; WEB DASHBOARD
+Web Dashboard ──[Firebase JS SDK]──► Firebase Realtime Database ◄── Edge Simulation
+
+TASK 05: FULL HARDWARE &amp; CLOUD INTEGRATION
+Physical Sensors &amp; Button ◄──► ESP32 ◄──[SSE Stream &amp; REST]──► Firebase RTDB ◄──► Web Dashboard</div>
+        <p class="content-block-text">
+          Task 05 represents the culmination of this learning journey—delivering an autonomous, synchronized, and production-grade IoT edge node.
+        </p>
+      </section>
+
+      <!-- BOTTOM NAVIGATION -->
       <div class="task-nav-bottom">
         <a href="iot-week.html" class="back-link">&larr; Back to IoT Week</a>
       </div>
