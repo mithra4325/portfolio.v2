@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Task 04: Firebase Realtime Web Dashboard — Mithra Ravi</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- NAV -->
+  <header class="site-nav">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-brand">Mithra Ravi</a>
+      <nav>
+        <ul class="nav-links">
+          <li><a href="index.html#about" class="nav-link">About</a></li>
+          <li><a href="index.html#skills" class="nav-link">Skills</a></li>
+          <li><a href="index.html#projects" class="nav-link">Projects</a></li>
+          <li><a href="index.html#education" class="nav-link">Education</a></li>
+          <li><a href="index.html#contact" class="nav-link">Contact</a></li>
+          <li><a href="protosem.html" class="nav-btn">ProtoSem</a></li>
+          <li><a href="iot-week.html" class="nav-btn">IoT Week</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <div class="container page-container">
+      <h1 class="page-main-heading">Task 04: Firebase Realtime Web Dashboard</h1>
+
+      <section class="content-block">
+        <h2 class="content-block-heading">Overview</h2>
+        <p class="content-block-text">This task builds a web dashboard that shows live data and sends control commands through the Firebase Realtime Database. The dashboard displays temperature, humidity and light level and has a toggle for a bulb. It is hosted on Firebase Hosting, so it can be opened from any browser.</p>
+      </section>
+
+      <section class="content-block">
+        <h2 class="content-block-heading">Objective</h2>
+        <ul class="content-block-list">
+          <li>Set up a Firebase project with a Realtime Database.</li>
+          <li>Design the database structure for sensor data and control values.</li>
+          <li>Build a web page that reads live data and writes the bulb state.</li>
+          <li>Deploy the page with Firebase Hosting.</li>
+        </ul>
+      </section>
+
+      <section class="content-block">
+        <h2 class="content-block-heading">Components</h2>
+        <ul class="content-block-list">
+          <li>Firebase project with Realtime Database and Hosting</li>
+          <li>HTML, CSS and JavaScript</li>
+          <li>Firebase JavaScript SDK</li>
+          <li>Node.js and Firebase CLI for deployment</li>
+          <li>Code editor and browser</li>
+        </ul>
+      </section>
+
+      <section class="content-block">
+        <h2 class="content-block-heading">Work</h2>
+        <ol class="content-block-list">
+          <li>Created a Firebase project in the Firebase console and added a Web app. Copied the generated firebaseConfig values into the page.</li>
+          <li>Created a Realtime Database. Planned two parts: "telemetry/live" holds temperature, humidity and light level, and "controls/bulbState" holds 1 for ON and 0 for OFF.</li>
+          <li>Set the database rules [[FILL: describe your rules, e.g. test mode or sign-in required]].</li>
+          <li>Built the dashboard page with three value cards for temperature, humidity and light level, plus a toggle for the bulb.</li>
+          <li>Connected the page to Firebase. An onValue listener on telemetry/live updates the cards the moment the data changes, with no page refresh. Another listener keeps the toggle in sync with controls/bulbState.</li>
+          <li>Switching the toggle writes 1 or 0 to controls/bulbState.</li>
+          <li>Tested without any hardware. Changed values by hand in the Firebase console and watched the dashboard update immediately. Flipped the toggle and watched controls/bulbState change in the console.</li>
+          <li>Deployed with the Firebase CLI using firebase login, firebase init hosting and firebase deploy. The dashboard is live at <a href="https://mithra-63101.web.app" target="_blank" rel="noopener" style="color: var(--maroon); font-weight: 600;">Smart Home Dashboard</a>.</li>
+        </ol>
+        <p class="content-block-text" style="margin-top: 1rem;">Keep only the features your dashboard really has, and delete the rest of this list:</p>
+        <ul class="content-block-list" style="margin-top: 0.5rem;">
+          <li>Login with Firebase Authentication (email and password)</li>
+          <li>Table of past readings with search</li>
+          <li>Export of the readings to a CSV file</li>
+          <li>Auto mode that switches the bulb from the light level</li>
+        </ul>
+      </section>
+
+      <section class="content-block">
+        <h2 class="content-block-heading">Media</h2>
+        <div class="media-grid">
+          <img src="assets/iot/task4-img1.jpeg" alt="Task 4 Image 1">
+          <img src="assets/iot/task4-img2.jpeg" alt="Task 4 Image 2">
+          <img src="assets/iot/task4-img3.jpeg" alt="Task 4 Image 3">
+        </div>
+      </section>
+
+      <section class="content-block">
+        <h2 class="content-block-heading">Code</h2>
+        <div class="code-filename">File: index.html</div>
+        <div class="code-wrapper">
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre><code>&lt;!DOCTYPE html&gt;
+&lt;html lang="en"&gt;
+&lt;head&gt;
+  &lt;meta charset="UTF-8"&gt;
+  &lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;
+  &lt;title&gt;Smart IoT Dashboard&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  &lt;h1&gt;Smart IoT Dashboard&lt;/h1&gt;
+  &lt;p&gt;Temperature: &lt;span id="temp"&gt;--&lt;/span&gt; &amp;deg;C&lt;/p&gt;
+  &lt;p&gt;Humidity: &lt;span id="hum"&gt;--&lt;/span&gt; %&lt;/p&gt;
+  &lt;p&gt;Light level: &lt;span id="light"&gt;--&lt;/span&gt; %&lt;/p&gt;
+  &lt;label&gt;&lt;input type="checkbox" id="bulbToggle"&gt; Bulb&lt;/label&gt;
+
+  &lt;script type="module"&gt;
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT.firebaseapp.com",
+      databaseURL: "https://YOUR_PROJECT-default-rtdb.firebaseio.com",
+      projectId: "YOUR_PROJECT"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const telemetryRef = ref(db, "telemetry/live");
+    const bulbRef = ref(db, "controls/bulbState");
+
+    // Live sensor values
+    onValue(telemetryRef, (snapshot) =&gt; {
+      const d = snapshot.val();
+      if (!d) return;
+      document.getElementById("temp").textContent = d.temperature;
+      document.getElementById("hum").textContent = d.humidity;
+      document.getElementById("light").textContent = d.light;
+    });
+
+    // Keep the toggle in sync with the database
+    onValue(bulbRef, (snapshot) =&gt; {
+      document.getElementById("bulbToggle").checked = snapshot.val() === 1;
+    });
+
+    // Send the toggle change to the database
+    document.getElementById("bulbToggle").addEventListener("change", (e) =&gt; {
+      set(bulbRef, e.target.checked ? 1 : 0);
+    });
+  &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+        </div>
+      </section>
+
+      <section class="content-block">
+        <h2 class="content-block-heading">Result</h2>
+        <p class="content-block-text">The dashboard was deployed on Firebase Hosting and opened from a browser. Sensor values appeared on the page as soon as they changed in the database, and the bulb toggle wrote its state to the database in real time.</p>
+      </section>
+
+      <section class="content-block">
+        <h2 class="content-block-heading">Learnings</h2>
+        <ul class="content-block-list">
+          <li>Firebase Realtime Database pushes changes to every connected page, so no refresh or polling is needed.</li>
+          <li>The database works as a shared meeting point. The web page and the ESP32 never connect to each other, they only read and write the same paths.</li>
+          <li>Planning the data structure first made the hardware code in Task 5 simple to match.</li>
+          <li>Testing the dashboard by editing values in the console shows that the web side works before any hardware is connected.</li>
+          <li>Firebase Hosting gives a free public HTTPS link for a static site with one deploy command.</li>
+          <li>The database rules decide who can read and write, so they must be set deliberately.</li>
+        </ul>
+      </section>
+
+      <div class="task-nav-bottom">
+        <a href="iot-week.html" class="back-link">&larr; Back to IoT Week</a>
+        <a href="iot-task5.html" class="next-link">Next Task: Task 05 &rarr;</a>
+      </div>
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="site-footer">
+    <div class="container">
+      &copy; 2026 Mithra Ravi
+    </div>
+  </footer>
+
+  <script>
+    function copyCode(btn) {
+      const code = btn.closest('.code-wrapper').querySelector('code').innerText;
+      navigator.clipboard.writeText(code).then(() => {
+        btn.textContent = 'Copied';
+        setTimeout(() => { btn.textContent = 'Copy'; }, 2000);
+      });
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Task 05: Firebase Hardware Integration — Mithra Ravi</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- NAV -->
+  <header class="site-nav">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-brand">Mithra Ravi</a>
+      <nav>
+        <ul class="nav-links">
+          <li><a href="index.html#about" class="nav-link">About</a></li>
+          <li><a href="index.html#skills" class="nav-link">Skills</a></li>
+          <li><a href="index.html#projects" class="nav-link">Projects</a></li>
+          <li><a href="index.html#education" class="nav-link">Education</a></li>
+          <li><a href="index.html#contact" class="nav-link">Contact</a></li>
+          <li><a href="protosem.html" class="nav-btn">ProtoSem</a></li>
+          <li><a href="iot-week.html" class="nav-btn">IoT Week</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <div class="container page-container">
+      <h1 class="page-main-heading">Task 05: Firebase Hardware Integration</h1>
+
+      <section class="content-block">
+        <h2 class="content-block-heading">Overview</h2>
+        <p class="content-block-text">This task connects the physical hardware to the Firebase dashboard from Task 4. An ESP32 reads a DHT11 temperature and humidity sensor and an LDR light sensor and uploads the values to Firebase. It also controls a bulb through a relay. The bulb can be switched from the dashboard or from a push button on the board, and both always show the same state.</p>
+      </section>
+
+      <section class="content-block">
+        <h2 class="content-block-heading">Objective</h2>
+        <ul class="content-block-list">
+          <li>Read temperature, humidity and light level on the ESP32.</li>
+          <li>Upload the readings to the Firebase Realtime Database at fixed intervals.</li>
+          <li>Receive the bulb command from the dashboard instantly and switch the relay.</li>
+          <li>Add a push button as a local control that also updates the database.</li>
+        </ul>
+      </section>
+
+      <section class="content-block">
+        <h2 class="content-block-heading">Components</h2>
+        <ul class="content-block-list">
+          <li>ESP32 development board</li>
+          <li>DHT11 temperature and humidity sensor (GPIO 4)</li>
+          <li>LDR with a fixed resistor as a voltage divider [[FILL: resistor value]] (GPIO 34)</li>
+          <li>Push button (GPIO 14)</li>
+          <li>5 V relay module (GPIO 26)</li>
+          <li>Bulb and holder [[FILL: what you switched]]</li>
+          <li>Breadboard and jumper wires</li>
+          <li>Firebase project from Task 4</li>
+        </ul>
+      </section>
+
+      <section class="content-block">
+        <h2 class="content-block-heading">Work</h2>
+        <ol class="content-block-list">
+          <li>Used the same Firebase project and database structure as Task 4: telemetry/live for the sensor values and controls/bulbState for the bulb.</li>
+          <li>Wired the DHT11 data pin to GPIO 4. Wired the LDR and its fixed resistor as a voltage divider with the middle point going to GPIO 34, an analog input. Wired the push button between GPIO 14 and ground using the internal pull-up. Wired the relay input to GPIO 26.</li>
+          <li>Installed the Firebase ESP Client library and the DHT sensor library in Arduino IDE.</li>
+          <li>Wrote the sketch. The ESP32 connects to Wi-Fi, signs in to Firebase anonymously and reads the current bulbState once so the relay starts in the correct state.</li>
+          <li>Opened a stream on the controls path. When the dashboard changes bulbState, the ESP32 is notified immediately and switches the relay. This avoids asking the database again and again.</li>
+          <li>In the main loop the push button is checked with a 250 ms debounce. A press flips the relay and writes the new bulbState to Firebase, so the dashboard toggle follows.</li>
+          <li>Every 5 seconds the ESP32 reads the DHT11 and the LDR and uploads temperature, humidity and light level to telemetry/live. The LDR reading from 0 to 4095 is converted to a 0 to 100 percent light level.</li>
+          <li>Tested all directions. The dashboard toggle switched the bulb. The push button switched the bulb and the dashboard toggle updated. The sensor values appeared on the dashboard every few seconds.</li>
+        </ol>
+      </section>
+
+      <section class="content-block">
+        <h2 class="content-block-heading">Media</h2>
+        <p class="content-block-text">No media yet.</p>
+      </section>
+
+      <section class="content-block">
+        <h2 class="content-block-heading">Code</h2>
+        <div class="code-filename">File: ESP32_Firebase_Node.ino</div>
+        <div class="code-wrapper">
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre><code>#include &lt;WiFi.h&gt;
+#include &lt;Firebase_ESP_Client.h&gt;
+#include &lt;DHT.h&gt;
+#include "addons/TokenHelper.h"
+#include "addons/RTDBHelper.h"
+
+#define WIFI_SSID     "YOUR_WIFI_NAME"
+#define WIFI_PASSWORD "YOUR_WIFI_PASSWORD"
+#define API_KEY       "YOUR_FIREBASE_API_KEY"
+#define DATABASE_URL  "https://YOUR_PROJECT-default-rtdb.firebaseio.com/"
+
+#define DHT_PIN    4
+#define DHT_TYPE   DHT11
+#define LDR_PIN    34
+#define BUTTON_PIN 14
+#define RELAY_PIN  26
+
+// Change these if your relay module is active-HIGH
+#define RELAY_ON  LOW
+#define RELAY_OFF HIGH
+
+DHT dht(DHT_PIN, DHT_TYPE);
+FirebaseData stream;
+FirebaseData fbdo;
+FirebaseAuth auth;
+FirebaseConfig config;
+
+bool bulbState = false;
+int lastButton = HIGH;
+unsigned long lastPress = 0;
+unsigned long lastSend = 0;
+const unsigned long sendInterval = 5000;   // upload every 5 seconds
+
+void setBulb(bool on) {
+  bulbState = on;
+  digitalWrite(RELAY_PIN, on ? RELAY_ON : RELAY_OFF);
+}
+
+// Runs when the dashboard changes a value under /controls
+void streamCallback(FirebaseStream data) {
+  if (data.dataPath() == "/bulbState" && data.dataType() == "int") {
+    setBulb(data.intData() == 1);
+    Serial.println(bulbState ? "Dashboard: bulb ON" : "Dashboard: bulb OFF");
+  }
+}
+
+void streamTimeoutCallback(bool timeout) {
+  if (timeout) Serial.println("Stream timed out, reconnecting...");
+}
+
+void setup() {
+  Serial.begin(115200);
+  dht.begin();
+  pinMode(BUTTON_PIN, INPUT_PULLUP);
+  pinMode(RELAY_PIN, OUTPUT);
+  setBulb(false);
+
+  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(400);
+    Serial.print(".");
+  }
+  Serial.println("\nWiFi connected: " + WiFi.localIP().toString());
+
+  config.api_key = API_KEY;
+  config.database_url = DATABASE_URL;
+  if (Firebase.signUp(&config, &auth, "", "")) {
+    Serial.println("Firebase sign-in OK");
+  } else {
+    Serial.printf("Firebase sign-in failed: %s\n", config.signer.signupError.message.c_str());
+  }
+  config.token_status_callback = tokenStatusCallback;
+  Firebase.begin(&config, &auth);
+  Firebase.reconnectWiFi(true);
+
+  // Start with the state stored in the database
+  if (Firebase.RTDB.getInt(&fbdo, "/controls/bulbState")) {
+    setBulb(fbdo.intData() == 1);
+  }
+
+  Firebase.RTDB.beginStream(&stream, "/controls");
+  Firebase.RTDB.setStreamCallback(&stream, streamCallback, streamTimeoutCallback);
+}
+
+void loop() {
+  unsigned long now = millis();
+
+  // Push button: flip the bulb and tell the database
+  int reading = digitalRead(BUTTON_PIN);
+  if (reading == LOW && lastButton == HIGH && now - lastPress > 250) {
+    lastPress = now;
+    setBulb(!bulbState);
+    Firebase.RTDB.setInt(&fbdo, "/controls/bulbState", bulbState ? 1 : 0);
+    Serial.println(bulbState ? "Button: bulb ON" : "Button: bulb OFF");
+  }
+  lastButton = reading;
+
+  // Sensors: read and upload every 5 seconds
+  if (Firebase.ready() && now - lastSend >= sendInterval) {
+    lastSend = now;
+
+    float temp = dht.readTemperature();
+    float hum  = dht.readHumidity();
+    int ldrRaw = analogRead(LDR_PIN);
+    int light  = map(ldrRaw, 0, 4095, 0, 100);
+
+    if (!isnan(temp) && !isnan(hum)) {
+      FirebaseJson json;
+      json.set("temperature", temp);
+      json.set("humidity", hum);
+      json.set("light", light);
+      Firebase.RTDB.setJSON(&fbdo, "/telemetry/live", &json);
+      Serial.printf("Temp: %.1f C | Humidity: %.1f %% | Light: %d %%\n", temp, hum, light);
+    } else {
+      Serial.println("DHT11 read failed");
+    }
+  }
+}</code></pre>
+        </div>
+      </section>
+
+      <section class="content-block">
+        <h2 class="content-block-heading">Result</h2>
+        <p class="content-block-text">The ESP32 uploaded temperature, humidity and light level to Firebase and the dashboard showed them live. The bulb switched from the dashboard toggle and from the push button, and each control updated the other, so the bulb, the database and the dashboard always agreed.</p>
+      </section>
+
+      <section class="content-block">
+        <h2 class="content-block-heading">Learnings</h2>
+        <ul class="content-block-list">
+          <li>A database stream lets the device react to a dashboard change immediately, which is better than checking the database in a loop.</li>
+          <li>With two controls for one output, every change must be written to the database, otherwise the dashboard shows the wrong state.</li>
+          <li>A push button needs debouncing, otherwise one press can register several times.</li>
+          <li>Reading the stored bulb state at startup makes the relay match the database after a reboot.</li>
+          <li>The DHT11 can return invalid readings, so the values are checked before they are uploaded.</li>
+          <li>The LDR reading is only a relative light level, so it is shown as a percentage and not as exact lux.</li>
+          <li>The mains side of the relay is kept separate from the ESP32 side, and the relay isolates the two.</li>
+        </ul>
+      </section>
+
+      <div class="task-nav-bottom">
+        <a href="iot-week.html" class="back-link">&larr; Back to IoT Week</a>
+      </div>
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="site-footer">
+    <div class="container">
+      &copy; 2026 Mithra Ravi
+    </div>
+  </footer>
+
+  <script>
+    function copyCode(btn) {
+      const code = btn.closest('.code-wrapper').querySelector('code').innerText;
+      navigator.clipboard.writeText(code).then(() => {
+        btn.textContent = 'Copied';
+        setTimeout(() => { btn.textContent = 'Copy'; }, 2000);
+      });
+    }
+  </script>
+</body>
+</html>

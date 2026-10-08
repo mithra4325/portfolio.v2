@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Task 01: Control the Inbuilt LED of ESP32 over Wi-Fi — Mithra Ravi</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- NAV -->
+  <header class="site-nav">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-brand">Mithra Ravi</a>
+      <nav>
+        <ul class="nav-links">
+          <li><a href="index.html#about" class="nav-link">About</a></li>
+          <li><a href="index.html#skills" class="nav-link">Skills</a></li>
+          <li><a href="index.html#projects" class="nav-link">Projects</a></li>
+          <li><a href="index.html#education" class="nav-link">Education</a></li>
+          <li><a href="index.html#contact" class="nav-link">Contact</a></li>
+          <li><a href="protosem.html" class="nav-btn">ProtoSem</a></li>
+          <li><a href="iot-week.html" class="nav-btn">IoT Week</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <div class="container page-container">
+      <h1 class="page-main-heading">Task 01: Control the Inbuilt LED of ESP32 over Wi-Fi</h1>
+
+      <section class="content-block">
+        <h2 class="content-block-heading">Overview</h2>
+        <p class="content-block-text">This task turns an ESP32 into a small web server on the local Wi-Fi network. The ESP32 serves a web page with two buttons, ON and OFF. Clicking a button switches the inbuilt LED of the board. No cloud service is used. The ESP32 and the browser device only need to be connected to the same router.</p>
+      </section>
+
+      <section class="content-block">
+        <h2 class="content-block-heading">Objective</h2>
+        <ul class="content-block-list">
+          <li>Connect the ESP32 to a Wi-Fi network.</li>
+          <li>Run a web server on port 80 of the ESP32.</li>
+          <li>Switch the inbuilt LED on and off from a browser by sending HTTP requests to the board.</li>
+        </ul>
+      </section>
+
+      <section class="content-block">
+        <h2 class="content-block-heading">Components</h2>
+        <ul class="content-block-list">
+          <li>ESP32 development board [[FILL: board name, e.g. NodeMCU ESP-WROOM-32]]</li>
+          <li>Inbuilt LED on GPIO 2</li>
+          <li>USB cable</li>
+          <li>2.4 GHz Wi-Fi network</li>
+          <li>Arduino IDE with the ESP32 board package</li>
+        </ul>
+      </section>
+
+      <section class="content-block">
+        <h2 class="content-block-heading">Work</h2>
+        <ol class="content-block-list">
+          <li>Set up Arduino IDE with the ESP32 board package. Selected the ESP32 Dev Module board and the correct COM port.</li>
+          <li>Wrote the sketch using the WiFi.h and WebServer.h libraries. GPIO 2 is set as an output because the inbuilt LED is connected to it.</li>
+          <li>Entered the Wi-Fi name and password in the sketch and uploaded it to the board.</li>
+          <li>Opened the Serial Monitor at 115200 baud. After connecting, the ESP32 prints its IP address: [[FILL: your IP address]].</li>
+          <li>Typed that IP address into a browser on a device connected to the same Wi-Fi. The page with the ON and OFF buttons loaded.</li>
+          <li>The server has three routes. "/" returns the page. "/on" sets GPIO 2 HIGH. "/off" sets GPIO 2 LOW. Each button click sends an HTTP GET request to its route, the ESP32 changes the pin and sends the page back showing the current LED state.</li>
+          <li>Clicked ON and OFF several times and checked that the LED followed every click.</li>
+        </ol>
+      </section>
+
+      <section class="content-block">
+        <h2 class="content-block-heading">Media</h2>
+        <div class="media-grid">
+          <img src="assets/iot/task1-img1.jpeg" alt="Task 1 Image 1">
+          <img src="assets/iot/task1-img2.jpeg" alt="Task 1 Image 2">
+          <img src="assets/iot/task1-img3.jpeg" alt="Task 1 Image 3">
+        </div>
+      </section>
+
+      <section class="content-block">
+        <h2 class="content-block-heading">Code</h2>
+        <div class="code-filename">File: ESP32_LED_WebServer.ino</div>
+        <div class="code-wrapper">
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre><code>#include &lt;WiFi.h&gt;
+#include &lt;WebServer.h&gt;
+
+const char* ssid     = "YOUR_WIFI_NAME";
+const char* password = "YOUR_WIFI_PASSWORD";
+
+const int ledPin = 2;      // inbuilt LED
+WebServer server(80);
+
+String buildPage() {
+  String state = digitalRead(ledPin) ? "ON" : "OFF";
+  String page = "&lt;!DOCTYPE html&gt;&lt;html&gt;&lt;head&gt;";
+  page += "&lt;meta name='viewport' content='width=device-width, initial-scale=1'&gt;";
+  page += "&lt;title&gt;ESP32 LED Control&lt;/title&gt;&lt;/head&gt;";
+  page += "&lt;body style='text-align:center;font-family:sans-serif'&gt;";
+  page += "&lt;h1&gt;ESP32 LED Control&lt;/h1&gt;";
+  page += "&lt;p&gt;LED is " + state + "&lt;/p&gt;";
+  page += "&lt;p&gt;&lt;a href='/on'&gt;&lt;button&gt;ON&lt;/button&gt;&lt;/a&gt; ";
+  page += "&lt;a href='/off'&gt;&lt;button&gt;OFF&lt;/button&gt;&lt;/a&gt;&lt;/p&gt;";
+  page += "&lt;/body&gt;&lt;/html&gt;";
+  return page;
+}
+
+void handleRoot() { server.send(200, "text/html", buildPage()); }
+
+void handleOn() {
+  digitalWrite(ledPin, HIGH);
+  server.send(200, "text/html", buildPage());
+}
+
+void handleOff() {
+  digitalWrite(ledPin, LOW);
+  server.send(200, "text/html", buildPage());
+}
+
+void setup() {
+  Serial.begin(115200);
+  pinMode(ledPin, OUTPUT);
+  digitalWrite(ledPin, LOW);
+
+  WiFi.begin(ssid, password);
+  Serial.print("Connecting");
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println();
+  Serial.print("IP address: ");
+  Serial.println(WiFi.localIP());
+
+  server.on("/", handleRoot);
+  server.on("/on", handleOn);
+  server.on("/off", handleOff);
+  server.begin();
+}
+
+void loop() {
+  server.handleClient();
+}</code></pre>
+        </div>
+      </section>
+
+      <section class="content-block">
+        <h2 class="content-block-heading">Result</h2>
+        <p class="content-block-text">The ESP32 connected to Wi-Fi and hosted its own control page. The inbuilt LED switched on and off every time the ON and OFF buttons were clicked in the browser.</p>
+      </section>
+
+      <section class="content-block">
+        <h2 class="content-block-heading">Learnings</h2>
+        <ul class="content-block-list">
+          <li>An ESP32 can host a web server on a local network without any cloud service.</li>
+          <li>A browser request to a URL such as /on can be mapped to a function that changes a GPIO pin.</li>
+          <li>The IP address is assigned by the router, so it is read from the Serial Monitor after every connection and can change.</li>
+          <li>The inbuilt LED allows testing the Wi-Fi and web server logic before adding any external circuit.</li>
+          <li>The ESP32 only supports 2.4 GHz Wi-Fi, so the network must be a 2.4 GHz one.</li>
+        </ul>
+      </section>
+
+      <div class="task-nav-bottom">
+        <a href="iot-week.html" class="back-link">&larr; Back to IoT Week</a>
+        <a href="iot-task2.html" class="next-link">Next Task: Task 02 &rarr;</a>
+      </div>
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="site-footer">
+    <div class="container">
+      &copy; 2026 Mithra Ravi
+    </div>
+  </footer>
+
+  <script>
+    function copyCode(btn) {
+      const code = btn.closest('.code-wrapper').querySelector('code').innerText;
+      navigator.clipboard.writeText(code).then(() => {
+        btn.textContent = 'Copied';
+        setTimeout(() => { btn.textContent = 'Copy'; }, 2000);
+      });
+    }
+  </script>
+</body>
+</html>

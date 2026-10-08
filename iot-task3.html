@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Task 03: Voice Control with Google Assistant and IFTTT — Mithra Ravi</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- NAV -->
+  <header class="site-nav">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-brand">Mithra Ravi</a>
+      <nav>
+        <ul class="nav-links">
+          <li><a href="index.html#about" class="nav-link">About</a></li>
+          <li><a href="index.html#skills" class="nav-link">Skills</a></li>
+          <li><a href="index.html#projects" class="nav-link">Projects</a></li>
+          <li><a href="index.html#education" class="nav-link">Education</a></li>
+          <li><a href="index.html#contact" class="nav-link">Contact</a></li>
+          <li><a href="protosem.html" class="nav-btn">ProtoSem</a></li>
+          <li><a href="iot-week.html" class="nav-btn">IoT Week</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <div class="container page-container">
+      <h1 class="page-main-heading">Task 03: Voice Control with Google Assistant and IFTTT</h1>
+
+      <section class="content-block">
+        <h2 class="content-block-heading">Overview</h2>
+        <p class="content-block-text">This task switches an appliance with a voice command. A spoken phrase to Google Assistant triggers an IFTTT applet. The applet sends ON or OFF to an Adafruit IO feed. The ESP32 is subscribed to that feed and drives a relay module that switches the appliance.</p>
+        <p class="content-block-text" style="margin-top: 0.75rem;">The data flow is: Voice command, Google Assistant, IFTTT, Adafruit IO feed, ESP32, relay, appliance.</p>
+      </section>
+
+      <section class="content-block">
+        <h2 class="content-block-heading">Objective</h2>
+        <ul class="content-block-list">
+          <li>Create IFTTT applets that turn a Google Assistant phrase into an Adafruit IO feed update.</li>
+          <li>Subscribe the ESP32 to the feed and drive a relay.</li>
+          <li>Switch an appliance on and off using voice only.</li>
+        </ul>
+      </section>
+
+      <section class="content-block">
+        <h2 class="content-block-heading">Components</h2>
+        <ul class="content-block-list">
+          <li>ESP32 development board</li>
+          <li>Relay module [[FILL: number of channels, e.g. 4-channel with optocoupler]]</li>
+          <li>Appliance or bulb [[FILL: what you switched]]</li>
+          <li>Breadboard and jumper wires</li>
+          <li>5 V supply for the relay module</li>
+          <li>Google Assistant on a phone</li>
+          <li>IFTTT and Adafruit IO accounts</li>
+        </ul>
+      </section>
+
+      <section class="content-block">
+        <h2 class="content-block-heading">Work</h2>
+        <ol class="content-block-list">
+          <li>Created a feed in Adafruit IO named "bulb" [[FILL: change if you used another name]]. This is the feed the ESP32 listens to.</li>
+          <li>Created the first IFTTT applet. The trigger is Google Assistant, "Say a simple phrase", with the phrase [[FILL: your ON phrase]]. The action is Adafruit IO, "Send data to Adafruit IO", with the feed bulb and the data ON.</li>
+          <li>Created the second applet with the phrase [[FILL: your OFF phrase]] and the data OFF.</li>
+          <li>Wired the relay module. VCC goes to 5 V, GND goes to ground, and IN1 goes to GPIO 23 of the ESP32. The appliance is connected through the COM and NO terminals of the relay, so the relay works as the switch in the appliance line.</li>
+          <li>Wrote the sketch. The ESP32 connects to Wi-Fi, connects to Adafruit IO over MQTT and subscribes to the bulb feed. When ON arrives it energises the relay. When OFF arrives it releases the relay.</li>
+          <li>The relay module is active-LOW, so the pin is driven LOW to switch the relay ON and HIGH to switch it OFF. The pin is set to OFF as soon as the program starts so the appliance does not switch on during boot.</li>
+          <li>Said the ON phrase to Google Assistant. IFTTT updated the feed, the ESP32 received ON and the relay clicked on. Repeated with the OFF phrase.</li>
+        </ol>
+      </section>
+
+      <section class="content-block">
+        <h2 class="content-block-heading">Media</h2>
+        <video class="media-video" controls preload="metadata">
+          <source src="assets/iot/task3-clip1.mp4" type="video/mp4">
+        </video>
+      </section>
+
+      <section class="content-block">
+        <h2 class="content-block-heading">Code</h2>
+        <div class="code-filename">File: ESP32_Voice_Relay.ino</div>
+        <div class="code-wrapper">
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre><code>#include &lt;WiFi.h&gt;
+#include "Adafruit_MQTT.h"
+#include "Adafruit_MQTT_Client.h"
+
+#define WLAN_SSID      "YOUR_WIFI_NAME"
+#define WLAN_PASS      "YOUR_WIFI_PASSWORD"
+#define AIO_SERVER     "io.adafruit.com"
+#define AIO_SERVERPORT 1883
+#define AIO_USERNAME   "YOUR_AIO_USERNAME"
+#define AIO_KEY        "YOUR_AIO_KEY"
+
+const int RELAY_PIN = 23;   // relay IN1
+const int RELAY_ON  = LOW;  // most relay modules are active-LOW
+const int RELAY_OFF = HIGH;
+
+WiFiClient client;
+Adafruit_MQTT_Client mqtt(&amp;client, AIO_SERVER, AIO_SERVERPORT, AIO_USERNAME, AIO_KEY);
+Adafruit_MQTT_Subscribe bulbFeed = Adafruit_MQTT_Subscribe(&amp;mqtt, AIO_USERNAME "/feeds/bulb");
+
+unsigned long lastPing = 0;
+
+void MQTT_connect() {
+  if (mqtt.connected()) return;
+  Serial.print("Connecting to MQTT... ");
+  int8_t ret;
+  uint8_t retries = 3;
+  while ((ret = mqtt.connect()) != 0) {
+    Serial.println(mqtt.connectErrorString(ret));
+    mqtt.disconnect();
+    delay(5000);
+    if (--retries == 0) ESP.restart();
+  }
+  Serial.println("connected");
+}
+
+void setup() {
+  Serial.begin(115200);
+  pinMode(RELAY_PIN, OUTPUT);
+  digitalWrite(RELAY_PIN, RELAY_OFF);   // relay off at start
+
+  WiFi.begin(WLAN_SSID, WLAN_PASS);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("\nWiFi connected");
+
+  mqtt.subscribe(&amp;bulbFeed);
+}
+
+void loop() {
+  MQTT_connect();
+
+  Adafruit_MQTT_Subscribe *sub;
+  while ((sub = mqtt.readSubscription(1000))) {
+    if (sub == &amp;bulbFeed) {
+      String msg = (char *)bulbFeed.lastread;
+      msg.trim();
+      msg.toUpperCase();
+      Serial.print("Voice command received: ");
+      Serial.println(msg);
+      digitalWrite(RELAY_PIN, msg == "ON" ? RELAY_ON : RELAY_OFF);
+    }
+  }
+
+  if (millis() - lastPing > 30000) {
+    lastPing = millis();
+    if (!mqtt.ping()) mqtt.disconnect();
+  }
+}</code></pre>
+        </div>
+      </section>
+
+      <section class="content-block">
+        <h2 class="content-block-heading">Result</h2>
+        <p class="content-block-text">Speaking the ON and OFF phrases to Google Assistant switched the appliance through the relay without touching any button or screen. The command passed through IFTTT and Adafruit IO to the ESP32 within a short delay.</p>
+      </section>
+
+      <section class="content-block">
+        <h2 class="content-block-heading">Learnings</h2>
+        <ul class="content-block-list">
+          <li>Cloud services can be chained. IFTTT works as the link between a voice assistant and an MQTT feed.</li>
+          <li>The ESP32 code stays the same no matter what sends the data, as long as it writes to the feed.</li>
+          <li>A relay with an optocoupler keeps the ESP32 circuit electrically separate from the appliance side.</li>
+          <li>Many relay modules are active-LOW, so the pin logic is inverted and the pin must be set to OFF at startup.</li>
+          <li>The mains side is wired only with the power disconnected and kept apart from the ESP32 wiring.</li>
+          <li>Voice commands depend on the internet, so they work only while the Wi-Fi and the cloud services are running.</li>
+        </ul>
+      </section>
+
+      <div class="task-nav-bottom">
+        <a href="iot-week.html" class="back-link">&larr; Back to IoT Week</a>
+        <a href="iot-task4.html" class="next-link">Next Task: Task 04 &rarr;</a>
+      </div>
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="site-footer">
+    <div class="container">
+      &copy; 2026 Mithra Ravi
+    </div>
+  </footer>
+
+  <script>
+    function copyCode(btn) {
+      const code = btn.closest('.code-wrapper').querySelector('code').innerText;
+      navigator.clipboard.writeText(code).then(() => {
+        btn.textContent = 'Copied';
+        setTimeout(() => { btn.textContent = 'Copy'; }, 2000);
+      });
+    }
+  </script>
+</body>
+</html>

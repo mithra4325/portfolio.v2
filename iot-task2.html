@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Task 02: Adafruit IO MQTT Control — Mithra Ravi</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- NAV -->
+  <header class="site-nav">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-brand">Mithra Ravi</a>
+      <nav>
+        <ul class="nav-links">
+          <li><a href="index.html#about" class="nav-link">About</a></li>
+          <li><a href="index.html#skills" class="nav-link">Skills</a></li>
+          <li><a href="index.html#projects" class="nav-link">Projects</a></li>
+          <li><a href="index.html#education" class="nav-link">Education</a></li>
+          <li><a href="index.html#contact" class="nav-link">Contact</a></li>
+          <li><a href="protosem.html" class="nav-btn">ProtoSem</a></li>
+          <li><a href="iot-week.html" class="nav-btn">IoT Week</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <div class="container page-container">
+      <h1 class="page-main-heading">Task 02: Adafruit IO MQTT Control</h1>
+
+      <section class="content-block">
+        <h2 class="content-block-heading">Overview</h2>
+        <p class="content-block-text">This task controls hardware through the MQTT protocol using the Adafruit IO cloud broker. A toggle switch on an Adafruit IO dashboard publishes ON or OFF to a feed. The ESP32 is subscribed to the same feed and switches a circuit soldered on a perfboard. A push button on the circuit works as a manual override and sends its state back to the dashboard.</p>
+      </section>
+
+      <section class="content-block">
+        <h2 class="content-block-heading">Objective</h2>
+        <ul class="content-block-list">
+          <li>Understand how MQTT works with a broker, topics, publishers and subscribers.</li>
+          <li>Create an Adafruit IO feed and dashboard with a toggle switch.</li>
+          <li>Connect the ESP32 to Adafruit IO and subscribe to the feed.</li>
+          <li>Build and solder a transistor driver circuit on a perfboard.</li>
+          <li>Control the circuit from the dashboard and from the push button.</li>
+        </ul>
+      </section>
+
+      <section class="content-block">
+        <h2 class="content-block-heading">Components</h2>
+        <ul class="content-block-list">
+          <li>ESP32 development board</li>
+          <li>NPN transistor [[FILL: part number, e.g. BC547]]</li>
+          <li>Resistor for the transistor base [[FILL: value]]</li>
+          <li>LED or bulb as the load [[FILL: what you used]]</li>
+          <li>Push button</li>
+          <li>Perfboard, solder and wires</li>
+          <li>Digital multimeter for continuity checks</li>
+          <li>Adafruit IO account</li>
+        </ul>
+      </section>
+
+      <section class="content-block">
+        <h2 class="content-block-heading">Work</h2>
+        <ol class="content-block-list">
+          <li>Created an Adafruit IO account and a feed named "bulb". Adafruit IO feeds are MQTT topics in the format username/feeds/feedname.</li>
+          <li>Created a dashboard [[FILL: dashboard name]] and added a Toggle block connected to the bulb feed. The toggle sends ON and OFF.</li>
+          <li>Noted the Adafruit IO username and the Active Key. The key acts as the password for the MQTT connection and is not shared.</li>
+          <li>Soldered the circuit on the perfboard. An ESP32 output pin goes through a resistor to the base of the NPN transistor. The emitter goes to ground. The load sits between the supply and the collector, so the transistor works as a switch. The push button connects an ESP32 input pin to ground and uses the internal pull-up resistor. Checked every joint for continuity with a multimeter before powering the board.</li>
+          <li>Installed the Adafruit MQTT library in Arduino IDE and wrote the sketch. It connects to Wi-Fi, connects to io.adafruit.com on port 1883 and subscribes to the bulb feed.</li>
+          <li>When the dashboard toggle is switched, the broker forwards ON or OFF to the ESP32. The ESP32 sets the output pin HIGH or LOW and the transistor switches the load.</li>
+          <li>When the push button is pressed, the ESP32 flips the output and publishes the new state to the same feed. The dashboard toggle then updates to match.</li>
+          <li>Tested from both sides. The dashboard switched the load, the push button switched the load, and the dashboard always showed the current state.</li>
+        </ol>
+      </section>
+
+      <section class="content-block">
+        <h2 class="content-block-heading">Media</h2>
+        <video class="media-video" controls preload="metadata">
+          <source src="assets/iot/task2-clip1.mp4" type="video/mp4">
+        </video>
+      </section>
+
+      <section class="content-block">
+        <h2 class="content-block-heading">Code</h2>
+        <div class="code-filename">File: ESP32_AdafruitIO_MQTT.ino</div>
+        <div class="code-wrapper">
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre><code>#include &lt;WiFi.h&gt;
+#include "Adafruit_MQTT.h"
+#include "Adafruit_MQTT_Client.h"
+
+#define WLAN_SSID      "YOUR_WIFI_NAME"
+#define WLAN_PASS      "YOUR_WIFI_PASSWORD"
+#define AIO_SERVER     "io.adafruit.com"
+#define AIO_SERVERPORT 1883
+#define AIO_USERNAME   "YOUR_AIO_USERNAME"
+#define AIO_KEY        "YOUR_AIO_KEY"
+
+const int OUTPUT_PIN = 5;   // to transistor base through a resistor
+const int BUTTON_PIN = 4;   // push button to GND
+
+WiFiClient client;
+Adafruit_MQTT_Client mqtt(&amp;client, AIO_SERVER, AIO_SERVERPORT, AIO_USERNAME, AIO_KEY);
+
+Adafruit_MQTT_Subscribe bulbFeed = Adafruit_MQTT_Subscribe(&amp;mqtt, AIO_USERNAME "/feeds/bulb");
+Adafruit_MQTT_Publish   bulbPub  = Adafruit_MQTT_Publish(&amp;mqtt, AIO_USERNAME "/feeds/bulb");
+
+bool outputState = false;
+int lastButton = HIGH;
+unsigned long lastPress = 0;
+unsigned long lastPing = 0;
+
+void setOutput(bool on) {
+  outputState = on;
+  digitalWrite(OUTPUT_PIN, on ? HIGH : LOW);
+}
+
+void MQTT_connect() {
+  if (mqtt.connected()) return;
+  Serial.print("Connecting to MQTT... ");
+  int8_t ret;
+  uint8_t retries = 3;
+  while ((ret = mqtt.connect()) != 0) {
+    Serial.println(mqtt.connectErrorString(ret));
+    mqtt.disconnect();
+    delay(5000);
+    if (--retries == 0) ESP.restart();
+  }
+  Serial.println("connected");
+}
+
+void setup() {
+  Serial.begin(115200);
+  pinMode(OUTPUT_PIN, OUTPUT);
+  pinMode(BUTTON_PIN, INPUT_PULLUP);
+  setOutput(false);
+
+  WiFi.begin(WLAN_SSID, WLAN_PASS);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("\nWiFi connected");
+
+  mqtt.subscribe(&amp;bulbFeed);
+}
+
+void loop() {
+  MQTT_connect();
+
+  // Message from the dashboard
+  Adafruit_MQTT_Subscribe *sub;
+  while ((sub = mqtt.readSubscription(100))) {
+    if (sub == &amp;bulbFeed) {
+      String msg = (char *)bulbFeed.lastread;
+      Serial.print("Received: ");
+      Serial.println(msg);
+      setOutput(msg == "ON");
+    }
+  }
+
+  // Manual push button
+  int reading = digitalRead(BUTTON_PIN);
+  if (reading == LOW &amp;&amp; lastButton == HIGH &amp;&amp; millis() - lastPress &gt; 250) {
+    lastPress = millis();
+    setOutput(!outputState);
+    bulbPub.publish(outputState ? "ON" : "OFF");
+  }
+  lastButton = reading;
+
+  // Keep the connection alive
+  if (millis() - lastPing &gt; 30000) {
+    lastPing = millis();
+    if (!mqtt.ping()) mqtt.disconnect();
+  }
+}</code></pre>
+        </div>
+      </section>
+
+      <section class="content-block">
+        <h2 class="content-block-heading">Result</h2>
+        <p class="content-block-text">The Adafruit IO dashboard switched the soldered circuit from anywhere with internet access. The push button switched the same circuit locally and the dashboard toggle followed it. Both controls stayed in sync through the single bulb feed.</p>
+      </section>
+
+      <section class="content-block">
+        <h2 class="content-block-heading">Learnings</h2>
+        <ul class="content-block-list">
+          <li>MQTT uses a broker between devices. The dashboard and the ESP32 never talk to each other directly. They only publish to and subscribe from a topic.</li>
+          <li>MQTT messages are small, which makes it a better fit than HTTP for constant device updates.</li>
+          <li>An ESP32 pin can only supply a small current, so a transistor is used to switch the load.</li>
+          <li>Publishing the button state back to the feed keeps the cloud dashboard accurate.</li>
+          <li>Continuity checks with a multimeter before powering a soldered circuit find bad joints early.</li>
+          <li>The Adafruit IO key works like a password and stays out of public code.</li>
+        </ul>
+      </section>
+
+      <div class="task-nav-bottom">
+        <a href="iot-week.html" class="back-link">&larr; Back to IoT Week</a>
+        <a href="iot-task3.html" class="next-link">Next Task: Task 03 &rarr;</a>
+      </div>
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="site-footer">
+    <div class="container">
+      &copy; 2026 Mithra Ravi
+    </div>
+  </footer>
+
+  <script>
+    function copyCode(btn) {
+      const code = btn.closest('.code-wrapper').querySelector('code').innerText;
+      navigator.clipboard.writeText(code).then(() => {
+        btn.textContent = 'Copied';
+        setTimeout(() => { btn.textContent = 'Copy'; }, 2000);
+      });
+    }
+  </script>
+</body>
+</html>
