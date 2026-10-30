@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Smart Home Dashboard</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ===================== LOGIN SCREEN ===================== -->
+  <div id="login-screen" class="screen">
+    <div class="login-card">
+      <div class="login-icon">🏠</div>
+      <h1>Smart Home</h1>
+      <p class="subtitle">Sign in to access your dashboard</p>
+
+      <form id="login-form">
+        <label for="email">Email</label>
+        <input type="email" id="email" placeholder="you@example.com" required />
+
+        <label for="password">Password</label>
+        <input type="password" id="password" placeholder="Enter your password" required />
+
+        <button type="submit" id="login-btn">Login</button>
+      </form>
+
+      <div class="divider"><span>or</span></div>
+
+      <button id="google-login-btn" class="google-btn">
+        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" class="google-icon" />
+        Sign in with Google
+      </button>
+
+      <p id="login-error" class="error-message"></p>
+    </div>
+  </div>
+
+  <!-- ===================== DASHBOARD SCREEN ===================== -->
+  <div id="dashboard-screen" class="screen hidden">
+
+    <header class="topbar">
+      <div class="topbar-left">
+        <span class="logo-icon">🏠</span>
+        <h2>Smart Home Dashboard</h2>
+      </div>
+      <div class="topbar-right">
+        <span id="esp-status" class="status-badge offline">
+          <span class="dot"></span> ESP32 Offline
+        </span>
+        <button id="logout-btn">Logout</button>
+      </div>
+    </header>
+
+    <main class="dashboard-grid">
+
+      <!-- Temperature Card -->
+      <div class="card">
+        <div class="card-icon">🌡️</div>
+        <h3>Temperature</h3>
+        <p class="card-value"><span id="temp-value">--</span> °C</p>
+      </div>
+
+      <!-- Humidity Card -->
+      <div class="card">
+        <div class="card-icon">💧</div>
+        <h3>Humidity</h3>
+        <p class="card-value"><span id="humidity-value">--</span> %</p>
+      </div>
+
+      <!-- Light Card -->
+      <div class="card">
+        <div class="card-icon">☀️</div>
+        <h3>Ambient Light</h3>
+        <p class="card-value"><span id="light-value">--</span> lux</p>
+        <div class="light-bar-track">
+          <div id="light-bar-fill" class="light-bar-fill"></div>
+        </div>
+        <p id="light-label" class="light-label">--</p>
+      </div>
+
+      <!-- Bulb Control Card -->
+      <div class="card bulb-card">
+        <div class="card-icon" id="bulb-icon">💡</div>
+        <h3>Bulb Control</h3>
+        <p class="card-value" id="bulb-status">OFF</p>
+
+        <div class="toggle-buttons">
+          <button id="bulb-on-btn" class="btn btn-on">ON</button>
+          <button id="bulb-off-btn" class="btn btn-off">OFF</button>
+        </div>
+      </div>
+
+      <!-- Automation Mode Card -->
+      <div class="card automation-card">
+        <div class="card-icon">⚙️</div>
+        <h3>Automation Mode</h3>
+
+        <div class="mode-toggle">
+          <button id="manual-mode-btn" class="mode-btn">Manual</button>
+          <button id="auto-mode-btn" class="mode-btn">Automatic</button>
+        </div>
+
+        <div id="threshold-section" class="threshold-section hidden">
+          <label for="threshold-input">Turn bulb ON when light is below:</label>
+          <div class="threshold-row">
+            <input type="number" id="threshold-input" min="0" max="4095" value="1000" />
+            <button id="save-threshold-btn" class="btn-save">Save</button>
+          </div>
+        </div>
+      </div>
+
+    </main>
+
+    <!-- ===================== HISTORY / CHART / EXPORT ===================== -->
+    <section class="history-section">
+      <div class="history-header">
+        <h3>Historical Data</h3>
+        <button id="export-csv-btn" class="btn-export">⬇ Export CSV</button>
+      </div>
+
+      <div class="chart-wrapper">
+        <canvas id="history-chart"></canvas>
+      </div>
+
+      <div class="table-wrapper">
+        <table id="history-table">
+          <thead>
+            <tr>
+              <th>Time</th>
+              <th>Temp (°C)</th>
+              <th>Humidity (%)</th>
+              <th>Light</th>
+              <th>Bulb</th>
+              <th>Mode</th>
+            </tr>
+          </thead>
+          <tbody id="history-table-body">
+            <tr><td colspan="6" class="empty-row">No data logged yet</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- Chart.js for the history graph -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+  <!-- ===================== FIREBASE SDK (Modular v10) ===================== -->
+  <script type="module" src="script.js"></script>
+
+</body>
+</html>
+

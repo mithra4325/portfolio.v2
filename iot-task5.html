@@ -500,6 +500,34 @@
           </tbody>
         </table>
 
+        <!-- TRANSDUCER & AUTOMATION DETAILS -->
+        <div class="glow-card-grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); margin-top: 1.5rem;">
+          <div class="glow-card">
+            <span class="glow-card-badge">DIGITAL SENSOR</span>
+            <div class="glow-card-title">DHT11 Temperature &amp; Humidity</div>
+            <div class="glow-card-desc">
+              Measures ambient temperature (0°C to 50°C, ±2°C) via an NTC thermistor and relative humidity (20% to 90%, ±5%) via a resistive humidity substrate. Communicates over a custom single-wire bus: the ESP32 initiates an 18 ms start pulse, and the sensor replies with 40 serial bits (16-bit humidity, 16-bit temperature, and an 8-bit CRC checksum).
+            </div>
+          </div>
+
+          <div class="glow-card">
+            <span class="glow-card-badge">ANALOG TRANSDUCER</span>
+            <div class="glow-card-title">LDR Ambient Light &amp; ADC Divider</div>
+            <div class="glow-card-desc">
+              A Cadmium Sulfide (CdS) photoresistor whose electrical resistance decreases non-linearly with increasing illuminance (dark resistance &gt;100 kΩ; bright sunlight &lt;2 kΩ). Paired with a 10 kΩ resistor in a voltage divider sampled by 12-bit ADC1 Channel 6 on GPIO 34, producing raw values from 0 to 4095 mapped to 0–1023 lux.
+            </div>
+          </div>
+
+          <div class="glow-card">
+            <span class="glow-card-badge">AUTOMATION LOGIC</span>
+            <div class="glow-card-title">Threshold Calibration &amp; Dual Modes</div>
+            <div class="glow-card-desc">
+              <strong>Manual Mode:</strong> User controls the bulb exclusively via web toggle buttons or physical pushbutton. Automatic checks are bypassed.<br>
+              <strong>Automatic Mode:</strong> Firmware compares raw LDR readings against <code>smartHome/threshold</code> (default 1000). When light falls below threshold (darkness), the relay energizes (`LOW`) to illuminate the bulb; when light rises above threshold, it automatically turns off. Manual web buttons are locked to prevent conflicting control loops.
+            </div>
+          </div>
+        </div>
+
         <div class="feature-card" style="border-left: 3px solid var(--maroon); margin-top: 1rem;">
           <div class="feature-card-title">Mains Isolation &amp; Safety Protocol</div>
           <div class="feature-card-desc">
@@ -525,21 +553,35 @@
             <span class="step-number">CH 1</span>
             <div>
               <div class="step-title">Telemetry Uplink (ESP32 &rarr; Cloud RTDB)</div>
-              <div class="step-text">Every 5 seconds, the ESP32 reads DHT11 temperature/humidity and analog LDR lumens. Readings are structured into a <code>FirebaseJson</code> object and written to <code>/telemetry/live</code> using <code>Firebase.RTDB.setJSON()</code>.</div>
+              <div class="step-text">Every 5 seconds, the ESP32 reads DHT11 temperature/humidity and analog LDR lumens. Readings are structured into JSON objects and written to <code>/smartHome/temperature</code>, <code>/smartHome/humidity</code>, <code>/smartHome/light</code>, and legacy <code>/telemetry/live</code> using <code>Firebase.RTDB.setJSON()</code>.</div>
             </div>
           </div>
           <div class="flow-step-item">
             <span class="step-number">CH 2</span>
             <div>
               <div class="step-title">Cloud Downlink Control (Dashboard &rarr; RTDB &rarr; ESP32)</div>
-              <div class="step-text">When a user toggles the web switch, the dashboard writes <code>1</code> or <code>0</code> to <code>/controls/bulbState</code>. Firebase immediately pushes the updated integer through the persistent HTTP Server-Sent Events stream to the ESP32's <code>streamCallback</code>, toggling the relay without polling.</div>
+              <div class="step-text">When a user toggles the web switch, the dashboard writes <code>true</code> or <code>false</code> to <code>/smartHome/bulb</code>. Firebase immediately pushes the updated state through the persistent HTTP Server-Sent Events stream to the ESP32's <code>streamCallback</code>, toggling the relay without polling.</div>
             </div>
           </div>
           <div class="flow-step-item">
             <span class="step-number">CH 3</span>
             <div>
               <div class="step-title">Local Manual Override (Button &rarr; Relay &rarr; RTDB Sync)</div>
-              <div class="step-text">Pressing the hardware tactile button triggers debounced edge detection. The firmware flips local <code>bulbState</code>, actuates the relay, and updates <code>/controls/bulbState</code> in Firebase, causing the remote dashboard toggle to track the physical switch automatically.</div>
+              <div class="step-text">Pressing the hardware tactile button triggers debounced edge detection. The firmware flips local <code>bulbState</code>, actuates the relay, and updates <code>/smartHome/bulb</code> in Firebase, causing the remote dashboard toggle to track the physical switch automatically.</div>
+            </div>
+          </div>
+          <div class="flow-step-item">
+            <span class="step-number">CH 4</span>
+            <div>
+              <div class="step-title">Automated Historical Logging (smartHome/logs)</div>
+              <div class="step-text">Every 30 seconds, a background logging timer compiles the latest live readings (temperature, humidity, light, bulb state, mode) and commits an append-only document under <code>/smartHome/logs</code> using <code>push()</code> with a server-side epoch timestamp (<code>serverTimestamp()</code>).</div>
+            </div>
+          </div>
+          <div class="flow-step-item">
+            <span class="step-number">CH 5</span>
+            <div>
+              <div class="step-title">Historical Analytics &amp; CSV Data Export</div>
+              <div class="step-text">The web dashboard subscribes to <code>query(ref(db, "smartHome/logs"), limitToLast(30))</code>, dynamically plotting multi-axis trends on Chart.js and rendering a tabular log. Clicking <strong>⬇ Export CSV</strong> generates a structured dataset file (<code>smarthome_data.csv</code>) for external verification.</div>
             </div>
           </div>
         </div>
@@ -647,28 +689,61 @@
 
       <!-- 13. FIRMWARE & 25. SOURCE CODE -->
       <section class="content-block">
-        <h2 class="content-block-heading">11. Complete Firmware Source Code</h2>
-        <div class="code-filename">File: ESP32_Firebase_Node.ino</div>
+        <h2 class="content-block-heading">11. Complete Firmware Source Code &amp; Downloadable Assets</h2>
+        <p class="content-block-text">
+          Complete production source code for the ESP32 microcontroller firmware and associated web client files. Download the unified package or individual files below:
+        </p>
+
+        <!-- DOWNLOAD BUTTONS BAR -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin: 1.25rem 0 1rem 0; flex-wrap: wrap; gap: 0.6rem;">
+          <div class="code-filename" style="margin-bottom: 0;">Files: source/task5/ (ESP32_Firebase_SmartHome.ino, index.html, script.js, style.css, README.md)</div>
+          <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+            <a href="source/task5/SmartHome_Firebase_System.zip" download="SmartHome_Firebase_System.zip" class="btn btn-outlined" style="padding: 0.45rem 0.95rem; font-size: 0.8125rem; display: inline-flex; align-items: center; gap: 0.45rem; text-decoration: none; border-color: var(--maroon); color: var(--text-main);">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+              Download Complete Task 5 Source (.zip)
+            </a>
+            <a href="source/task5/ESP32_Firebase_SmartHome.ino" download="ESP32_Firebase_SmartHome.ino" class="btn btn-outlined" style="padding: 0.45rem 0.75rem; font-size: 0.8125rem; display: inline-flex; align-items: center; gap: 0.35rem; text-decoration: none; border-color: rgba(255,255,255,0.2); color: var(--text-secondary);">
+              ESP32_Firebase_SmartHome.ino
+            </a>
+            <a href="source/task5/index.html" download="index.html" class="btn btn-outlined" style="padding: 0.45rem 0.75rem; font-size: 0.8125rem; display: inline-flex; align-items: center; gap: 0.35rem; text-decoration: none; border-color: rgba(255,255,255,0.2); color: var(--text-secondary);">
+              index.html
+            </a>
+            <a href="source/task5/script.js" download="script.js" class="btn btn-outlined" style="padding: 0.45rem 0.75rem; font-size: 0.8125rem; display: inline-flex; align-items: center; gap: 0.35rem; text-decoration: none; border-color: rgba(255,255,255,0.2); color: var(--text-secondary);">
+              script.js
+            </a>
+          </div>
+        </div>
+
         <div class="code-wrapper">
           <button class="copy-btn" onclick="copyCode(this)">Copy</button>
-          <pre><code>#include &lt;WiFi.h&gt;
+          <pre><code>/*
+ * ESP32 Smart Home IoT Node — Firebase Logging, Automation &amp; Control
+ * Assignment: IoT Task 5 — Full Edge-to-Cloud Integration
+ * Author: Mithra Ravi
+ */
+
+#include &lt;WiFi.h&gt;
 #include &lt;Firebase_ESP_Client.h&gt;
 #include &lt;DHT.h&gt;
 #include "addons/TokenHelper.h"
 #include "addons/RTDBHelper.h"
 
+// --- Wi-Fi Credentials (Placeholders) ---
 #define WIFI_SSID     "YOUR_WIFI_NAME"
 #define WIFI_PASSWORD "YOUR_WIFI_PASSWORD"
+
+// --- Firebase Project Credentials (Placeholders) ---
 #define API_KEY       "YOUR_FIREBASE_API_KEY"
 #define DATABASE_URL  "https://YOUR_PROJECT-default-rtdb.firebaseio.com/"
 
+// --- Hardware Pin Definitions ---
 #define DHT_PIN    4
 #define DHT_TYPE   DHT11
 #define LDR_PIN    34
 #define BUTTON_PIN 14
 #define RELAY_PIN  26
 
-// Change these if your relay module is active-HIGH
+// Active-LOW relay logic
 #define RELAY_ON  LOW
 #define RELAY_OFF HIGH
 
@@ -679,26 +754,41 @@ FirebaseAuth auth;
 FirebaseConfig config;
 
 bool bulbState = false;
-int lastButton = HIGH;
-unsigned long lastPress = 0;
+String currentMode = "manual";
+int lightThreshold = 1000;
+
+int lastButtonState = HIGH;
+unsigned long lastDebounceTime = 0;
+const unsigned long debounceDelay = 250;
+
 unsigned long lastSend = 0;
-const unsigned long sendInterval = 5000;   // upload every 5 seconds
+const unsigned long sendInterval = 5000;
 
 void setBulb(bool on) {
   bulbState = on;
   digitalWrite(RELAY_PIN, on ? RELAY_ON : RELAY_OFF);
 }
 
-// Runs when the dashboard changes a value under /controls
+// Stream callback: invoked when cloud values change
 void streamCallback(FirebaseStream data) {
-  if (data.dataPath() == "/bulbState" && data.dataType() == "int") {
-    setBulb(data.intData() == 1);
-    Serial.println(bulbState ? "Dashboard: bulb ON" : "Dashboard: bulb OFF");
+  String path = data.dataPath();
+  
+  if (path == "/bulb") {
+    if (data.dataType() == "boolean") {
+      setBulb(data.boolData());
+    } else if (data.dataType() == "int") {
+      setBulb(data.intData() == 1);
+    }
+  } else if (path == "/mode" && data.dataType() == "string") {
+    currentMode = data.stringData();
+    currentMode.toLowerCase();
+  } else if (path == "/threshold" && data.dataType() == "int") {
+    lightThreshold = data.intData();
   }
 }
 
 void streamTimeoutCallback(bool timeout) {
-  if (timeout) Serial.println("Stream timed out, reconnecting...");
+  if (timeout) Serial.println("Firebase RTDB stream timed out, reconnecting...");
 }
 
 void setup() {
@@ -706,7 +796,7 @@ void setup() {
   dht.begin();
   pinMode(BUTTON_PIN, INPUT_PULLUP);
   pinMode(RELAY_PIN, OUTPUT);
-  setBulb(false);
+  setBulb(false); // Fail-safe: ensure lamp is OFF at boot
 
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
   while (WiFi.status() != WL_CONNECTED) {
@@ -717,55 +807,76 @@ void setup() {
 
   config.api_key = API_KEY;
   config.database_url = DATABASE_URL;
-  if (Firebase.signUp(&config, &auth, "", "")) {
-    Serial.println("Firebase sign-in OK");
+
+  if (Firebase.signUp(&amp;config, &amp;auth, "", "")) {
+    Serial.println("Firebase auth OK");
   } else {
-    Serial.printf("Firebase sign-in failed: %s\n", config.signer.signupError.message.c_str());
+    Serial.printf("Firebase auth failed: %s\n", config.signer.signupError.message.c_str());
   }
+
   config.token_status_callback = tokenStatusCallback;
-  Firebase.begin(&config, &auth);
+  Firebase.begin(&amp;config, &amp;auth);
   Firebase.reconnectWiFi(true);
 
-  // Start with the state stored in the database
-  if (Firebase.RTDB.getInt(&fbdo, "/controls/bulbState")) {
-    setBulb(fbdo.intData() == 1);
+  // Initial cloud state reconciliation
+  if (Firebase.RTDB.getBool(&amp;fbdo, "/smartHome/bulb")) {
+    setBulb(fbdo.boolData());
+  }
+  if (Firebase.RTDB.getString(&amp;fbdo, "/smartHome/mode")) {
+    currentMode = fbdo.stringData();
+    currentMode.toLowerCase();
+  }
+  if (Firebase.RTDB.getInt(&amp;fbdo, "/smartHome/threshold")) {
+    lightThreshold = fbdo.intData();
   }
 
-  Firebase.RTDB.beginStream(&stream, "/controls");
-  Firebase.RTDB.setStreamCallback(&stream, streamCallback, streamTimeoutCallback);
+  // Subscribe to Firebase RTDB stream
+  Firebase.RTDB.beginStream(&amp;stream, "/smartHome");
+  Firebase.RTDB.setStreamCallback(&amp;stream, streamCallback, streamTimeoutCallback);
 }
 
 void loop() {
   unsigned long now = millis();
 
-  // Push button: flip the bulb and tell the database
+  // 1. Local Manual Pushbutton Override (Debounced)
   int reading = digitalRead(BUTTON_PIN);
-  if (reading == LOW && lastButton == HIGH && now - lastPress > 250) {
-    lastPress = now;
+  if (reading == LOW &amp;&amp; lastButtonState == HIGH &amp;&amp; (now - lastDebounceTime &gt; debounceDelay)) {
+    lastDebounceTime = now;
     setBulb(!bulbState);
-    Firebase.RTDB.setInt(&fbdo, "/controls/bulbState", bulbState ? 1 : 0);
-    Serial.println(bulbState ? "Button: bulb ON" : "Button: bulb OFF");
+    Firebase.RTDB.setBool(&amp;fbdo, "/smartHome/bulb", bulbState);
   }
-  lastButton = reading;
+  lastButtonState = reading;
 
-  // Sensors: read and upload every 5 seconds
-  if (Firebase.ready() && now - lastSend >= sendInterval) {
+  // 2. Periodic Sensor Sampling &amp; Automation Evaluation
+  if (Firebase.ready() &amp;&amp; (now - lastSend &gt;= sendInterval)) {
     lastSend = now;
 
     float temp = dht.readTemperature();
     float hum  = dht.readHumidity();
     int ldrRaw = analogRead(LDR_PIN);
-    int light  = map(ldrRaw, 0, 4095, 0, 100);
+    int lightLux = map(ldrRaw, 0, 4095, 0, 1023);
 
-    if (!isnan(temp) && !isnan(hum)) {
+    if (!isnan(temp) &amp;&amp; !isnan(hum)) {
+      // Automatic Lighting Logic
+      if (currentMode == "auto") {
+        bool shouldTurnOn = (ldrRaw &lt; lightThreshold);
+        if (shouldTurnOn != bulbState) {
+          setBulb(shouldTurnOn);
+          Firebase.RTDB.setBool(&amp;fbdo, "/smartHome/bulb", bulbState);
+        }
+      }
+
+      // Upload live readings to Firebase RTDB
+      Firebase.RTDB.setFloat(&amp;fbdo, "/smartHome/temperature", temp);
+      Firebase.RTDB.setFloat(&amp;fbdo, "/smartHome/humidity", hum);
+      Firebase.RTDB.setInt(&amp;fbdo, "/smartHome/light", lightLux);
+
+      // Multi-dashboard compatibility path
       FirebaseJson json;
       json.set("temperature", temp);
       json.set("humidity", hum);
-      json.set("light", light);
-      Firebase.RTDB.setJSON(&fbdo, "/telemetry/live", &json);
-      Serial.printf("Temp: %.1f C | Humidity: %.1f %% | Light: %d %%\n", temp, hum, light);
-    } else {
-      Serial.println("DHT11 read failed");
+      json.set("light", lightLux);
+      Firebase.RTDB.setJSON(&amp;fbdo, "/telemetry/live", &amp;json);
     }
   }
 }</code></pre>
@@ -1002,29 +1113,83 @@ void loop() {
       <section class="content-block" id="demonstration-proof">
         <h2 class="content-block-heading">18. Demonstration Media &amp; Activity Completion Proof</h2>
         <p class="content-block-text">
-          Photographic verification of the physical bench implementation demonstrating successful sensor telemetry acquisition, cloud synchronization, and active relay load switching:
+          Photographic and telemetry records verifying the complete end-to-end cloud database integration, time-series logging, and data export pipelines:
         </p>
 
-        <div class="hardware-gallery">
+        <!-- SUBSECTION A: FIREBASE DATABASE CONSOLE -->
+        <h3 class="content-block-subheading" style="margin-top: 1.5rem; margin-bottom: 0.75rem; font-size: 1.15rem; color: var(--gold);">A. Firebase Realtime Database Telemetry Logs</h3>
+        <div class="hardware-gallery" style="grid-template-columns: 1fr; max-width: 820px; margin: 0 auto 2rem auto;">
           <div class="hardware-media-card">
-            <img src="assets/iot/task5-img1.jpeg" alt="ESP32 hardware breadboard with DHT11, LDR divider, and tactile push button">
+            <img src="assets/iot/task5-img1.jpeg" alt="Firebase Realtime Database Console showing smartHome/logs JSON tree">
             <div class="hardware-media-caption">
-              <div class="hardware-media-title">Sensor Subsystem &amp; Input Stage</div>
-              <div class="hardware-media-desc">ESP32 Dev Module interconnected with DHT11 temperature/humidity sensor on GPIO 4, LDR analog voltage divider on GPIO 34, and manual debounced push button on GPIO 14.</div>
+              <div class="hardware-media-title">Firebase Realtime Database Console (<code>mithra-63101-default-rtdb.firebaseio.com</code>)</div>
+              <div class="hardware-media-desc">Production console view under Google Cloud Firebase displaying the hierarchical JSON document tree under path <code>smartHome &gt; logs</code>. Each push ID stores a structured telemetry document: <code>temperature: 26.9</code>, <code>humidity: 52</code>, <code>light: 677</code>, <code>bulb: true</code>, <code>mode: "manual"</code>, and millisecond epoch <code>timestamp: 1791459878872</code>.</div>
             </div>
           </div>
+        </div>
+
+        <!-- SUBSECTION B: WEB DASHBOARD HISTORICAL ANALYTICS -->
+        <h3 class="content-block-subheading" style="margin-top: 1.5rem; margin-bottom: 0.75rem; font-size: 1.15rem; color: var(--gold);">B. Web Dashboard Historical Analytics &amp; Live Telemetry Table</h3>
+        <div class="hardware-gallery" style="grid-template-columns: 1fr; max-width: 820px; margin: 0 auto 2rem auto;">
           <div class="hardware-media-card">
-            <img src="assets/iot/task5-img2.jpeg" alt="5V Optocoupled Relay Module wired to ESP32 and load terminal">
+            <img src="assets/iot/task5-img2.jpeg" alt="Historical Data multi-axis line chart and real-time tabular data stream">
             <div class="hardware-media-caption">
-              <div class="hardware-media-title">Optocoupled Relay Actuation Stage</div>
-              <div class="hardware-media-desc">Active-LOW 5V relay module interfaced with GPIO 26, providing full galvanic isolation while switching the AC mains circuit via COM and NO contacts.</div>
+              <div class="hardware-media-title">Chart.js Multi-Axis Dynamic Graph &amp; Tabular Stream</div>
+              <div class="hardware-media-desc">Dynamic multi-axis time-series visualization tracking chronological trends in temperature, humidity, and light levels, accompanied by a reverse-chronological data table and an <code>Export CSV</code> action button.</div>
             </div>
           </div>
+        </div>
+
+        <!-- SUBSECTION C: CSV TELEMETRY DATASET IN EXCEL -->
+        <h3 class="content-block-subheading" style="margin-top: 1.5rem; margin-bottom: 0.75rem; font-size: 1.15rem; color: var(--gold);">C. Exported Telemetry Dataset in Microsoft Excel</h3>
+        <div class="hardware-gallery" style="grid-template-columns: 1fr; max-width: 820px; margin: 0 auto 2rem auto;">
           <div class="hardware-media-card">
-            <img src="assets/iot/task5-img3.jpeg" alt="Complete live bench prototype under active Firebase Realtime synchronization">
+            <img src="assets/iot/task5-img3.jpeg" alt="Exported telemetry CSV file opened in Microsoft Excel showing timestamped columns">
             <div class="hardware-media-caption">
-              <div class="hardware-media-title">Full Integrated Bench Verification</div>
-              <div class="hardware-media-desc">Live operating node streaming 5-second telemetry payloads to Firebase RTDB while maintaining instant, sub-50ms bidirectional state parity with the web dashboard.</div>
+              <div class="hardware-media-title">Exported Telemetry Dataset in Microsoft Excel (<code>smarthome_data.csv</code>)</div>
+              <div class="hardware-media-desc">Verification of client-side CSV dataset compilation (<code>smarthome_data.csv</code>) opened in Microsoft Excel, featuring structured telemetry columns: <code>Timestamp</code>, <code>Temperature</code>, <code>Humidity</code>, <code>Light</code>, <code>Bulb</code>, and <code>Mode</code>.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SUBSECTION D: PHYSICAL PROTOTYPE PHOTO STATUS -->
+        <h3 class="content-block-subheading" style="margin-top: 2rem; margin-bottom: 0.75rem; font-size: 1.15rem; color: var(--gold);">D. Physical Prototype Photographic Verification Status</h3>
+        <div class="hardware-gallery" style="grid-template-columns: 1fr; max-width: 820px; margin: 0 auto 2rem auto;">
+          <div class="hardware-media-card" style="border: 1px dashed rgba(255, 107, 139, 0.4); background: rgba(18, 18, 18, 0.8);">
+            <div style="padding: 1.5rem; text-align: center;">
+              <span class="test-pill fail" style="background: rgba(255, 75, 114, 0.15); color: #ff4b72; margin-bottom: 0.75rem; display: inline-block;">AWAITING HARDWARE PHOTO UPLOAD</span>
+              <div class="hardware-media-title" style="font-size: 1.15rem; margin-bottom: 0.5rem;">Physical Prototype Laboratory Bench Photo</div>
+              <p style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.6; max-width: 640px; margin: 0 auto 1rem auto;">
+                The physical test bench comprises the ESP32 development module, DHT11 temperature/humidity sensor (GPIO 4), LDR voltage divider (GPIO 34), tactile pushbutton (GPIO 14), 5V optocoupled relay module (GPIO 26), and switched 230V AC incandescent lamp fixture.
+              </p>
+              <div style="font-size: 0.8125rem; color: #a0aec0; background: rgba(0,0,0,0.3); border-radius: 6px; padding: 0.75rem; display: inline-block;">
+                <em>Action Required:</em> Capture a clear photograph of your physical breadboard circuit with all sensors wired and save it to: <code>assets/iot/task5-hardware-setup.jpg</code>.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SUBSECTION E: SYSTEM DEMONSTRATION VIDEO STATUS -->
+        <h3 class="content-block-subheading" style="margin-top: 2rem; margin-bottom: 0.75rem; font-size: 1.15rem; color: var(--gold);">E. Complete System Demonstration Video Status</h3>
+        <div class="hardware-gallery" style="grid-template-columns: 1fr; max-width: 820px; margin: 0 auto;">
+          <div class="hardware-media-card" style="border: 1px dashed rgba(255, 107, 139, 0.4); background: rgba(18, 18, 18, 0.8);">
+            <div style="padding: 1.5rem; text-align: center;">
+              <span class="test-pill fail" style="background: rgba(255, 75, 114, 0.15); color: #ff4b72; margin-bottom: 0.75rem; display: inline-block;">AWAITING VIDEO ASSET</span>
+              <div class="hardware-media-title" style="font-size: 1.15rem; margin-bottom: 0.5rem;">End-to-End System Video Demonstration</div>
+              <p style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.6; max-width: 640px; margin: 0 auto 1rem auto;">
+                The complete interactive web portal is accessible live at <a href="https://mithra-63101.web.app/" target="_blank" rel="noopener" style="color: #ff6b8b; text-decoration: underline; font-weight: 600;">https://mithra-63101.web.app/</a>. A video recording demonstrating edge-to-cloud execution can be uploaded to complete Requirement 23.
+              </p>
+              <div style="text-align: left; font-size: 0.8125rem; color: #a0aec0; background: rgba(0,0,0,0.3); border-radius: 6px; padding: 1rem; max-width: 600px; margin: 0 auto;">
+                <strong>Recommended 5-Step Recording Sequence:</strong>
+                <ol style="margin: 0.5rem 0 0 1.25rem; padding: 0; line-height: 1.5;">
+                  <li>Log in to the web dashboard (Email/Password or Google OAuth).</li>
+                  <li>Show live telemetry cards updating dynamically (Temperature, Humidity, Ambient Light).</li>
+                  <li>In <strong>Manual Mode</strong>, toggle the Bulb ON and OFF via dashboard buttons and show the relay/lamp responding.</li>
+                  <li>Switch to <strong>Automatic Mode</strong> and cover the LDR photoresistor with a hand/cardboard to demonstrate automatic lamp illumination below threshold.</li>
+                  <li>Click <strong>⬇ Export CSV</strong> and open <code>smarthome_data.csv</code> on screen showing timestamped sensor and relay records.</li>
+                </ol>
+                <div style="margin-top: 0.5rem;"><em>File destination:</em> <code>assets/iot/task5-demo.mp4</code>.</div>
+              </div>
             </div>
           </div>
         </div>
