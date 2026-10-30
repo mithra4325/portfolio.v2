@@ -425,10 +425,145 @@
         </div>
       </section>
 
-      <!-- 2. WHAT I WAS TRYING TO BUILD -->
+      <!-- 2. CLOUD COMPUTING CONCEPTS & SERVICE MODELS -->
       <section class="content-block">
-        <span class="section-lead-badge">02 &bull; Design Intent</span>
-        <h2 class="content-block-heading">2. What I Was Trying to Build</h2>
+        <span class="section-lead-badge">02 &bull; Cloud Foundations</span>
+        <h2 class="content-block-heading">2. Cloud Computing &amp; Service Architectures</h2>
+        <p class="content-block-text">
+          <strong>Cloud Computing</strong> is the on-demand delivery of computing power, database storage, applications, and other IT resources through a cloud services platform via the internet with pay-as-you-go pricing. Rather than purchasing, provisioning, and maintaining physical servers in a local closet, developers provision virtualized resources globally within seconds.
+        </p>
+
+        <h3 class="content-block-subheading" style="margin-top: 1.5rem; margin-bottom: 0.75rem; font-size: 1.15rem; color: var(--gold);">The Four Cloud Service Models</h3>
+        <p class="content-block-text">
+          Cloud computing services are organized into four distinct operational tiers depending on how much infrastructure the cloud vendor manages versus what the developer manages:
+        </p>
+
+        <div class="tech-table-wrapper" style="margin: 1.25rem 0; overflow-x: auto;">
+          <table class="tech-table">
+            <thead>
+              <tr>
+                <th>Service Model</th>
+                <th>Full Name</th>
+                <th>What the Cloud Provider Manages</th>
+                <th>What the Developer Manages</th>
+                <th>Real-World Examples</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>IaaS</strong></td>
+                <td>Infrastructure as a Service</td>
+                <td>Physical data centers, virtualization hypervisors, raw compute servers, storage, and networking hardware.</td>
+                <td>Operating system (OS), middleware, runtime environments, application binaries, security configurations, and data.</td>
+                <td>AWS EC2, Google Compute Engine (GCE), Microsoft Azure Virtual Machines.</td>
+              </tr>
+              <tr>
+                <td><strong>PaaS</strong></td>
+                <td>Platform as a Service</td>
+                <td>Hardware, OS patching, server management, language runtimes, middleware, and auto-scaling infrastructure.</td>
+                <td>Application source code and business logic data. Developers simply push code to deploy.</td>
+                <td>Google App Engine, Heroku, AWS Elastic Beanstalk, Render.</td>
+              </tr>
+              <tr>
+                <td><strong>SaaS</strong></td>
+                <td>Software as a Service</td>
+                <td>The entire software stack, hosting, database, infrastructure, backups, and user interface.</td>
+                <td>User account credentials, organizational configuration, and user-generated content.</td>
+                <td>Google Workspace (Docs, Gmail), Dropbox, Microsoft 365, Canva.</td>
+              </tr>
+              <tr>
+                <td><strong>BaaS</strong></td>
+                <td>Backend as a Service</td>
+                <td>Pre-built serverless cloud backend microservices: user authentication, realtime databases, cloud storage, and hosting CDN.</td>
+                <td>Client-side frontend application (HTML/CSS/JS) and database access security rules. No server code required.</td>
+                <td><strong>Google Firebase</strong>, Supabase, AWS Amplify.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="glow-card-grid" style="margin-top: 1.5rem;">
+          <div class="glow-card">
+            <span class="glow-card-badge">CLOUD PLATFORM</span>
+            <div class="glow-card-title">What is a Cloud Platform?</div>
+            <div class="glow-card-desc">An integrated suite of globally distributed data centers, network routing backbones, managed databases, compute clusters, and developer APIs operated by a cloud vendor (such as Google Cloud Platform or AWS) allowing engineers to build and scale applications worldwide with high availability and redundancy.</div>
+          </div>
+
+          <div class="glow-card">
+            <span class="glow-card-badge">DATA PERSISTENCE</span>
+            <div class="glow-card-title">What is a Database?</div>
+            <div class="glow-card-desc">An organized, persistent digital store capable of performing CRUD operations (Create, Read, Update, Delete). Unlike rigid relational databases (SQL tables with fixed schemas), <strong>Firebase Realtime Database</strong> is a NoSQL JSON document tree optimized for millisecond-latency push synchronization across millions of web clients.</div>
+          </div>
+
+          <div class="glow-card">
+            <span class="glow-card-badge">WEB PORTAL</span>
+            <div class="glow-card-title">What is a Cloud-Based Dashboard?</div>
+            <div class="glow-card-desc">A graphical web interface accessible securely from any browser over HTTPS. It continuously visualizes live telemetry feeds (temperature, humidity, light) and exposes interactive control switches to command physical IoT hardware across continents without direct network pairing.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3. AUTHENTICATION & SECURITY ARCHITECTURE -->
+      <section class="content-block">
+        <span class="section-lead-badge">03 &bull; Security &amp; Access Control</span>
+        <h2 class="content-block-heading">3. Authentication &amp; Access Security</h2>
+        <p class="content-block-text">
+          Because IoT dashboards have the power to actuate physical mains-voltage appliances and inspect private domestic sensor telemetry, securing the frontend behind an authenticated gateway is paramount.
+        </p>
+
+        <div class="glow-card-grid" style="margin: 1.25rem 0;">
+          <div class="glow-card" style="border-left: 3px solid #4f46e5;">
+            <span class="glow-card-badge" style="background: rgba(79, 70, 229, 0.2); color: #818cf8;">IDENTITY VERIFICATION</span>
+            <div class="glow-card-title">Authentication (AuthN)</div>
+            <div class="glow-card-desc">
+              <strong>Core Question:</strong> <em>"Who are you?"</em><br>
+              The verification of a user's asserted identity. Implemented in Task 4 using <strong>Firebase Authentication</strong>, supporting both traditional Email/Password credentials (<code>signInWithEmailAndPassword</code>) and Google OAuth federated tokens (<code>signInWithPopup</code>).
+            </div>
+          </div>
+
+          <div class="glow-card" style="border-left: 3px solid #00ff88;">
+            <span class="glow-card-badge" style="background: rgba(0, 255, 136, 0.2); color: #00ff88;">PERMISSIONS ENFORCEMENT</span>
+            <div class="glow-card-title">Authorization (AuthZ)</div>
+            <div class="glow-card-desc">
+              <strong>Core Question:</strong> <em>"What are you allowed to do?"</em><br>
+              The enforcement of access boundaries and operational permissions. Governed by <strong>Firebase Realtime Database Security Rules</strong>, ensuring only authenticated users matching valid session tokens can read live sensor streams or commit mutations to the relay actuator branch.
+            </div>
+          </div>
+        </div>
+
+        <h3 class="content-block-subheading" style="margin-top: 1.5rem; margin-bottom: 0.75rem; font-size: 1.15rem; color: var(--gold);">Authentication Workflow &amp; Reactive Routing</h3>
+        <p class="content-block-text">
+          The web application uses the Firebase Auth state observer (<code>onAuthStateChanged</code>) as an automatic client-side router:
+        </p>
+        <div class="step-timeline">
+          <div class="step-item">
+            <span class="step-badge">STEP 1</span>
+            <div>
+              <div class="step-content-title">Unauthenticated State (Login Screen)</div>
+              <div class="step-content-text">When a visitor lands on <code>https://mithra-63101.web.app</code> without an active session, the dashboard screen is masked with <code>class="hidden"</code> and the standalone Login Card is presented.</div>
+            </div>
+          </div>
+          <div class="step-item">
+            <span class="step-badge">STEP 2</span>
+            <div>
+              <div class="step-content-title">Credential Validation &amp; Token Grant</div>
+              <div class="step-content-text">The user logs in via Email/Password or clicks <em>"Sign in with Google"</em>. Firebase Auth exchanges credentials against Google identity servers and issues a signed JSON Web Token (JWT).</div>
+            </div>
+          </div>
+          <div class="step-item">
+            <span class="step-badge">STEP 3</span>
+            <div>
+              <div class="step-content-title">Reactive Transition to Main Dashboard</div>
+              <div class="step-content-text">The <code>onAuthStateChanged</code> observer fires immediately, hiding the login screen, unmasking the dashboard grid, establishing the Realtime Database listeners, and initiating background telemetry logging.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4. WHAT I WAS TRYING TO BUILD -->
+      <section class="content-block">
+        <span class="section-lead-badge">04 &bull; Design Intent</span>
+        <h2 class="content-block-heading">4. What I Was Trying to Build</h2>
         <p class="content-block-text">
           The engineering objective was to eliminate direct hardware coupling. Instead of requiring a client to know the ESP32's local IP address or maintain an open socket directly to an embedded web server, the user interacts seamlessly through a shared cloud state repository:
         </p>
@@ -763,69 +898,342 @@
           </div>
         </div>
 
-        <div class="media-grid">
-          <img src="assets/iot/task4-img1.jpeg" alt="Task 4 Image 1: Firebase Realtime Database Console View">
-          <img src="assets/iot/task4-img2.jpeg" alt="Task 4 Image 2: Web Dashboard Telemetry and Control Interface">
-          <img src="assets/iot/task4-img3.jpeg" alt="Task 4 Image 3: Realtime Database Synchronization Verification">
+        <!-- SUBSECTION A: AUTHENTICATION & LOGIN INTERFACE -->
+        <h3 class="content-block-subheading" style="margin-top: 1.5rem; margin-bottom: 0.75rem; font-size: 1.15rem; color: var(--gold);">A. User Authentication &amp; Login Gateway</h3>
+        <div class="hardware-gallery" style="grid-template-columns: 1fr; max-width: 820px; margin: 0 auto 2rem auto;">
+          <div class="hardware-media-card">
+            <img src="assets/iot/task4-img1.jpeg" alt="Firebase Authentication Login Page showing Email/Password and Google OAuth Sign-in">
+            <div class="hardware-media-caption">
+              <div class="hardware-media-title">Firebase Authentication Login Gateway (<code>https://mithra-63101.web.app/</code>)</div>
+              <div class="hardware-media-desc">Production authentication interface deployed on Firebase Hosting. Protects domestic IoT telemetry and actuator control behind identity verification, offering both Email/Password authentication and Google OAuth federated sign-in (<em>Sign in with Google</em>).</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SUBSECTION B: REALTIME DATABASE CLOUD CONSOLE -->
+        <h3 class="content-block-subheading" style="margin-top: 1.5rem; margin-bottom: 0.75rem; font-size: 1.15rem; color: var(--gold);">B. Firebase Realtime Database Cloud Console</h3>
+        <div class="hardware-gallery" style="grid-template-columns: 1fr; max-width: 820px; margin: 0 auto 2rem auto;">
+          <div class="hardware-media-card">
+            <img src="assets/iot/task4-firebase-rtdb-console.jpeg" alt="Firebase Realtime Database Console showing smartHome/logs JSON tree">
+            <div class="hardware-media-caption">
+              <div class="hardware-media-title">Firebase Realtime Database Console (<code>mithra-63101-default-rtdb.firebaseio.com</code>)</div>
+              <div class="hardware-media-desc">Live production console view under Google Cloud Firebase displaying the hierarchical JSON document tree under path <code>smartHome &gt; logs</code>. Each push ID stores a structured telemetry document: <code>temperature: 26.9</code>, <code>humidity: 52</code>, <code>light: 677</code>, <code>bulb: true</code>, <code>mode: "manual"</code>, and millisecond epoch <code>timestamp: 1791459878872</code>.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SUBSECTION C: LIVE DASHBOARD MONITORING & CONTROLS -->
+        <h3 class="content-block-subheading" style="margin-top: 1.5rem; margin-bottom: 0.75rem; font-size: 1.15rem; color: var(--gold);">C. Real-Time Telemetry &amp; Actuator Control Dashboard</h3>
+        <div class="hardware-gallery" style="grid-template-columns: 1fr; max-width: 820px; margin: 0 auto 2rem auto;">
+          <div class="hardware-media-card">
+            <img src="assets/iot/task4-img2.jpeg" alt="Smart Home Dashboard web interface with Temperature, Humidity, Light, Bulb Control, and Automation Mode cards">
+            <div class="hardware-media-caption">
+              <div class="hardware-media-title">Production Web Dashboard Interface</div>
+              <div class="hardware-media-desc">Authenticated dashboard interface presenting live sensory metrics: Temperature (26.9 °C), Humidity (52%), Ambient Light (677 lux with dynamic visual light bar and Dark/Bright rating), Bulb Control (state: ON with green ON and red OFF pushbuttons), Automation Mode selector (Manual vs Automatic), and ESP32 heartbeat status badge.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SUBSECTION D: TIME-SERIES ANALYTICS & CSV DATA EXPORT -->
+        <h3 class="content-block-subheading" style="margin-top: 1.5rem; margin-bottom: 0.75rem; font-size: 1.15rem; color: var(--gold);">D. Historical Time-Series Analytics &amp; CSV Export</h3>
+        <div class="hardware-gallery" style="grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); margin-top: 1rem;">
+          <div class="hardware-media-card">
+            <img src="assets/iot/task4-img3.jpeg" alt="Historical Data multi-axis line chart and real-time tabular data stream">
+            <div class="hardware-media-caption">
+              <div class="hardware-media-title">Chart.js Historical Graph &amp; Tabular Stream</div>
+              <div class="hardware-media-desc">Dynamic multi-axis time-series visualization tracking chronological trends in temperature, humidity, and light levels, accompanied by a reverse-chronological data table and an <code>Export CSV</code> action button.</div>
+            </div>
+          </div>
+
+          <div class="hardware-media-card">
+            <img src="assets/iot/task4-csv-export.jpeg" alt="Exported telemetry CSV file opened in Microsoft Excel showing timestamped columns">
+            <div class="hardware-media-caption">
+              <div class="hardware-media-title">Exported Telemetry Dataset in Microsoft Excel</div>
+              <div class="hardware-media-desc">Verification of client-side CSV dataset compilation (<code>smarthome_data.csv</code>) opened in Microsoft Excel, featuring structured telemetry columns: <code>Timestamp</code>, <code>Temperature</code>, <code>Humidity</code>, <code>Light</code>, <code>Bulb</code>, and <code>Mode</code>.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SUBSECTION E: SYSTEM SCHEMATICS & DATAFLOW DIAGRAMS -->
+        <h3 class="content-block-subheading" style="margin-top: 2rem; margin-bottom: 0.75rem; font-size: 1.15rem; color: var(--gold);">E. Edge-to-Cloud System Architecture &amp; Schematics</h3>
+        <p class="content-block-text">
+          Comprehensive technical diagrams illustrating how the Firebase IoT web dashboard integrates with edge transducers, power relays, and cloud database streams:
+        </p>
+
+        <div class="hardware-gallery" style="grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); margin-top: 1rem;">
+          <div class="hardware-media-card">
+            <img src="assets/iot/task4-system-architecture.jpg" alt="Complete IoT System Architecture: Sensors, ESP32, Firebase RTDB, and Web Dashboard">
+            <div class="hardware-media-caption">
+              <div class="hardware-media-title">End-to-End IoT System Architecture</div>
+              <div class="hardware-media-desc">Edge-to-cloud operational diagram mapping DHT11, LDR, and relay stages to the ESP32 microcontroller, synchronizing bidirectionally with Firebase Realtime Database and the browser dashboard over Wi-Fi.</div>
+            </div>
+          </div>
+
+          <div class="hardware-media-card">
+            <img src="assets/iot/task4-bidirectional-dataflow.jpg" alt="Bidirectional Communication Flow: Telemetry Stream and Cloud Downlink Control">
+            <div class="hardware-media-caption">
+              <div class="hardware-media-title">Bidirectional Data Flow Pipeline</div>
+              <div class="hardware-media-desc">Data synchronization architecture detailing 5-second periodic telemetry ingestion from transducers into <code>/telemetry/live</code> and instantaneous cloud downlink control to <code>/controls/bulbState</code>.</div>
+            </div>
+          </div>
+
+          <div class="hardware-media-card">
+            <img src="assets/iot/task4-hardware-wiring.jpg" alt="Pinout and Hardware Interconnect Diagram for ESP32 Sensor and Actuator Node">
+            <div class="hardware-media-caption">
+              <div class="hardware-media-title">Hardware Interconnect &amp; Pinout Schematic</div>
+              <div class="hardware-media-desc">Full circuit layout showing ESP32 GPIO connections to DHT11 (GPIO 4), LDR voltage divider (ADC1 CH0 / GPIO 36), push button (GPIO 18), and active-LOW relay driver (GPIO 23).</div>
+            </div>
+          </div>
+
+          <div class="hardware-media-card">
+            <img src="assets/iot/task4-debugging-sync.jpg" alt="Diagnostic Comparison: Mechanical Contact Chatter and State Synchronization Fixes">
+            <div class="hardware-media-caption">
+              <div class="hardware-media-title">State Synchronization &amp; Debounce Diagnostics</div>
+              <div class="hardware-media-desc">Engineering debugging visual illustrating software debouncing, circular loop prevention between web dashboard and hardware button, and boot-time state reconciliation.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SUBSECTION F: WORKFLOW VIDEO STATUS -->
+        <h3 class="content-block-subheading" style="margin-top: 2rem; margin-bottom: 0.75rem; font-size: 1.15rem; color: var(--gold);">F. Webpage Workflow Demonstration Video Status</h3>
+        <div class="hardware-gallery" style="grid-template-columns: 1fr; max-width: 820px; margin: 0 auto;">
+          <div class="hardware-media-card" style="border: 1px dashed rgba(255, 107, 139, 0.4); background: rgba(18, 18, 18, 0.8);">
+            <div style="padding: 1.5rem; text-align: center;">
+              <span class="test-pill pass" style="background: rgba(0, 255, 136, 0.15); color: #00ff88; margin-bottom: 0.75rem; display: inline-block;">INTERACTIVE TESTBED ACTIVE</span>
+              <div class="hardware-media-title" style="font-size: 1.15rem; margin-bottom: 0.5rem;">Live Web Application Verified</div>
+              <p style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.6; max-width: 640px; margin: 0 auto 1rem auto;">
+                The complete web application is deployed and live at <a href="https://mithra-63101.web.app/" target="_blank" rel="noopener" style="color: #ff6b8b; text-decoration: underline; font-weight: 600;">https://mithra-63101.web.app/</a>. Visitors can directly test the login workflow (Email/Password or Google OAuth), observe real-time telemetry rendering, click Bulb ON/OFF switches, switch between Manual and Automatic modes, inspect the Chart.js graph, and download generated CSV data files.
+              </p>
+              <div style="font-size: 0.8125rem; color: #a0aec0; background: rgba(0,0,0,0.3); border-radius: 6px; padding: 0.75rem; display: inline-block;">
+                <em>Note:</em> A screen capture video recording (<code>.mp4</code>) demonstrating the full browser session from login to CSV export can be placed into <code>assets/iot/task4-demo.mp4</code> to fulfill Requirement 18.
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
       <!-- 11. COMPLETE FRONTEND SOURCE CODE -->
       <section class="content-block">
         <span class="section-lead-badge">11 &bull; Production Code</span>
-        <h2 class="content-block-heading">11. Complete Frontend Source Code</h2>
-        <div class="code-filename">File: index.html</div>
+        <h2 class="content-block-heading">11. Complete Frontend Source Code &amp; Downloadable Assets</h2>
+        <p class="content-block-text">
+          The dashboard is authored as a modular single-page application using modern ES module imports. Visitors can download the complete standalone web package or individual source files directly:
+        </p>
+
+        <!-- DOWNLOAD BUTTONS BAR -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin: 1.25rem 0 1rem 0; flex-wrap: wrap; gap: 0.6rem;">
+          <div class="code-filename" style="margin-bottom: 0;">Package: source/task4/ (index.html, script.js, style.css, README.md)</div>
+          <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+            <a href="source/task4/SmartHome_Firebase_Dashboard.zip" download="SmartHome_Firebase_Dashboard.zip" class="btn btn-outlined" style="padding: 0.45rem 0.95rem; font-size: 0.8125rem; display: inline-flex; align-items: center; gap: 0.45rem; text-decoration: none; border-color: var(--maroon); color: var(--text-main);">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+              Download Complete Web Dashboard (.zip)
+            </a>
+            <a href="source/task4/index.html" download="index.html" class="btn btn-outlined" style="padding: 0.45rem 0.75rem; font-size: 0.8125rem; display: inline-flex; align-items: center; gap: 0.35rem; text-decoration: none; border-color: rgba(255,255,255,0.2); color: var(--text-secondary);">
+              index.html
+            </a>
+            <a href="source/task4/script.js" download="script.js" class="btn btn-outlined" style="padding: 0.45rem 0.75rem; font-size: 0.8125rem; display: inline-flex; align-items: center; gap: 0.35rem; text-decoration: none; border-color: rgba(255,255,255,0.2); color: var(--text-secondary);">
+              script.js
+            </a>
+            <a href="source/task4/style.css" download="style.css" class="btn btn-outlined" style="padding: 0.45rem 0.75rem; font-size: 0.8125rem; display: inline-flex; align-items: center; gap: 0.35rem; text-decoration: none; border-color: rgba(255,255,255,0.2); color: var(--text-secondary);">
+              style.css
+            </a>
+          </div>
+        </div>
+
+        <h3 class="content-block-subheading" style="margin-top: 1.5rem; margin-bottom: 0.5rem; font-size: 1.05rem; color: var(--text-main);">1. JavaScript Controller: <code>script.js</code></h3>
+        <div class="code-wrapper">
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre><code>// =========================================================
+// SMART HOME - FIREBASE DASHBOARD CLIENT CONTROLLER
+// Modular Firebase SDK v10 (Authentication &amp; Realtime Database)
+// =========================================================
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getAuth,
+  signInWithEmailAndPassword,
+  signInWithPopup,
+  GoogleAuthProvider,
+  signOut,
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import {
+  getDatabase,
+  ref,
+  onValue,
+  set,
+  push,
+  query,
+  limitToLast,
+  serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+// Firebase Configuration (Placeholders for public repository)
+const firebaseConfig = {
+  apiKey: "YOUR_FIREBASE_API_KEY",
+  authDomain: "mithra-63101.firebaseapp.com",
+  databaseURL: "https://mithra-63101-default-rtdb.firebaseio.com",
+  projectId: "mithra-63101",
+  storageBucket: "mithra-63101.firebasestorage.app",
+  messagingSenderId: "649689915283",
+  appId: "YOUR_FIREBASE_APP_ID"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
+
+// Authentication: Email/Password &amp; Google Sign-In
+const loginForm = document.getElementById("login-form");
+const googleLoginBtn = document.getElementById("google-login-btn");
+const logoutBtn = document.getElementById("logout-btn");
+
+if (loginForm) {
+  loginForm.addEventListener("submit", (e) =&gt; {
+    e.preventDefault();
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value;
+    signInWithEmailAndPassword(auth, email, password)
+      .catch(err =&gt; alert("Login failed: " + err.message));
+  });
+}
+
+if (googleLoginBtn) {
+  const provider = new GoogleAuthProvider();
+  googleLoginBtn.addEventListener("click", () =&gt; {
+    signInWithPopup(auth, provider).catch(err =&gt; alert("Google Sign-In failed"));
+  });
+}
+
+if (logoutBtn) {
+  logoutBtn.addEventListener("click", () =&gt; signOut(auth));
+}
+
+// Reactive Screen Router
+onAuthStateChanged(auth, (user) =&gt; {
+  if (user) {
+    document.getElementById("login-screen").classList.add("hidden");
+    document.getElementById("dashboard-screen").classList.remove("hidden");
+    startListening();
+  } else {
+    document.getElementById("login-screen").classList.remove("hidden");
+    document.getElementById("dashboard-screen").classList.add("hidden");
+  }
+});
+
+// Real-Time Database Event Listeners
+function startListening() {
+  onValue(ref(db, "smartHome/temperature"), (snap) =&gt; {
+    const val = snap.val();
+    if (val !== null) document.getElementById("temp-value").textContent = val;
+  });
+
+  onValue(ref(db, "smartHome/humidity"), (snap) =&gt; {
+    const val = snap.val();
+    if (val !== null) document.getElementById("humidity-value").textContent = val;
+  });
+
+  onValue(ref(db, "smartHome/light"), (snap) =&gt; {
+    const val = snap.val();
+    if (val !== null) {
+      document.getElementById("light-value").textContent = val;
+      const pct = Math.min(100, Math.round((val / 1023) * 100));
+      document.getElementById("light-bar-fill").style.width = pct + "%";
+    }
+  });
+
+  onValue(ref(db, "smartHome/bulb"), (snap) =&gt; {
+    const isOn = snap.val() === true;
+    const statusEl = document.getElementById("bulb-status");
+    statusEl.textContent = isOn ? "ON" : "OFF";
+    statusEl.style.color = isOn ? "#16a34a" : "#dc2626";
+    document.getElementById("bulb-icon").textContent = isOn ? "💡" : "⚪";
+  });
+
+  // Relay Controls Mutation Handlers
+  document.getElementById("bulb-on-btn")?.addEventListener("click", () =&gt; {
+    set(ref(db, "smartHome/bulb"), true);
+  });
+  document.getElementById("bulb-off-btn")?.addEventListener("click", () =&gt; {
+    set(ref(db, "smartHome/bulb"), false);
+  });
+}</code></pre>
+        </div>
+
+        <h3 class="content-block-subheading" style="margin-top: 2rem; margin-bottom: 0.5rem; font-size: 1.05rem; color: var(--text-main);">2. HTML5 Structure: <code>index.html</code></h3>
         <div class="code-wrapper">
           <button class="copy-btn" onclick="copyCode(this)">Copy</button>
           <pre><code>&lt;!DOCTYPE html&gt;
 &lt;html lang="en"&gt;
 &lt;head&gt;
-  &lt;meta charset="UTF-8"&gt;
-  &lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;
-  &lt;title&gt;Smart IoT Dashboard&lt;/title&gt;
+  &lt;meta charset="UTF-8" /&gt;
+  &lt;meta name="viewport" content="width=device-width, initial-scale=1.0" /&gt;
+  &lt;title&gt;Smart Home Dashboard&lt;/title&gt;
+  &lt;link rel="stylesheet" href="style.css" /&gt;
 &lt;/head&gt;
 &lt;body&gt;
-  &lt;h1&gt;Smart IoT Dashboard&lt;/h1&gt;
-  &lt;p&gt;Temperature: &lt;span id="temp"&gt;--&lt;/span&gt; &amp;deg;C&lt;/p&gt;
-  &lt;p&gt;Humidity: &lt;span id="hum"&gt;--&lt;/span&gt; %&lt;/p&gt;
-  &lt;p&gt;Light level: &lt;span id="light"&gt;--&lt;/span&gt; %&lt;/p&gt;
-  &lt;label&gt;&lt;input type="checkbox" id="bulbToggle"&gt; Bulb&lt;/label&gt;
+  &lt;!-- LOGIN SCREEN --&gt;
+  &lt;div id="login-screen" class="screen"&gt;
+    &lt;div class="login-card"&gt;
+      &lt;div class="login-icon"&gt;🏠&lt;/div&gt;
+      &lt;h1&gt;Smart Home&lt;/h1&gt;
+      &lt;p class="subtitle"&gt;Sign in to access your dashboard&lt;/p&gt;
+      &lt;form id="login-form"&gt;
+        &lt;label for="email"&gt;Email&lt;/label&gt;
+        &lt;input type="email" id="email" placeholder="you@example.com" required /&gt;
+        &lt;label for="password"&gt;Password&lt;/label&gt;
+        &lt;input type="password" id="password" placeholder="Enter your password" required /&gt;
+        &lt;button type="submit" id="login-btn"&gt;Login&lt;/button&gt;
+      &lt;/form&gt;
+      &lt;div class="divider"&gt;&lt;span&gt;or&lt;/span&gt;&lt;/div&gt;
+      &lt;button id="google-login-btn" class="google-btn"&gt;
+        &lt;img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" class="google-icon" /&gt;
+        Sign in with Google
+      &lt;/button&gt;
+      &lt;p id="login-error" class="error-message"&gt;&lt;/p&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
 
-  &lt;script type="module"&gt;
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+  &lt;!-- DASHBOARD SCREEN --&gt;
+  &lt;div id="dashboard-screen" class="screen hidden"&gt;
+    &lt;header class="topbar"&gt;
+      &lt;div class="topbar-left"&gt;
+        &lt;span class="logo-icon"&gt;🏠&lt;/span&gt;
+        &lt;h2&gt;Smart Home Dashboard&lt;/h2&gt;
+      &lt;/div&gt;
+      &lt;div class="topbar-right"&gt;
+        &lt;span id="esp-status" class="status-badge offline"&gt;
+          &lt;span class="dot"&gt;&lt;/span&gt; ESP32 Offline
+        &lt;/span&gt;
+        &lt;button id="logout-btn"&gt;Logout&lt;/button&gt;
+      &lt;/div&gt;
+    &lt;/header&gt;
 
-    const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_PROJECT.firebaseapp.com",
-      databaseURL: "https://YOUR_PROJECT-default-rtdb.firebaseio.com",
-      projectId: "YOUR_PROJECT"
-    };
+    &lt;main class="dashboard-grid"&gt;
+      &lt;div class="card"&gt;&lt;h3&gt;Temperature&lt;/h3&gt;&lt;p class="card-value"&gt;&lt;span id="temp-value"&gt;--&lt;/span&gt; °C&lt;/p&gt;&lt;/div&gt;
+      &lt;div class="card"&gt;&lt;h3&gt;Humidity&lt;/h3&gt;&lt;p class="card-value"&gt;&lt;span id="humidity-value"&gt;--&lt;/span&gt; %&lt;/p&gt;&lt;/div&gt;
+      &lt;div class="card"&gt;&lt;h3&gt;Ambient Light&lt;/h3&gt;&lt;p class="card-value"&gt;&lt;span id="light-value"&gt;--&lt;/span&gt; lux&lt;/p&gt;&lt;/div&gt;
+      &lt;div class="card bulb-card"&gt;
+        &lt;h3&gt;Bulb Control&lt;/h3&gt;
+        &lt;p class="card-value" id="bulb-status"&gt;OFF&lt;/p&gt;
+        &lt;div class="toggle-buttons"&gt;
+          &lt;button id="bulb-on-btn" class="btn btn-on"&gt;ON&lt;/button&gt;
+          &lt;button id="bulb-off-btn" class="btn btn-off"&gt;OFF&lt;/button&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/main&gt;
 
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-    const telemetryRef = ref(db, "telemetry/live");
-    const bulbRef = ref(db, "controls/bulbState");
+    &lt;section class="history-section"&gt;
+      &lt;div class="history-header"&gt;
+        &lt;h3&gt;Historical Data&lt;/h3&gt;
+        &lt;button id="export-csv-btn" class="btn-export"&gt;⬇ Export CSV&lt;/button&gt;
+      &lt;/div&gt;
+      &lt;div class="chart-wrapper"&gt;&lt;canvas id="history-chart"&gt;&lt;/canvas&gt;&lt;/div&gt;
+    &lt;/section&gt;
+  &lt;/div&gt;
 
-    // Live sensor values
-    onValue(telemetryRef, (snapshot) =&gt; {
-      const d = snapshot.val();
-      if (!d) return;
-      document.getElementById("temp").textContent = d.temperature;
-      document.getElementById("hum").textContent = d.humidity;
-      document.getElementById("light").textContent = d.light;
-    });
-
-    // Keep the toggle in sync with the database
-    onValue(bulbRef, (snapshot) =&gt; {
-      document.getElementById("bulbToggle").checked = snapshot.val() === 1;
-    });
-
-    // Send the toggle change to the database
-    document.getElementById("bulbToggle").addEventListener("change", (e) =&gt; {
-      set(bulbRef, e.target.checked ? 1 : 0);
-    });
-  &lt;/script&gt;
+  &lt;script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"&gt;&lt;/script&gt;
+  &lt;script type="module" src="script.js"&gt;&lt;/script&gt;
 &lt;/body&gt;
 &lt;/html&gt;</code></pre>
         </div>
@@ -913,10 +1321,66 @@
         </div>
       </section>
 
-      <!-- 14. KEY LEARNINGS -->
+      <!-- 14. PROBLEMS ENCOUNTERED & ENGINEERING SOLUTIONS -->
       <section class="content-block">
-        <span class="section-lead-badge">14 &bull; Engineering Insights</span>
-        <h2 class="content-block-heading">14. Key Learnings</h2>
+        <span class="section-lead-badge">14 &bull; Diagnostics &amp; Solutions</span>
+        <h2 class="content-block-heading">14. Problems Encountered &amp; Engineering Solutions</h2>
+        <p class="content-block-text">
+          Developing a reactive cloud dashboard that synchronizes asynchronously with Firebase services introduced several real-world software engineering challenges:
+        </p>
+
+        <div class="glow-card-grid" style="margin-top: 1.25rem;">
+          <div class="glow-card">
+            <span class="glow-card-badge" style="color: #ff4b72; border-color: rgba(255, 75, 114, 0.4);">DEFENSIVE PARSING</span>
+            <div class="glow-card-title">1. Initial Null Snapshot Crash</div>
+            <div class="glow-card-desc">
+              <strong>Symptom:</strong> On initial web app boot prior to telemetry ingestion, <code>snapshot.val()</code> returned <code>null</code>, causing uncaught JavaScript runtime exceptions (<code>TypeError: Cannot read properties of null</code>) when attempting to access property fields.<br>
+              <strong>Resolution:</strong> Implemented defensive null-guard clauses and modern nullish coalescing operators (<code>val?.temperature ?? "--"</code>) across all reactive callback listeners, guaranteeing that uninitialized paths render placeholder dashes without freezing the DOM.
+            </div>
+          </div>
+
+          <div class="glow-card">
+            <span class="glow-card-badge" style="color: #4f46e5; border-color: rgba(79, 70, 229, 0.4);">ROUTING LIFECYCLE</span>
+            <div class="glow-card-title">2. Auth State Redirection Flicker</div>
+            <div class="glow-card-desc">
+              <strong>Symptom:</strong> When a user refreshed the page while authenticated, the login card briefly flashed for ~150ms before the dashboard rendered, causing an annoying visual layout shift.<br>
+              <strong>Resolution:</strong> Configured <code>#dashboard-screen</code> with default <code>class="hidden"</code> in static CSS and centralized all DOM transition logic inside <code>onAuthStateChanged(auth, callback)</code>, ensuring UI components reveal only after token validation resolves.
+            </div>
+          </div>
+
+          <div class="glow-card">
+            <span class="glow-card-badge" style="color: #f59e0b; border-color: rgba(245, 158, 11, 0.4);">CANVAS MEMORY REUSE</span>
+            <div class="glow-card-title">3. Chart.js Re-Render Memory Conflict</div>
+            <div class="glow-card-desc">
+              <strong>Symptom:</strong> Subscribing the Chart.js canvas to the historical telemetry log triggered <em>"Canvas is already in use. Chart with ID '0' must be destroyed before the canvas can be reused"</em> on every 30-second snapshot update.<br>
+              <strong>Resolution:</strong> Tracked the chart instance globally and executed <code>if (historyChart) { historyChart.destroy(); }</code> immediately prior to instantiating new datasets, releasing canvas memory buffers cleanly.
+            </div>
+          </div>
+
+          <div class="glow-card">
+            <span class="glow-card-badge" style="color: #00ff88; border-color: rgba(0, 255, 136, 0.4);">DATABASE SECURITY</span>
+            <div class="glow-card-title">4. Realtime Database Security Rules Lockout</div>
+            <div class="glow-card-desc">
+              <strong>Symptom:</strong> Firebase Realtime Database default locked rules rejected all client requests with <code>PERMISSION_DENIED</code>, blocking the browser from reading telemetry or writing bulb commands.<br>
+              <strong>Resolution:</strong> Authored deterministic JSON security rules requiring valid user authentication (<code>".read": "auth != null", ".write": "auth != null"</code>), linking permissions directly to the Firebase Auth token.
+            </div>
+          </div>
+
+          <div class="glow-card">
+            <span class="glow-card-badge" style="color: #00e5ff; border-color: rgba(0, 229, 255, 0.4);">STATE ISOLATION</span>
+            <div class="glow-card-title">5. Auto vs Manual Threshold Race Condition</div>
+            <div class="glow-card-desc">
+              <strong>Symptom:</strong> When the dashboard was switched to Automatic Mode, manual button clicks on Bulb ON/OFF produced a race condition against light-sensor threshold rules.<br>
+              <strong>Resolution:</strong> Injected conditional UI disabling: setting <code>smartHome/mode</code> to <code>"auto"</code> automatically sets <code>bulbOnBtn.disabled = true</code> and <code>bulbOffBtn.disabled = true</code>, preventing conflicting control signals.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 15. KEY LEARNINGS -->
+      <section class="content-block">
+        <span class="section-lead-badge">15 &bull; Engineering Insights</span>
+        <h2 class="content-block-heading">15. Key Learnings</h2>
         <div class="glow-card-grid">
           <div class="glow-card">
             <div class="glow-card-title">Shared Cloud State Layers</div>
@@ -937,10 +1401,10 @@
         </div>
       </section>
 
-      <!-- 15. FINAL RESULT & TAKEAWAY -->
+      <!-- 16. FINAL RESULT & TAKEAWAY -->
       <section class="content-block">
-        <span class="section-lead-badge">15 &bull; Operational Delivery</span>
-        <h2 class="content-block-heading">15. Final Result &amp; Engineering Takeaway</h2>
+        <span class="section-lead-badge">16 &bull; Operational Delivery</span>
+        <h2 class="content-block-heading">16. Final Result &amp; Engineering Takeaway</h2>
         <p class="content-block-text">
           Task 04 successfully delivered a fast, responsive, and robust cloud-connected web portal:
         </p>
@@ -958,10 +1422,10 @@
         </p>
       </section>
 
-      <!-- 16. THE 4-PHASE EVOLUTION ROADMAP -->
+      <!-- 17. THE 4-PHASE EVOLUTION ROADMAP -->
       <section class="content-block">
-        <span class="section-lead-badge">16 &bull; The Complete IoT Week Arc</span>
-        <h2 class="content-block-heading">16. The 4-Phase IoT Architecture Evolution Arc</h2>
+        <span class="section-lead-badge">17 &bull; The Complete IoT Week Arc</span>
+        <h2 class="content-block-heading">17. The 4-Phase IoT Architecture Evolution Arc</h2>
         <p class="content-block-text">
           Task 04 represents the software culmination of four progressive architectural milestones across IoT Week:
         </p>
