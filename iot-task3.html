@@ -657,7 +657,7 @@
       <section class="content-block">
         <h2 class="content-block-heading">9. IFTTT Automation Layer</h2>
         <p class="content-block-text">
-          <strong>IFTTT ("If This, Then That")</strong> provides the automation rules engine that connects Google's ecosystem with Adafruit IO. Two dedicated applets were constructed:
+          <strong>IFTTT ("If This, Then That")</strong> provides the automation rules engine that connects Google's ecosystem with Adafruit IO. Two dedicated applets were constructed under the student's IFTTT account (<code>sudhiksha118</code>):
         </p>
 
         <div class="glow-card-grid" style="margin: 1.25rem 0;">
@@ -665,10 +665,10 @@
             <div class="card-icon" style="color: #00e676;">&#9654;</div>
             <div class="card-title">Applet 1 &mdash; Voice Turn ON</div>
             <div class="card-desc">
-              <span class="test-pill pass" style="margin-bottom: 0.5rem; display: inline-block;">IF THIS</span><br>
-              Google Assistant detects: <code>"turn on bulb"</code><br><br>
-              <span class="test-pill pass" style="margin-bottom: 0.5rem; display: inline-block;">THEN THAT</span><br>
-              Send payload <code>"ON"</code> to Adafruit IO feed <code>bulb</code>
+              <span class="test-pill pass" style="margin-bottom: 0.5rem; display: inline-block;">IF THIS (Trigger)</span><br>
+              Google Assistant "Activate scene": <code>"Okay Google, activate Bulb"</code><br><br>
+              <span class="test-pill pass" style="margin-bottom: 0.5rem; display: inline-block;">THEN THAT (Action)</span><br>
+              Adafruit IO "Send data to Adafruit IO": Publish <code>"ON"</code> to feed <code>bulb</code>
             </div>
           </div>
 
@@ -676,10 +676,10 @@
             <div class="card-icon" style="color: #ff4b72;">&#9632;</div>
             <div class="card-title">Applet 2 &mdash; Voice Turn OFF</div>
             <div class="card-desc">
-              <span class="test-pill fail" style="margin-bottom: 0.5rem; display: inline-block;">IF THIS</span><br>
-              Google Assistant detects: <code>"turn off bulb"</code><br><br>
-              <span class="test-pill fail" style="margin-bottom: 0.5rem; display: inline-block;">THEN THAT</span><br>
-              Send payload <code>"OFF"</code> to Adafruit IO feed <code>bulb</code>
+              <span class="test-pill fail" style="margin-bottom: 0.5rem; display: inline-block;">IF THIS (Trigger)</span><br>
+              Google Assistant "Activate scene": <code>"Okay Google, activate TURN off bulb"</code><br><br>
+              <span class="test-pill fail" style="margin-bottom: 0.5rem; display: inline-block;">THEN THAT (Action)</span><br>
+              Adafruit IO "Send data to Adafruit IO": Publish <code>"OFF"</code> to feed <code>bulb</code>
             </div>
           </div>
         </div>
@@ -687,6 +687,33 @@
         <p class="content-block-text">
           IFTTT acts strictly as the <strong>automation bridge</strong>. When Google Assistant fires the trigger, IFTTT issues an API request to Adafruit IO, writing the string <code>ON</code> or <code>OFF</code> into the feed. IFTTT does not maintain an MQTT connection to the ESP32; it relies on Adafruit IO to broker the message.
         </p>
+
+        <!-- IFTTT CONFIGURATION GALLERY -->
+        <div class="hardware-gallery" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); margin-top: 1.5rem;">
+          <div class="hardware-media-card">
+            <img src="assets/iot/task3-ifttt-my-applets.png" alt="IFTTT My Applets console showing active Google Assistant to Adafruit IO automation applets">
+            <div class="hardware-media-caption">
+              <div class="hardware-media-title">IFTTT Applet Console (My Applets)</div>
+              <div class="hardware-media-desc">Connected automation applets under account <code>sudhiksha118</code>: <em>"If you say 'Okay Google, activate Bulb', then Send data to bulb feed"</em> and <em>"If you say 'Okay Google, activate TURN off bulb', then Send data to bulb feed"</em>.</div>
+            </div>
+          </div>
+
+          <div class="hardware-media-card">
+            <img src="assets/iot/task3-ifttt-edit-applet.png" alt="IFTTT Applet configuration editor linking Google Assistant scene to Adafruit IO feed">
+            <div class="hardware-media-caption">
+              <div class="hardware-media-title">IFTTT Applet Builder Configuration</div>
+              <div class="hardware-media-desc">Mapping the trigger service (<strong>Google Assistant</strong>: <em>Activate scene</em>) directly to the action service (<strong>Adafruit IO</strong>: <em>Send data to Adafruit IO</em> under account <em>Sudhiksha G</em> targeting feed <code>bulb</code> with data payload <code>ON</code>).</div>
+            </div>
+          </div>
+
+          <div class="hardware-media-card">
+            <img src="assets/iot/task3-ifttt-applet-details.png" alt="IFTTT Applet details defining the trigger ingredients and action fields">
+            <div class="hardware-media-caption">
+              <div class="hardware-media-title">Trigger Definition &amp; Action Fields</div>
+              <div class="hardware-media-desc">Applet architectural specifications displaying the <code>Activate scene</code> realtime trigger with <code>SceneName</code> parameter and downstream Adafruit IO action fields (<code>feed_name</code> and <code>data</code>).</div>
+            </div>
+          </div>
+        </div>
       </section>
 
       <!-- 10. ADAFRUIT IO LAYER -->
@@ -714,6 +741,25 @@
         <p class="content-block-text" style="margin-top: 0.75rem;">
           This abstraction decouples the frontend entirely: the ESP32 does not know whether the feed update originated from an IFTTT voice applet, an Adafruit IO web dashboard, or a REST API call.
         </p>
+
+        <!-- ADAFRUIT IO DASHBOARD & FEED TELEMETRY GALLERY -->
+        <div class="hardware-gallery" style="grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); margin-top: 1.5rem;">
+          <div class="hardware-media-card">
+            <img src="assets/iot/task2-adafruit-dashboard.png" alt="Adafruit IO Dashboard monitoring bulb feed">
+            <div class="hardware-media-caption">
+              <div class="hardware-media-title">Adafruit IO Broker Dashboard (/dashboards/bulb)</div>
+              <div class="hardware-media-desc">Web dashboard displaying the live state of the <code>bulb</code> feed under account <code>sudhiksha</code>, reflecting commands delivered from voice triggers.</div>
+            </div>
+          </div>
+
+          <div class="hardware-media-card">
+            <img src="assets/iot/task2-feed-history.png" alt="Adafruit IO Feed History displaying real-time payload updates">
+            <div class="hardware-media-caption">
+              <div class="hardware-media-title">Broker Feed History (/feeds/bulb)</div>
+              <div class="hardware-media-desc">Real-time timestamped payload log on the Adafruit IO broker confirming receipt of <code>ON</code> and <code>OFF</code> strings dispatched via IFTTT webhooks.</div>
+            </div>
+          </div>
+        </div>
       </section>
 
       <!-- 11. MQTT COMMUNICATION LAYER -->
@@ -939,17 +985,35 @@
 
       <!-- MEDIA SECTION -->
       <section class="content-block" id="media">
-        <h2 class="content-block-heading">Demonstration Video</h2>
-        <p class="content-block-text">Video recording demonstrating voice command dispatch and hardware relay actuation:</p>
-        <div class="hardware-gallery" style="grid-template-columns: 1fr; max-width: 820px; margin: 1.5rem auto 0 auto;">
-          <div class="hardware-card">
+        <h2 class="content-block-heading">Hardware Setup &amp; Demonstration Evidence</h2>
+        <p class="content-block-text">Photographic evidence of the physical test bench and live video capture validating the end-to-end voice automation pipeline:</p>
+
+        <!-- SUBSECTION A: PHYSICAL PROTOTYPE PHOTO -->
+        <h3 class="content-block-subheading" style="margin-top: 1.5rem; margin-bottom: 0.75rem; font-size: 1.1rem; color: var(--gold);">Physical Hardware Bench Setup</h3>
+        <div class="hardware-gallery" style="grid-template-columns: 1fr; max-width: 820px; margin: 0 auto 1.5rem auto;">
+          <div class="hardware-media-card">
+            <img src="assets/iot/task3-hardware-setup.jpg" alt="Physical laboratory setup showing ESP32, 5V optocoupled relay module, and Eveready AC light bulb">
+            <div class="hardware-media-caption">
+              <div class="hardware-media-title">Integrated Breadboard &amp; High-Voltage Relay Bench Setup</div>
+              <div class="hardware-media-desc">Physical setup of the IoT voice automation system: the ESP32 development board (powered via USB) is wired to a 5V optocoupled relay module (VCC to 5V, GND to GND, IN1 to GPIO 23). The relay Common (COM) and Normally Open (NO) terminals break the 230V AC phase conductor supplying an Eveready incandescent lamp.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SUBSECTION B: DEMONSTRATION VIDEO -->
+        <h3 class="content-block-subheading" style="margin-top: 1.5rem; margin-bottom: 0.75rem; font-size: 1.1rem; color: var(--gold);">Live Demonstration Video</h3>
+        <div class="hardware-gallery" style="grid-template-columns: 1fr; max-width: 820px; margin: 0 auto;">
+          <div class="hardware-media-card">
             <video class="media-video" controls preload="metadata" style="width: 100%; border-radius: 10px 10px 0 0; display: block;">
               <source src="assets/iot/task3-clip1.mp4" type="video/mp4">
+              Your browser does not support the video tag.
             </video>
-            <div class="hardware-card-caption">
-              <span class="hw-badge">LIVE DEMO</span>
-              <span class="hw-title">Voice Command to Physical Relay Switching</span>
-              <p>Video capture demonstrating end-to-end multi-platform integration: issuing spoken voice commands to Google Assistant on a smartphone triggers IFTTT webhook dispatch to Adafruit IO, and the ESP32 instantaneously energizes the active-LOW relay to switch the bench appliance.</p>
+            <div class="hardware-media-caption">
+              <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.4rem;">
+                <span class="test-pill pass" style="font-size: 0.6875rem;">LIVE DEMO</span>
+                <div class="hardware-media-title" style="margin-bottom: 0;">Voice-Controlled Cloud Relay Actuation</div>
+              </div>
+              <div class="hardware-media-desc">Video recording demonstrating complete end-to-end cloud voice automation: the user issues the voice phrase <code>"Ok Google, activate Bulb"</code> to Google Assistant on a smartphone, triggering IFTTT to publish <code>"ON"</code> to Adafruit IO. The ESP32 receives the MQTT packet and drives GPIO 23 LOW, energizing the relay and illuminating the 230V AC bulb. Subsequently, speaking <code>"Ok Google, activate TURN off bulb"</code> triggers IFTTT to publish <code>"OFF"</code>, causing the ESP32 to bring GPIO 23 HIGH and de-energize the lamp.</div>
             </div>
           </div>
         </div>
@@ -980,18 +1044,18 @@
 
           <div class="test-matrix-card">
             <div class="test-card-header">
-              <span class="test-title">Test 3 — Voice Trigger ON</span>
+              <span class="test-title">Test 3 — Voice Trigger ON (Scene Match)</span>
               <span class="test-pill pass">PASS</span>
             </div>
-            <div class="test-desc">Spoke <em>"turn on bulb"</em> to Google Assistant. Verified Assistant confirmation, Serial log <code>Voice command received: ON</code>, GPIO 23 drove 0V, relay clicked, and load illuminated.</div>
+            <div class="test-desc">Spoke <em>"Ok Google, activate Bulb"</em> to Google Assistant on Android. Verified Assistant matched the scene, IFTTT webhook dispatched <code>ON</code> to feed <code>bulb</code>, ESP32 Serial logged <code>Voice automation command received: ON</code>, GPIO 23 drove 0V (active-LOW), relay clicked, and 230V AC lamp illuminated.</div>
           </div>
 
           <div class="test-matrix-card">
             <div class="test-card-header">
-              <span class="test-title">Test 4 — Voice Trigger OFF</span>
+              <span class="test-title">Test 4 — Voice Trigger OFF (Scene Match)</span>
               <span class="test-pill pass">PASS</span>
             </div>
-            <div class="test-desc">Spoke <em>"turn off bulb"</em>. Verified Assistant confirmation, Serial log <code>Voice command received: OFF</code>, GPIO 23 rose to 3.3V, relay contact opened, and load turned off.</div>
+            <div class="test-desc">Spoke <em>"Ok Google, activate TURN off bulb"</em>. Verified Assistant confirmation, IFTTT dispatched <code>OFF</code> to feed <code>bulb</code>, ESP32 Serial logged <code>Voice automation command received: OFF</code>, GPIO 23 rose to 3.3V, relay contact opened, and lamp extinguished.</div>
           </div>
 
           <div class="test-matrix-card">
@@ -1186,77 +1250,138 @@
       <!-- 23. CODE -->
       <section class="content-block">
         <h2 class="content-block-heading">23. Complete Firmware Code</h2>
-        <div class="code-filename">File: ESP32_Voice_Relay.ino</div>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
+          <div class="code-filename" style="margin-bottom: 0;">File: ESP32_IFTTT_AdafruitIO.ino</div>
+          <a href="firmware/task3/ESP32_IFTTT_AdafruitIO.ino" download="ESP32_IFTTT_AdafruitIO.ino" class="btn btn-outlined" style="padding: 0.4rem 0.9rem; font-size: 0.8125rem; display: inline-flex; align-items: center; gap: 0.45rem; text-decoration: none; border-color: var(--maroon); color: var(--text-main);">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            Download ESP32 Source Code (.ino)
+          </a>
+        </div>
         <div class="code-wrapper">
           <button class="copy-btn" onclick="copyCode(this)">Copy</button>
-          <pre><code>#include &lt;WiFi.h&gt;
+          <pre><code>/*
+ * ESP32 Voice-Controlled IoT Relay Actuation (IFTTT + Adafruit IO MQTT)
+ * Assignment: IoT Task 3 — Cloud Automation Pipeline
+ * Author: Mithra Ravi
+ *
+ * Description:
+ * Connects the ESP32 to Adafruit IO via MQTT (port 1883) over local Wi-Fi.
+ * Subscribes to the "bulb" feed which receives upstream automated commands 
+ * from Google Assistant voice actions via IFTTT webhook triggers.
+ *
+ * Hardware Configuration:
+ * - ESP32 NodeMCU / DevKit V4
+ * - GPIO 23 -> Relay Module IN1 (Active-LOW: LOW = ON, HIGH = OFF)
+ * - 5V Songle Relay Module switching a 230V AC incandescent lamp (COM/NO)
+ */
+
+#include &lt;WiFi.h&gt;
 #include "Adafruit_MQTT.h"
 #include "Adafruit_MQTT_Client.h"
 
+// --- Wi-Fi Credentials (Placeholders: do not commit actual credentials) ---
 #define WLAN_SSID      "YOUR_WIFI_NAME"
 #define WLAN_PASS      "YOUR_WIFI_PASSWORD"
+
+// --- Adafruit IO Cloud Broker Credentials (Placeholders) ---
 #define AIO_SERVER     "io.adafruit.com"
 #define AIO_SERVERPORT 1883
 #define AIO_USERNAME   "YOUR_AIO_USERNAME"
 #define AIO_KEY        "YOUR_AIO_KEY"
 
-const int RELAY_PIN = 23;   // relay IN1
-const int RELAY_ON  = LOW;  // most relay modules are active-LOW
-const int RELAY_OFF = HIGH;
+// --- Hardware Pin Definitions ---
+const int RELAY_PIN = 23;   // GPIO connected to Relay Module IN1
+const int RELAY_ON  = LOW;  // Active-LOW relay coil energized
+const int RELAY_OFF = HIGH; // Active-LOW relay coil de-energized
 
+// --- Networking &amp; MQTT Client Setup ---
 WiFiClient client;
 Adafruit_MQTT_Client mqtt(&amp;client, AIO_SERVER, AIO_SERVERPORT, AIO_USERNAME, AIO_KEY);
+
+// Setup subscription feed for the bulb channel
 Adafruit_MQTT_Subscribe bulbFeed = Adafruit_MQTT_Subscribe(&amp;mqtt, AIO_USERNAME "/feeds/bulb");
 
 unsigned long lastPing = 0;
 
+// Connects and reconnects to the Adafruit IO MQTT broker
 void MQTT_connect() {
   if (mqtt.connected()) return;
-  Serial.print("Connecting to MQTT... ");
+
+  Serial.print("Connecting to Adafruit IO MQTT... ");
   int8_t ret;
   uint8_t retries = 3;
   while ((ret = mqtt.connect()) != 0) {
     Serial.println(mqtt.connectErrorString(ret));
     mqtt.disconnect();
-    delay(5000);
-    if (--retries == 0) ESP.restart();
+    delay(5000); // Wait 5 seconds before retrying
+    if (--retries == 0) {
+      Serial.println("MQTT connection failed. Resetting ESP32...");
+      ESP.restart();
+    }
   }
-  Serial.println("connected");
+  Serial.println("MQTT Connected!");
 }
 
 void setup() {
   Serial.begin(115200);
+  delay(100);
+
+  // Initialize relay pin in safe OFF state
   pinMode(RELAY_PIN, OUTPUT);
-  digitalWrite(RELAY_PIN, RELAY_OFF);   // relay off at start
+  digitalWrite(RELAY_PIN, RELAY_OFF);
+
+  Serial.println("\n--- Starting ESP32 Voice Automation Node ---");
+  Serial.print("Connecting to Wi-Fi SSID: ");
+  Serial.println(WLAN_SSID);
 
   WiFi.begin(WLAN_SSID, WLAN_PASS);
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
     Serial.print(".");
   }
-  Serial.println("\nWiFi connected");
+  Serial.println("\nWiFi connected successfully!");
+  Serial.print("Local IP Address: ");
+  Serial.println(WiFi.localIP());
 
+  // Subscribe to Adafruit IO feed
   mqtt.subscribe(&amp;bulbFeed);
+  Serial.println("Subscribed to MQTT feed: " AIO_USERNAME "/feeds/bulb");
 }
 
 void loop() {
+  // Ensure the MQTT connection is alive
   MQTT_connect();
 
+  // Read incoming subscription packets with a 1000ms timeout
   Adafruit_MQTT_Subscribe *sub;
   while ((sub = mqtt.readSubscription(1000))) {
     if (sub == &amp;bulbFeed) {
       String msg = (char *)bulbFeed.lastread;
       msg.trim();
       msg.toUpperCase();
-      Serial.print("Voice command received: ");
+      Serial.print("Voice automation command received: ");
       Serial.println(msg);
-      digitalWrite(RELAY_PIN, msg == "ON" ? RELAY_ON : RELAY_OFF);
+
+      if (msg == "ON") {
+        digitalWrite(RELAY_PIN, RELAY_ON);
+        Serial.println("Relay energized -> Lamp ON");
+      } else if (msg == "OFF") {
+        digitalWrite(RELAY_PIN, RELAY_OFF);
+        Serial.println("Relay de-energized -> Lamp OFF");
+      } else {
+        Serial.print("Unrecognized payload received: ");
+        Serial.println(msg);
+      }
     }
   }
 
+  // Send keepalive ping to broker every 30 seconds
   if (millis() - lastPing > 30000) {
     lastPing = millis();
-    if (!mqtt.ping()) mqtt.disconnect();
+    if (!mqtt.ping()) {
+      Serial.println("MQTT ping failed; disconnecting...");
+      mqtt.disconnect();
+    }
   }
 }</code></pre>
         </div>
